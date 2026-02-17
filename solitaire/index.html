@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>xSTIK Solitaire</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
   <style>
     /* ===== SOLITAIRE LAYOUT — V2 ===== */
     /* Viewport-contained, no scroll, smart condensing */
@@ -272,7 +272,7 @@
   <!-- ===== HEADER ===== -->
   <header class="top-bar">
     <div class="logo-wrap">
-      <img src="../SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
       <div>
         <div class="logo-text">xSTIK</div>
         <div class="logo-sub">SOLITAIRE</div>
@@ -354,12 +354,12 @@
   </div>
 
   <!-- ===== SHARED-CORE SCRIPTS ===== -->
-  <script src="../SHARED-CORE/nft-loader/card-deck.js"></script>
-  <script src="../SHARED-CORE/nft-loader/image-loader.js"></script>
-  <script src="../SHARED-CORE/credit-system/credit-system.js"></script>
-  <script src="../SHARED-CORE/player/player-system.js"></script>
-  <script src="../SHARED-CORE/leaderboard/leaderboard.js"></script>
-  <script src="../SHARED-CORE/game-init.js"></script>
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
 
   <!-- ===== SOLITAIRE GAME LOGIC ===== -->
   <script>
@@ -494,7 +494,7 @@
         img.alt = card.name;
         img.onerror = function () { XstikImageLoader.handleError(this, card); };
       } else {
-        img.src = '../' + CARD_BACK_PATH;
+        img.src = CARD_BACK_PATH;
         img.alt = 'Card back';
       }
       el.appendChild(img);

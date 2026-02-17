@@ -1,0 +1,76 @@
+# ============================================
+# xSTIK Game Hub — Netlify Configuration
+# Domain: games.xstik.art
+# ============================================
+# No build step needed — pre-built static files
+# ============================================
+
+[build]
+  publish = "."
+
+# ------ Routing ------
+# Static file paths are served directly by Netlify (no redirect needed).
+# The SPA catch-all ONLY fires when no file matches the request path.
+# Order matters: most specific first, catch-all last.
+
+# Solitaire is a standalone HTML file, not a React route
+[[redirects]]
+  from = "/solitaire"
+  to = "/solitaire/index.html"
+  status = 200
+
+# Future games: add rules here as they're built
+# [[redirects]]
+#   from = "/blackjack"
+#   to = "/blackjack/index.html"
+#   status = 200
+
+# SPA catch-all: React Router handles /blackjack, /poker, /hearts etc.
+# This MUST be last — it only fires when no real file matches
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ------ Security Headers ------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# ------ Caching ------
+# Hashed assets (React bundle) — immutable cache
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Images — long cache with revalidation
+[[headers]]
+  for = "/fallback-images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+[[headers]]
+  for = "*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+[[headers]]
+  for = "*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+# NFT data — moderate cache
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# SHARED-CORE JS — moderate cache (may update between deploys)
+[[headers]]
+  for = "/SHARED-CORE/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
