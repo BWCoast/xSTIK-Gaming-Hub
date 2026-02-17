@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>xSTIK Video Poker — Jacks or Better on XRPL</title>
+
+  <!-- OG Meta -->
+  <meta property="og:title" content="xSTIK Video Poker">
+  <meta property="og:description" content="Play Jacks or Better Video Poker with NFT playing cards on XRPL. Hold your best cards, chase the Royal Flush.">
+  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
+  <meta property="og:url" content="https://games.xstik.art/video-poker">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
+
+  <!-- REQUIRED: xSTIK Brand Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================
+       xSTIK BRAND FOUNDATION — DO NOT MODIFY
+       ================================================================ */
+
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      /* xSTIK Brand Colors — IMMUTABLE */
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+
+      /* Dark Theme — Default */
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+
+      /* Semantic */
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+
+      /* Spacing Scale */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+
+      /* Card sizing */
+      --card-w: clamp(3.8rem, 13vw, 7.5rem);
+      --card-h: calc(var(--card-w) * 1.4);
+    }
+
+    html, body {
+      background: var(--background);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--foreground);
+      overflow: hidden;
+      width: 100%; height: 100vh; height: 100dvh; position: fixed;
+    }
+
+    /* ========== STANDARD HEADER (DO NOT MODIFY) ========== */
+    .top-bar {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-left))
+               var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-right));
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.2);
+      position: relative; z-index: 100; height: 3.5rem;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: var(--spacing-sm); }
+    .logo-coin {
+      width: 2.25rem; height: 2.25rem; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(245, 197, 24, 0.4); box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .logo-text {
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
+      color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow);
+    }
+    .logo-sub {
+      font-size: 0.6rem; color: var(--accent); letter-spacing: 2px;
+      text-transform: uppercase; margin-top: -2px;
+    }
+    .header-stats { display: flex; align-items: center; gap: var(--spacing-md); }
+
+    /* ========== STANDARD FOOTER (DO NOT MODIFY) ========== */
+    .game-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(245, 197, 24, 0.2);
+      padding: 0.75rem max(var(--spacing-md), env(safe-area-inset-left))
+               max(0.75rem, env(safe-area-inset-bottom))
+               max(var(--spacing-md), env(safe-area-inset-right));
+      z-index: 90; display: flex; justify-content: space-between;
+      align-items: center; font-size: 0.85rem;
+    }
+    .footer-links { display: flex; gap: var(--spacing-lg); align-items: center; }
+    .footer-links a { color: var(--primary); text-decoration: none; transition: color 0.3s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-legal { color: var(--muted-text); font-size: 0.75rem; }
+
+    /* ========== UTILITY ========== */
+    .btn-primary {
+      background: var(--primary); color: #0D0D0D;
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 0.65rem 1.3rem; border: none; border-radius: 0.5rem;
+      cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 0 20px var(--primary-glow); min-height: 44px;
+    }
+    .btn-primary:hover { background: var(--accent); box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-2px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-sm {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 0.35rem 0.75rem; border-radius: 0.4rem;
+      border: 1px solid var(--primary); background: transparent; color: var(--primary);
+      cursor: pointer; transition: all 0.2s;
+      min-height: 44px; min-width: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-sm:hover { background: rgba(245, 197, 24, 0.12); }
+
+    /* ================================================================
+       VIDEO POKER — GAME STYLES
+       ================================================================ */
+
+    #game-container {
+      max-width: 1200px; margin: 0 auto;
+      padding: var(--spacing-xs) max(var(--spacing-sm), env(safe-area-inset-left));
+      height: calc(100vh - 3.5rem - 2.75rem);
+      height: calc(100dvh - 3.5rem - 2.75rem);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ---- Controls ---- */
+    .game-controls {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.2rem 0; gap: var(--spacing-sm); flex-shrink: 0;
+    }
+    .game-info {
+      display: flex; gap: var(--spacing-md); align-items: center;
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+    .game-info span strong { color: var(--primary); font-weight: 700; }
+    .game-controls .btn-group { display: flex; gap: var(--spacing-xs); }
+
+    /* ---- Pay Table ---- */
+    .pay-table {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.1rem 0.5rem;
+      background: rgba(31, 31, 31, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      color: var(--muted-text);
+      flex-shrink: 0;
+      max-width: 22rem;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .pay-row {
+      display: contents;
+    }
+
+    .pay-hand {
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .pay-mult {
+      text-align: right;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .pay-row.active .pay-hand,
+    .pay-row.active .pay-mult {
+      color: var(--primary);
+      font-weight: 700;
+      text-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    .pay-row.jackpot .pay-hand,
+    .pay-row.jackpot .pay-mult {
+      color: var(--success);
+      text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+
+    /* ---- Table ---- */
+    .poker-table {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      gap: var(--spacing-sm); overflow: hidden;
+    }
+
+    /* ---- Cards Row ---- */
+    .cards-row {
+      display: flex; justify-content: center; gap: 0.35rem;
+    }
+
+    .card-slot-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    }
+
+    .hold-badge {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.6rem;
+      color: var(--primary); letter-spacing: 1px;
+      opacity: 0; transition: opacity 0.2s;
+      min-height: 0.8rem;
+    }
+
+    .hold-badge.visible { opacity: 1; }
+
+    /* ---- Card ---- */
+    .card {
+      width: var(--card-w); aspect-ratio: 5/7; border-radius: 0.4rem;
+      overflow: hidden; position: relative; background: var(--card-bg);
+      border: 2px solid var(--border);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+      flex-shrink: 0; cursor: pointer;
+    }
+
+    .card img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; pointer-events: none;
+    }
+
+    .card.deal-in { animation: dealCard 0.35s ease-out; }
+
+    @keyframes dealCard {
+      from { transform: translateY(-50px) scale(0.7) rotate(-6deg); opacity: 0; }
+      to   { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+    }
+
+    .card.held {
+      border-color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+      transform: translateY(-0.4rem);
+    }
+
+    .card.swap-out {
+      animation: swapOut 0.25s ease-in forwards;
+    }
+    .card.swap-in {
+      animation: swapIn 0.3s ease-out;
+    }
+
+    @keyframes swapOut {
+      to { transform: translateY(-30px) scale(0.7) rotate(5deg); opacity: 0; }
+    }
+    @keyframes swapIn {
+      from { transform: translateY(30px) scale(0.7) rotate(-5deg); opacity: 0; }
+      to   { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+    }
+
+    .card.winning-glow {
+      box-shadow: 0 0 15px var(--primary-glow), 0 0 30px var(--accent-glow);
+      border-color: var(--primary);
+    }
+
+    .card.no-interact { cursor: default; }
+
+    /* ---- Center Info ---- */
+    .center-info {
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--spacing-xs); text-align: center;
+    }
+
+    .result-text {
+      font-family: 'Orbitron', sans-serif; font-weight: 900;
+      font-size: clamp(1.1rem, 3.5vw, 1.8rem); letter-spacing: 2px;
+      text-shadow: 0 0 15px var(--primary-glow);
+      opacity: 0; transition: opacity 0.3s; min-height: 1.5rem;
+    }
+    .result-text.show { opacity: 1; }
+    .result-text.win { color: var(--success); text-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+    .result-text.lose { color: var(--error); text-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+    .result-text.jackpot { color: var(--primary); }
+
+    .payout-text {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.9rem;
+      min-height: 1rem;
+    }
+    .payout-text.win-pay { color: var(--success); }
+    .payout-text.lose-pay { color: var(--error); }
+
+    /* ---- Bet Controls ---- */
+    .bet-controls {
+      display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm);
+    }
+
+    .chip-row {
+      display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap;
+    }
+
+    .chip {
+      width: 3rem; height: 3rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.65rem;
+      cursor: pointer; transition: all 0.2s; border: 3px solid;
+      min-height: 44px; min-width: 44px;
+    }
+    .chip:hover { transform: scale(1.1); }
+    .chip:active { transform: scale(0.95); }
+    .chip-10  { background: rgba(59, 130, 246, 0.2);  border-color: var(--info);    color: var(--info); }
+    .chip-25  { background: rgba(34, 197, 94, 0.2);   border-color: var(--success); color: var(--success); }
+    .chip-50  { background: rgba(245, 158, 11, 0.2);  border-color: var(--warning); color: var(--warning); }
+    .chip-100 { background: rgba(245, 197, 24, 0.2);  border-color: var(--primary); color: var(--primary); }
+
+    .bet-amount-display {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.2rem;
+      color: var(--primary); text-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .bet-action-row { display: flex; gap: var(--spacing-sm); align-items: center; }
+
+    .btn-clear {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.85rem;
+      text-transform: uppercase; padding: 0.5rem 1rem; border-radius: 0.4rem;
+      border: 1px solid var(--error); background: transparent; color: var(--error);
+      cursor: pointer; transition: all 0.2s; min-height: 44px;
+    }
+    .btn-clear:hover { background: rgba(239, 68, 68, 0.12); }
+
+    /* ---- Action Row (Draw / New Hand) ---- */
+    .action-row {
+      display: flex; gap: var(--spacing-sm); align-items: center; justify-content: center;
+    }
+
+    .hint-text {
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.8rem;
+      color: var(--muted-text); min-height: 1rem;
+    }
+
+    /* ---- Stats Row ---- */
+    .stats-row {
+      display: flex; gap: var(--spacing-md); justify-content: center;
+      font-size: 0.8rem; color: var(--muted-text);
+    }
+    .stats-row .stat-win { color: var(--success); }
+    .stats-row .stat-loss { color: var(--error); }
+
+    /* ---- Leaderboard Slide-Up ---- */
+    #lb-overlay { display: none; position: fixed; inset: 0; z-index: 500; }
+    #lb-overlay.open { display: block; }
+    #lb-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    #lb-panel {
+      position: absolute; bottom: 0; left: 0; right: 0; max-height: 75vh;
+      background: var(--background); border-top: 2px solid var(--primary);
+      border-radius: 1rem 1rem 0 0;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5), 0 -2px 20px var(--primary-glow);
+      transform: translateY(100%); transition: transform 0.3s ease;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    #lb-overlay.open #lb-panel { transform: translateY(0); }
+    .lb-handle { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .lb-handle-bar { width: 2.5rem; height: 4px; border-radius: 2px; background: var(--muted-text); position: absolute; left: 50%; top: 0.5rem; transform: translateX(-50%); }
+    .lb-title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; color: var(--primary); letter-spacing: 1px; }
+    .lb-close {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.85rem;
+      text-transform: uppercase; letter-spacing: 1px; color: var(--muted-text);
+      background: none; border: 1px solid var(--border); border-radius: 0.4rem;
+      padding: 0.35rem 0.75rem; cursor: pointer; transition: all 0.2s;
+      min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
+    }
+    .lb-close:hover { color: var(--primary); border-color: var(--primary); }
+    #leaderboard-area { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl); -webkit-overflow-scrolling: touch; }
+    #leaderboard-area::-webkit-scrollbar { width: 4px; }
+    #leaderboard-area::-webkit-scrollbar-track { background: var(--muted); }
+    #leaderboard-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 767px) {
+      :root { --card-w: clamp(3rem, 16vw, 4.5rem); }
+      .game-info { font-size: 0.75rem; gap: var(--spacing-sm); }
+      .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+      .footer-links { gap: var(--spacing-md); }
+      .footer-legal { display: none; }
+      .logo-text { font-size: 0.95rem; }
+      .logo-coin { width: 2rem; height: 2rem; }
+      .pay-table { font-size: 0.6rem; padding: 0.3rem 0.4rem; }
+      .chip { width: 2.6rem; height: 2.6rem; font-size: 0.55rem; min-height: 44px; min-width: 44px; }
+      .hold-badge { font-size: 0.5rem; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      :root { --card-w: clamp(4.5rem, 11vw, 6.5rem); }
+      .game-info { font-size: 0.95rem; }
+      .btn-sm { font-size: 0.85rem; padding: 0.4rem 0.85rem; }
+    }
+
+    @media (min-width: 1024px) {
+      .game-info { font-size: 1.05rem; gap: var(--spacing-lg); }
+      .btn-sm { font-size: 0.95rem; padding: 0.45rem 1rem; }
+      .pay-table { font-size: 0.8rem; max-width: 26rem; }
+      .chip { width: 3.5rem; height: 3.5rem; font-size: 0.75rem; }
+    }
+
+    @media (min-width: 1400px) {
+      .game-info { font-size: 1.15rem; }
+      .btn-sm { font-size: 1rem; padding: 0.5rem 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <header class="top-bar">
+    <div class="logo-wrap">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
+      <div>
+        <div class="logo-text">xSTIK</div>
+        <div class="logo-sub">VIDEO POKER</div>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div id="credit-display"></div>
+    </div>
+  </header>
+
+  <!-- ===== GAME AREA ===== -->
+  <main id="game-container">
+
+    <div class="game-controls">
+      <div class="game-info">
+        <span>🃏 <strong id="hands-played">0</strong></span>
+        <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" id="btn-leaderboard" title="Leaderboard">🏆</button>
+      </div>
+    </div>
+
+    <div class="poker-table">
+
+      <!-- Pay Table -->
+      <div class="pay-table" id="pay-table">
+        <div class="pay-row" data-hand="royal_flush"><span class="pay-hand">Royal Flush</span><span class="pay-mult">×250</span></div>
+        <div class="pay-row" data-hand="straight_flush"><span class="pay-hand">Straight Flush</span><span class="pay-mult">×50</span></div>
+        <div class="pay-row" data-hand="four_kind"><span class="pay-hand">Four of a Kind</span><span class="pay-mult">×25</span></div>
+        <div class="pay-row" data-hand="full_house"><span class="pay-hand">Full House</span><span class="pay-mult">×9</span></div>
+        <div class="pay-row" data-hand="flush"><span class="pay-hand">Flush</span><span class="pay-mult">×6</span></div>
+        <div class="pay-row" data-hand="straight"><span class="pay-hand">Straight</span><span class="pay-mult">×4</span></div>
+        <div class="pay-row" data-hand="three_kind"><span class="pay-hand">Three of a Kind</span><span class="pay-mult">×3</span></div>
+        <div class="pay-row" data-hand="two_pair"><span class="pay-hand">Two Pair</span><span class="pay-mult">×2</span></div>
+        <div class="pay-row" data-hand="jacks_better"><span class="pay-hand">Jacks or Better</span><span class="pay-mult">×1</span></div>
+      </div>
+
+      <!-- Cards -->
+      <div class="cards-row" id="cards-row">
+        <div class="card-slot-wrap"><div class="hold-badge" id="hold-0">HOLD</div><div class="card no-interact" id="card-0"></div></div>
+        <div class="card-slot-wrap"><div class="hold-badge" id="hold-1">HOLD</div><div class="card no-interact" id="card-1"></div></div>
+        <div class="card-slot-wrap"><div class="hold-badge" id="hold-2">HOLD</div><div class="card no-interact" id="card-2"></div></div>
+        <div class="card-slot-wrap"><div class="hold-badge" id="hold-3">HOLD</div><div class="card no-interact" id="card-3"></div></div>
+        <div class="card-slot-wrap"><div class="hold-badge" id="hold-4">HOLD</div><div class="card no-interact" id="card-4"></div></div>
+      </div>
+
+      <!-- Center Info -->
+      <div class="center-info">
+        <div class="result-text" id="result-text"></div>
+        <div class="payout-text" id="payout-text"></div>
+        <div class="hint-text" id="hint-text"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <span>W: <strong class="stat-win" id="stat-wins">0</strong></span>
+        <span>L: <strong class="stat-loss" id="stat-losses">0</strong></span>
+      </div>
+
+      <!-- Bet Controls (shown between hands) -->
+      <div class="bet-controls" id="bet-controls">
+        <div class="chip-row">
+          <button class="chip chip-10" data-value="10">10</button>
+          <button class="chip chip-25" data-value="25">25</button>
+          <button class="chip chip-50" data-value="50">50</button>
+          <button class="chip chip-100" data-value="100">100</button>
+        </div>
+        <div class="bet-amount-display" id="bet-amount-display">BET: 0</div>
+        <div class="bet-action-row">
+          <button class="btn-clear" id="btn-clear-bet">CLEAR</button>
+          <button class="btn-primary" id="btn-deal" disabled>DEAL</button>
+        </div>
+      </div>
+
+      <!-- Action Row (shown during hand) -->
+      <div class="action-row" id="action-row" style="display:none;">
+        <button class="btn-primary" id="btn-draw">DRAW</button>
+      </div>
+
+      <!-- New Hand (shown after result) -->
+      <button class="btn-primary" id="btn-new-hand" style="display:none;">NEW HAND</button>
+    </div>
+  </main>
+
+  <!-- Leaderboard Slide-Up -->
+  <div id="lb-overlay">
+    <div id="lb-backdrop"></div>
+    <div id="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 VIDEO POKER LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <footer class="game-footer">
+    <div class="footer-links">
+      <a href="https://xstik.art">Home</a>
+      <a href="https://games.xstik.art">Game Hub</a>
+      <a href="https://xstik.art/#ecosystem">Ecosystem</a>
+    </div>
+    <div class="footer-legal">
+      <p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p>
+    </div>
+  </footer>
+
+  <!-- ===== SHARED-CORE SCRIPTS (absolute paths, load order matters) ===== -->
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+
+  <!-- ===== VIDEO POKER v1.0 GAME LOGIC ===== -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ===== CONSTANTS =====
+    const MIN_BET = 10;
+    const RANK_VAL = { '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14 };
+
+    // Jacks or Better pay table (multiplier includes stake back)
+    const PAY_TABLE = {
+      royal_flush:    { mult: 250, name: 'ROYAL FLUSH' },
+      straight_flush: { mult: 50,  name: 'STRAIGHT FLUSH' },
+      four_kind:      { mult: 25,  name: 'FOUR OF A KIND' },
+      full_house:     { mult: 9,   name: 'FULL HOUSE' },
+      flush:          { mult: 6,   name: 'FLUSH' },
+      straight:       { mult: 4,   name: 'STRAIGHT' },
+      three_kind:     { mult: 3,   name: 'THREE OF A KIND' },
+      two_pair:       { mult: 2,   name: 'TWO PAIR' },
+      jacks_better:   { mult: 1,   name: 'JACKS OR BETTER' }
+    };
+
+    // ===== GAME STATE =====
+    let state = {
+      deck: [],
+      deckIdx: 0,
+      hand: [null, null, null, null, null],
+      held: [false, false, false, false, false],
+      betAmount: 0,
+      pendingBet: 0,
+      lastBet: 0,
+      handsPlayed: 0,
+      wins: 0,
+      losses: 0,
+      phase: 'betting' // betting | holding | result
+    };
+
+    // ===== DECK =====
+
+    function shuffleDeck() {
+      state.deck = XstikImageLoader.getShuffledDeck();
+      state.deckIdx = 0;
+    }
+
+    function drawCard() {
+      if (state.deckIdx >= state.deck.length) shuffleDeck();
+      return state.deck[state.deckIdx++];
+    }
+
+    // ===== CARD RENDERING =====
+
+    function createCardImg(card) {
+      const img = document.createElement('img');
+      img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+      img.alt = card.name;
+      img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      img.draggable = false;
+      return img;
+    }
+
+    function renderCards() {
+      for (let i = 0; i < 5; i++) {
+        const el = document.getElementById('card-' + i);
+        el.innerHTML = '';
+        el.className = 'card';
+
+        if (state.hand[i]) {
+          el.appendChild(createCardImg(state.hand[i]));
+          if (state.phase === 'holding') {
+            el.classList.remove('no-interact');
+            if (state.held[i]) el.classList.add('held');
+          } else {
+            el.classList.add('no-interact');
+          }
+        } else {
+          // Empty — show card back
+          const img = document.createElement('img');
+          img.src = CARD_BACK_PATH;
+          img.alt = 'Card back';
+          img.draggable = false;
+          el.appendChild(img);
+          el.classList.add('no-interact');
+        }
+
+        // Hold badge
+        const badge = document.getElementById('hold-' + i);
+        badge.classList.toggle('visible', state.held[i] && state.phase === 'holding');
+      }
+    }
+
+    // ===== HAND EVALUATION =====
+
+    function pokerRank(r) { return RANK_VAL[r] || 0; }
+
+    function evaluateHand(hand) {
+      const ranks = hand.map(c => pokerRank(c.rank)).sort((a, b) => b - a);
+      const suits = hand.map(c => c.suit);
+      const isFlush = suits.every(s => s === suits[0]);
+
+      // Check straight
+      const unique = [...new Set(ranks)].sort((a, b) => b - a);
+      let isStraight = false;
+      let straightHigh = 0;
+      if (unique.length === 5) {
+        if (unique[0] - unique[4] === 4) { isStraight = true; straightHigh = unique[0]; }
+        if (unique[0] === 14 && unique[1] === 5 && unique[2] === 4 && unique[3] === 3 && unique[4] === 2) {
+          isStraight = true; straightHigh = 5; // Wheel
+        }
+      }
+
+      // Group counts
+      const counts = {};
+      ranks.forEach(r => { counts[r] = (counts[r] || 0) + 1; });
+      const groups = Object.entries(counts).map(([r, c]) => ({ rank: parseInt(r), count: c }));
+      groups.sort((a, b) => b.count - a.count || b.rank - a.rank);
+
+      // Royal Flush
+      if (isFlush && isStraight && straightHigh === 14) return 'royal_flush';
+      if (isFlush && isStraight) return 'straight_flush';
+      if (groups[0].count === 4) return 'four_kind';
+      if (groups[0].count === 3 && groups[1].count === 2) return 'full_house';
+      if (isFlush) return 'flush';
+      if (isStraight) return 'straight';
+      if (groups[0].count === 3) return 'three_kind';
+      if (groups[0].count === 2 && groups[1].count === 2) return 'two_pair';
+      // Jacks or Better: pair of J, Q, K, or A
+      if (groups[0].count === 2 && groups[0].rank >= 11) return 'jacks_better';
+
+      return null; // No winning hand
+    }
+
+    // ===== UI PHASES =====
+
+    function showBetting() {
+      state.phase = 'betting';
+      state.pendingBet = state.lastBet || 0;
+      state.held = [false, false, false, false, false];
+      state.hand = [null, null, null, null, null];
+
+      document.getElementById('bet-controls').style.display = 'flex';
+      document.getElementById('action-row').style.display = 'none';
+      document.getElementById('btn-new-hand').style.display = 'none';
+      document.getElementById('result-text').classList.remove('show');
+      document.getElementById('payout-text').textContent = '';
+      document.getElementById('hint-text').textContent = '';
+
+      clearPayTableHighlight();
+      renderCards();
+      updateBetDisplay();
+      updateStats();
+    }
+
+    function showHolding() {
+      state.phase = 'holding';
+      document.getElementById('bet-controls').style.display = 'none';
+      document.getElementById('action-row').style.display = 'flex';
+      document.getElementById('hint-text').textContent = 'Tap cards to HOLD, then DRAW';
+      renderCards();
+    }
+
+    function showResult(handKey, payout) {
+      state.phase = 'result';
+      document.getElementById('action-row').style.display = 'none';
+      document.getElementById('btn-new-hand').style.display = 'block';
+      document.getElementById('hint-text').textContent = '';
+
+      const resultEl = document.getElementById('result-text');
+      const payoutEl = document.getElementById('payout-text');
+
+      if (handKey) {
+        const entry = PAY_TABLE[handKey];
+        resultEl.textContent = entry.name;
+        resultEl.className = 'result-text show ' + (handKey === 'royal_flush' ? 'jackpot' : 'win');
+        payoutEl.textContent = '+' + payout + ' credits';
+        payoutEl.className = 'payout-text win-pay';
+        state.wins++;
+        highlightPayRow(handKey);
+
+        // Glow on cards
+        for (let i = 0; i < 5; i++) {
+          document.getElementById('card-' + i).classList.add('winning-glow');
+        }
+      } else {
+        resultEl.textContent = 'NO WIN';
+        resultEl.className = 'result-text show lose';
+        payoutEl.textContent = '-' + state.betAmount + ' credits';
+        payoutEl.className = 'payout-text lose-pay';
+        state.losses++;
+      }
+
+      renderCards();
+      updateStats();
+    }
+
+    function highlightPayRow(key) {
+      clearPayTableHighlight();
+      const row = document.querySelector('.pay-row[data-hand="' + key + '"]');
+      if (row) {
+        row.classList.add(key === 'royal_flush' ? 'jackpot' : 'active');
+      }
+    }
+
+    function clearPayTableHighlight() {
+      document.querySelectorAll('.pay-row').forEach(r => r.classList.remove('active', 'jackpot'));
+    }
+
+    function updateBetDisplay() {
+      document.getElementById('bet-amount-display').textContent = 'BET: ' + state.pendingBet;
+      document.getElementById('btn-deal').disabled = state.pendingBet < MIN_BET;
+    }
+
+    function updateStats() {
+      document.getElementById('hands-played').textContent = state.handsPlayed;
+      document.getElementById('stat-wins').textContent = state.wins;
+      document.getElementById('stat-losses').textContent = state.losses;
+    }
+
+    // ===== DEAL =====
+
+    function deal() {
+      if (state.pendingBet < MIN_BET) return;
+
+      const balance = XstikCredits.getBalance();
+      if (balance < state.pendingBet) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(() => showBetting());
+          return;
+        }
+        return;
+      }
+
+      state.betAmount = state.pendingBet;
+      state.lastBet = state.betAmount;
+      XstikCredits.placeBet(state.betAmount, 'video-poker');
+
+      if (state.deckIdx > state.deck.length - 15) shuffleDeck();
+
+      // Deal 5 cards
+      state.hand = [drawCard(), drawCard(), drawCard(), drawCard(), drawCard()];
+      state.held = [false, false, false, false, false];
+      state.handsPlayed++;
+
+      // Animate deal
+      for (let i = 0; i < 5; i++) {
+        document.getElementById('card-' + i).classList.add('deal-in');
+      }
+
+      showHolding();
+    }
+
+    // ===== DRAW (replace unheld cards) =====
+
+    function drawReplace() {
+      // Animate out unheld
+      const toReplace = [];
+      for (let i = 0; i < 5; i++) {
+        if (!state.held[i]) {
+          toReplace.push(i);
+          document.getElementById('card-' + i).classList.add('swap-out');
+        }
+      }
+
+      setTimeout(() => {
+        // Replace unheld cards
+        for (const i of toReplace) {
+          state.hand[i] = drawCard();
+          const el = document.getElementById('card-' + i);
+          el.innerHTML = '';
+          el.appendChild(createCardImg(state.hand[i]));
+          el.className = 'card swap-in no-interact';
+        }
+
+        // Clear held visual
+        state.held = [false, false, false, false, false];
+        for (let i = 0; i < 5; i++) {
+          document.getElementById('hold-' + i).classList.remove('visible');
+          if (!toReplace.includes(i)) {
+            document.getElementById('card-' + i).classList.add('no-interact');
+            document.getElementById('card-' + i).classList.remove('held');
+          }
+        }
+
+        // Evaluate
+        setTimeout(() => {
+          const handKey = evaluateHand(state.hand);
+          let payout = 0;
+          if (handKey) {
+            payout = state.betAmount * PAY_TABLE[handKey].mult;
+            XstikCredits.awardWinnings(payout, 'video-poker');
+          }
+
+          // Leaderboard
+          const playerName = XstikPlayer.getUsername() || 'Anonymous';
+          XstikLeaderboard.submitScore(playerName, 'video-poker', {
+            handsPlayed: state.handsPlayed,
+            wins: state.wins + (handKey ? 1 : 0),
+            losses: state.losses + (handKey ? 0 : 1),
+            creditsWon: payout
+          });
+          XstikLeaderboard.rebuildUnified();
+
+          showResult(handKey, payout);
+        }, 350);
+      }, 280);
+    }
+
+    // ===== TOGGLE HOLD =====
+
+    function toggleHold(idx) {
+      if (state.phase !== 'holding') return;
+      state.held[idx] = !state.held[idx];
+
+      const el = document.getElementById('card-' + idx);
+      const badge = document.getElementById('hold-' + idx);
+      el.classList.toggle('held', state.held[idx]);
+      badge.classList.toggle('visible', state.held[idx]);
+    }
+
+    // ===== EVENT WIRING =====
+
+    function wireEvents() {
+      // Cards — tap to hold
+      for (let i = 0; i < 5; i++) {
+        document.getElementById('card-' + i).addEventListener('click', () => toggleHold(i));
+      }
+
+      // Chips
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          if (state.phase !== 'betting') return;
+          const val = parseInt(chip.dataset.value);
+          const balance = XstikCredits.getBalance();
+          state.pendingBet = Math.min(state.pendingBet + val, balance);
+          updateBetDisplay();
+        });
+      });
+
+      // Clear
+      document.getElementById('btn-clear-bet').addEventListener('click', () => {
+        if (state.phase !== 'betting') return;
+        state.pendingBet = 0;
+        updateBetDisplay();
+      });
+
+      // Deal
+      document.getElementById('btn-deal').addEventListener('click', () => {
+        if (state.phase !== 'betting') return;
+        deal();
+      });
+
+      // Draw
+      document.getElementById('btn-draw').addEventListener('click', () => {
+        if (state.phase !== 'holding') return;
+        drawReplace();
+      });
+
+      // New hand
+      document.getElementById('btn-new-hand').addEventListener('click', showBetting);
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'video-poker');
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() {
+        document.getElementById('lb-overlay').classList.remove('open');
+      }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+    }
+
+    // ===== BOOT =====
+
+    function showPlayerName() {
+      const name = XstikPlayer.getUsername();
+      if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    XstikGameInit.showDisclaimer();
+
+    XstikGameInit.boot('video-poker', {
+      preloadCards: true,
+      onReady: function () {
+        shuffleDeck();
+        wireEvents();
+        showPlayerName();
+        showBetting();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
