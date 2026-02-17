@@ -13,6 +13,9 @@
  *
  * Monthly reset: 1st of each month, current→previousMonth, fresh start.
  * localStorage keys: "xstik_leaderboard_{gameName}", "xstik_leaderboard_unified"
+ *
+ * v1.1 — Added scoring formulas for all 9 games, skill weights,
+ *         and weighted normalized unified leaderboard.
  */
 
 const XstikLeaderboard = (function () {
@@ -72,6 +75,13 @@ const XstikLeaderboard = (function () {
   }
 
   // ---- Scoring Formulas ----
+  //
+  // Categories:
+  //   Luck/House  — Casino War, Baccarat (reward streaks over grinding)
+  //   Skill/PvP   — Texas Hold'Em, Three Card Brag (big wins > small pots)
+  //   Skill/Luck  — Video Poker, Blackjack (optimal decisions matter)
+  //   Puzzle/Solo — Solitaire, Pyramid (speed + efficiency)
+  //   Strategy    — Spades (bidding accuracy + consistency)
 
   const SCORING = {
     /**
@@ -97,6 +107,97 @@ const XstikLeaderboard = (function () {
     },
 
     /**
+     * Casino War: Pure luck — reward hot streaks
+     * score = (wins × 30) + (winRate × 200) + min(creditsWon × 0.3, 300)
+     * Cap: 1000
+     */
+    'casino-war': function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.3, 300);
+      return Math.min(1000, Math.max(0, Math.round((wins * 30) + (winRate * 200) + creditBonus)));
+    },
+
+    /**
+     * Baccarat: Near-pure luck — same structure as Casino War
+     * score = (wins × 30) + (winRate × 200) + min(creditsWon × 0.3, 300)
+     * Cap: 1000
+     */
+    baccarat: function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.3, 300);
+      return Math.min(1000, Math.max(0, Math.round((wins * 30) + (winRate * 200) + creditBonus)));
+    },
+
+    /**
+     * Texas Hold'Em: High skill — big wins worth more
+     * score = (wins × 80) + (winRate × 300) + min(creditsWon × 0.5, 500)
+     * Cap: 2000
+     */
+    'texas-holdem': function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.5, 500);
+      return Math.min(2000, Math.max(0, Math.round((wins * 80) + (winRate * 300) + creditBonus)));
+    },
+
+    /**
+     * Three Card Brag: Medium skill — reads + betting strategy
+     * score = (wins × 60) + (winRate × 250) + min(creditsWon × 0.4, 400)
+     * Cap: 1500
+     */
+    'three-card-brag': function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.4, 400);
+      return Math.min(1500, Math.max(0, Math.round((wins * 60) + (winRate * 250) + creditBonus)));
+    },
+
+    /**
+     * Video Poker: Skill/Luck hybrid — optimal hold decisions matter
+     * score = (wins × 50) + (winRate × 250) + min(creditsWon × 0.4, 400)
+     * Cap: 1500
+     */
+    'video-poker': function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.4, 400);
+      return Math.min(1500, Math.max(0, Math.round((wins * 50) + (winRate * 250) + creditBonus)));
+    },
+
+    /**
+     * Pyramid: Puzzle — wins are rare, each worth a lot
+     * score = (wins × 150) + (winRate × 300) + min(creditsWon × 0.3, 300)
+     * Cap: 1500
+     */
+    pyramid: function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.3, 300);
+      return Math.min(1500, Math.max(0, Math.round((wins * 150) + (winRate * 300) + creditBonus)));
+    },
+
+    /**
+     * Spades: Strategy — highest winRate bonus reflects bidding accuracy
+     * score = (wins × 100) + (winRate × 400) + min(creditsWon × 0.4, 400)
+     * Cap: 2000
+     */
+    spades: function (details) {
+      var wins = details.wins || 0;
+      var hands = Math.max(details.handsPlayed || 1, 1);
+      var winRate = wins / hands;
+      var creditBonus = Math.min((details.creditsWon || 0) * 0.4, 400);
+      return Math.min(2000, Math.max(0, Math.round((wins * 100) + (winRate * 400) + creditBonus)));
+    },
+
+    /**
      * Default: Simple score pass-through (for future games)
      */
     _default: function (details) {
@@ -108,6 +209,24 @@ const XstikLeaderboard = (function () {
     const fn = SCORING[gameName] || SCORING._default;
     return fn(details);
   }
+
+  // ---- Skill Weights (for unified leaderboard) ----
+  //
+  // Higher weight = more contribution to global ranking.
+  // A top Spades player (0.95 × 1.5 = 1.425) contributes ~3×
+  // more than a top Casino War player (0.95 × 0.5 = 0.475).
+
+  const SKILL_WEIGHTS = {
+    spades:            1.5,
+    'texas-holdem':    1.4,
+    'three-card-brag': 1.2,
+    'video-poker':     1.1,
+    blackjack:         1.0,
+    solitaire:         0.9,
+    pyramid:           0.9,
+    baccarat:          0.6,
+    'casino-war':      0.5
+  };
 
   // ---- Per-Game Leaderboard API ----
 
@@ -189,37 +308,77 @@ const XstikLeaderboard = (function () {
   // ---- Unified Leaderboard ----
 
   /**
-   * Recalculate the unified leaderboard by aggregating best scores
-   * across all game leaderboards.
+   * Recalculate the unified leaderboard using weighted normalized scoring.
+   *
+   * Algorithm:
+   *   1. For each game, collect all player scores (already sorted descending)
+   *   2. Calculate each player's percentile within that game (0.0–1.0)
+   *   3. Multiply percentile by SKILL_WEIGHT for that game
+   *   4. Sum weighted percentiles across all games played
+   *   5. Add log10(totalCreditsWon + 1) as tiebreaker
+   *   6. Sort descending
+   *
+   * Formula: Global Score = Σ(gamePercentile × skillWeight) + log10(totalCredits + 1)
+   *
    * Call after any game score submission.
    */
   function rebuildUnified() {
-    const unified = {};
+    var gameBoards = {};
 
-    // Scan all game leaderboard keys
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    // Step 1: Collect all per-game boards
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
       if (key.startsWith(PREFIX) && key !== UNIFIED_KEY) {
-        const board = _getBoard(key);
-        if (!board || !board.scores) continue;
-
-        board.scores.forEach(entry => {
-          if (!unified[entry.playerName]) {
-            unified[entry.playerName] = { playerName: entry.playerName, totalScore: 0, games: {} };
-          }
-          const gameName = key.replace(PREFIX, '');
-          unified[entry.playerName].games[gameName] = entry.score;
-          unified[entry.playerName].totalScore += entry.score;
-        });
+        var board = _getBoard(key);
+        if (!board || !board.scores || board.scores.length === 0) continue;
+        var gameName = key.replace(PREFIX, '');
+        gameBoards[gameName] = board.scores;
       }
     }
 
-    // Convert to sorted array
-    const sorted = Object.values(unified)
-      .sort((a, b) => b.totalScore - a.totalScore)
+    // Step 2: For each game, calculate percentile per player
+    var playerData = {};
+
+    Object.keys(gameBoards).forEach(function (gameName) {
+      var scores = gameBoards[gameName];
+      var total = scores.length;
+      var weight = SKILL_WEIGHTS[gameName] || 1.0;
+
+      scores.forEach(function (entry, rank) {
+        var name = entry.playerName;
+        if (!playerData[name]) {
+          playerData[name] = { playerName: name, totalScore: 0, games: {}, totalCredits: 0 };
+        }
+
+        // Percentile: top player (rank 0) ≈ 1.0, bottom player ≈ 0.0
+        // Single-player edge case: percentile = 1.0
+        var percentile = total <= 1 ? 1.0 : 1 - (rank / (total - 1));
+
+        // Weighted contribution
+        var weightedScore = percentile * weight;
+        playerData[name].games[gameName] = entry.score;
+        playerData[name].totalScore += weightedScore;
+
+        // Accumulate credits for log tiebreaker
+        if (entry.details && entry.details.creditsWon) {
+          playerData[name].totalCredits += (entry.details.creditsWon || 0);
+        }
+      });
+    });
+
+    // Step 3: Add log10 credit tiebreaker and round
+    Object.keys(playerData).forEach(function (name) {
+      var p = playerData[name];
+      var logBonus = Math.log10(Math.max(p.totalCredits, 0) + 1);
+      p.totalScore = Math.round((p.totalScore + logBonus) * 100) / 100;
+    });
+
+    // Step 4: Sort descending, trim
+    var sorted = Object.values(playerData)
+      .sort(function (a, b) { return b.totalScore - a.totalScore; })
       .slice(0, MAX_ENTRIES);
 
-    const board = {
+    var board = {
       currentMonth: _monthStr(),
       scores: sorted,
       lastUpdated: new Date().toISOString()
