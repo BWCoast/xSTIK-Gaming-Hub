@@ -494,7 +494,7 @@
         img.alt = card.name;
         img.onerror = function () { XstikImageLoader.handleError(this, card); };
       } else {
-        img.src = CARD_BACK_PATH;
+        img.src = '../' + CARD_BACK_PATH;
         img.alt = 'Card back';
       }
       el.appendChild(img);
