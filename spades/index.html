@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>xSTIK Spades — Play on XRPL</title>
+
+  <!-- OG Meta -->
+  <meta property="og:title" content="xSTIK Spades">
+  <meta property="og:description" content="Play classic Spades with NFT playing cards on XRPL. Partner up, bid smart, take tricks, climb leaderboards.">
+  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
+  <meta property="og:url" content="https://games.xstik.art/spades">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
+
+  <!-- REQUIRED: xSTIK Brand Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================
+       xSTIK BRAND FOUNDATION — DO NOT MODIFY
+       ================================================================ */
+    * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+
+    :root {
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --card-w: clamp(2.8rem, 7vw, 5rem);
+      --card-h: calc(var(--card-w) * 1.4);
+    }
+
+    html, body {
+      background: var(--background); font-family: 'Rajdhani', sans-serif;
+      color: var(--foreground); overflow: hidden;
+      width: 100%; height: 100vh; height: 100dvh; position: fixed;
+    }
+
+    /* ========== STANDARD HEADER ========== */
+    .top-bar {
+      width:100%; display:flex; justify-content:space-between; align-items:center;
+      padding: var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-left))
+               var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-right));
+      background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(245,197,24,0.2); position:relative; z-index:100; height:3.5rem;
+    }
+    .logo-wrap { display:flex; align-items:center; gap:var(--spacing-sm); }
+    .logo-coin { width:2.25rem; height:2.25rem; border-radius:50%; object-fit: cover; border:1px solid rgba(245,197,24,0.4); box-shadow:0 0 10px var(--primary-glow); }
+    .logo-text { font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:900; color:var(--primary); letter-spacing:2px; text-shadow:0 0 10px var(--primary-glow); }
+    .logo-sub { font-size:0.6rem; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-top:-2px; }
+    .header-stats { display:flex; align-items:center; gap:var(--spacing-md); }
+
+    /* ========== STANDARD FOOTER ========== */
+    .game-footer {
+      position:fixed; bottom:0; left:0; right:0;
+      background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      border-top:1px solid rgba(245,197,24,0.2);
+      padding: 0.75rem max(var(--spacing-md), env(safe-area-inset-left))
+               max(0.75rem, env(safe-area-inset-bottom)) max(var(--spacing-md), env(safe-area-inset-right));
+      z-index:90; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;
+    }
+    .footer-links { display:flex; gap:var(--spacing-lg); align-items:center; }
+    .footer-links a { color:var(--primary); text-decoration:none; transition:color 0.3s; }
+    .footer-links a:hover { color:var(--accent); }
+    .footer-legal { color:var(--muted-text); font-size:0.75rem; }
+
+    /* ========== UTILITY ========== */
+    .btn-primary {
+      background:var(--primary); color:#0D0D0D;
+      font-family:'Rajdhani',sans-serif; font-weight:600; font-size:1rem;
+      text-transform:uppercase; letter-spacing:1px;
+      padding:0.6rem 1.2rem; border:none; border-radius:0.5rem;
+      cursor:pointer; transition:all 0.3s ease;
+      box-shadow:0 0 20px var(--primary-glow); min-height:44px;
+    }
+    .btn-primary:hover { background:var(--accent); box-shadow:0 0 30px var(--accent-glow); transform:translateY(-2px); }
+    .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+
+    .btn-sm {
+      font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.8rem;
+      text-transform:uppercase; letter-spacing:0.5px;
+      padding:0.35rem 0.75rem; border-radius:0.4rem;
+      border:1px solid var(--primary); background:transparent; color:var(--primary);
+      cursor:pointer; transition:all 0.2s;
+      min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center;
+    }
+    .btn-sm:hover { background:rgba(245,197,24,0.12); }
+
+    /* ================================================================
+       SPADES — GAME STYLES
+       ================================================================ */
+    #game-container {
+      max-width:1400px; margin:0 auto;
+      padding: var(--spacing-xs) max(var(--spacing-sm), env(safe-area-inset-left));
+      height: calc(100vh - 3.5rem - 2.75rem); height: calc(100dvh - 3.5rem - 2.75rem);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+
+    .game-controls {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.15rem 0; gap:var(--spacing-sm); flex-shrink:0;
+    }
+    .game-info {
+      display:flex; gap:var(--spacing-sm); align-items:center;
+      font-family:'Rajdhani',sans-serif; font-weight:500; font-size:0.75rem; color:var(--muted-text);
+    }
+    .game-info span strong { color:var(--primary); font-weight:700; }
+    .game-controls .btn-group { display:flex; gap:var(--spacing-xs); }
+
+    /* ---- Scoreboard Strip ---- */
+    .score-strip {
+      display:flex; justify-content:center; gap:var(--spacing-md); flex-shrink:0;
+      padding:0.2rem 0; font-size:0.7rem;
+    }
+    .team-score {
+      font-family:'Rajdhani',sans-serif; font-weight:600;
+      padding:0.15rem 0.6rem; border-radius:0.3rem;
+      border:1px solid var(--border); background:rgba(31,31,31,0.4);
+    }
+    .team-us { color:var(--success); border-color:rgba(34,197,94,0.3); }
+    .team-them { color:var(--error); border-color:rgba(239,68,68,0.3); }
+    .team-score strong { font-family:'Orbitron',sans-serif; font-weight:700; }
+
+    /* ---- Spades Table ---- */
+    .spades-table {
+      flex:1; display:grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: auto 1fr auto;
+      gap:0; overflow:hidden; position:relative;
+    }
+
+    /* ---- Trick Area (center) ---- */
+    .trick-area {
+      grid-row:2; grid-column:2;
+      display:flex; align-items:center; justify-content:center;
+      position:relative; min-height:0;
+    }
+    .trick-cards {
+      position:relative;
+      width: calc(var(--card-w) * 2.5); height: calc(var(--card-h) * 2);
+    }
+    .trick-card {
+      position:absolute; width:var(--card-w); aspect-ratio: 5/7;
+      border-radius:0.3rem; overflow:hidden; background:var(--card-bg);
+      border:1px solid var(--border); transition:all 0.3s;
+    }
+    .trick-card img { width:100%; height:100%; object-fit: cover; display:block; pointer-events:none; }
+    .trick-card.deal-in { animation:trickPlay 0.3s ease-out; }
+
+    /* Position trick cards: top=N, right=E, bottom=S(you), left=W */
+    .trick-card[data-seat="0"] { bottom:0; left:50%; transform:translateX(-50%); }
+    .trick-card[data-seat="1"] { left:0; top:50%; transform:translateY(-50%); }
+    .trick-card[data-seat="2"] { top:0; left:50%; transform:translateX(-50%); }
+    .trick-card[data-seat="3"] { right:0; top:50%; transform:translateY(-50%); }
+
+    @keyframes trickPlay {
+      from { opacity:0; transform:translate(-50%,-50%) scale(0.5); }
+      to { opacity:1; }
+    }
+
+    .trick-winner-badge {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      font-family:'Orbitron',sans-serif; font-weight:900; font-size:0.7rem;
+      color:var(--primary); text-shadow:0 0 10px var(--primary-glow);
+      letter-spacing:2px; opacity:0; transition:opacity 0.3s;
+    }
+    .trick-winner-badge.show { opacity:1; }
+
+    /* ---- Opponent Seats ---- */
+    .seat { display:flex; align-items:center; justify-content:center; min-width:0; min-height:0; }
+    .seat-top    { grid-row:1; grid-column:2; flex-direction:column; padding:0.1rem 0; }
+    .seat-left   { grid-row:2; grid-column:1; flex-direction:column; padding:0 0.15rem; }
+    .seat-right  { grid-row:2; grid-column:3; flex-direction:column; padding:0 0.15rem; }
+
+    .seat-label {
+      font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.6rem;
+      color:var(--muted-text); letter-spacing:1px; text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .seat-label.partner { color:var(--success); }
+    .seat-label.active { color:var(--primary); }
+
+    .seat-bid {
+      font-family:'Rajdhani',sans-serif; font-weight:500; font-size:0.55rem;
+      color:var(--muted-text); min-height:0.7rem;
+    }
+
+    .seat-cards-mini {
+      display:flex; gap:0.1rem;
+    }
+    .mini-card {
+      width:calc(var(--card-w) * 0.45); aspect-ratio: 5/7;
+      border-radius:0.15rem; overflow:hidden; background:var(--card-bg);
+      border:1px solid var(--border);
+    }
+    .mini-card img { width:100%; height:100%; object-fit: cover; display:block; }
+
+    /* ---- Player Hand (bottom) ---- */
+    .player-hand-area {
+      grid-row:3; grid-column:1 / -1;
+      display:flex; flex-direction:column; align-items:center;
+      gap:0.15rem; flex-shrink:0; padding-bottom:0.1rem;
+    }
+
+    .hand-row {
+      display:flex; justify-content:center; position:relative;
+    }
+
+    .hand-card {
+      width:var(--card-w); aspect-ratio: 5/7; border-radius:0.3rem;
+      overflow:hidden; background:var(--card-bg); border:2px solid var(--border);
+      cursor:pointer; transition:all 0.15s ease; flex-shrink:0;
+      margin-left:-0.6rem; position:relative;
+    }
+    .hand-card:first-child { margin-left:0; }
+    .hand-card img { width:100%; height:100%; object-fit: cover; display:block; pointer-events:none; }
+    .hand-card.playable { border-color:rgba(245,197,24,0.4); }
+    .hand-card.playable:hover { transform:translateY(-0.5rem); border-color:var(--primary); box-shadow:0 0 10px var(--primary-glow); z-index:5; }
+    .hand-card.disabled { opacity:0.4; cursor:not-allowed; }
+    .hand-card.deal-in { animation:dealCard 0.2s ease-out; }
+
+    @keyframes dealCard {
+      from { transform:translateY(-30px) scale(0.7); opacity:0; }
+      to   { transform:translateY(0) scale(1); opacity:1; }
+    }
+
+    /* ---- Center overlays ---- */
+    .center-overlay {
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      gap:var(--spacing-sm); z-index:10;
+      background:rgba(20,20,20,0.9); backdrop-filter:blur(4px); border-radius:0.5rem;
+    }
+    .center-overlay.show { display:flex; }
+
+    .overlay-title {
+      font-family:'Orbitron',sans-serif; font-weight:700; font-size:0.85rem;
+      color:var(--primary); letter-spacing:2px;
+    }
+
+    .overlay-text {
+      font-family:'Rajdhani',sans-serif; font-weight:500; font-size:0.8rem;
+      color:var(--muted-text); text-align:center; max-width:16rem;
+    }
+
+    /* ---- Bid Selector ---- */
+    .bid-row {
+      display:flex; gap:0.25rem; flex-wrap:wrap; justify-content:center;
+    }
+
+    .bid-btn {
+      width:2.2rem; height:2.2rem; border-radius:0.3rem;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Orbitron',sans-serif; font-weight:700; font-size:0.7rem;
+      cursor:pointer; transition:all 0.2s;
+      border:2px solid var(--border); background:rgba(31,31,31,0.5); color:var(--foreground);
+      min-height:44px; min-width:44px;
+    }
+    .bid-btn:hover { border-color:var(--primary); background:rgba(245,197,24,0.1); color:var(--primary); }
+    .bid-btn.nil-btn { color:var(--error); border-color:rgba(239,68,68,0.3); }
+    .bid-btn.nil-btn:hover { border-color:var(--error); background:rgba(239,68,68,0.1); }
+
+    /* ---- Result text ---- */
+    .result-text {
+      font-family:'Orbitron',sans-serif; font-weight:900;
+      font-size:clamp(0.9rem,3vw,1.4rem); letter-spacing:2px;
+      text-shadow:0 0 15px var(--primary-glow); opacity:0; transition:opacity 0.3s;
+    }
+    .result-text.show { opacity:1; }
+    .result-text.win { color:var(--success); text-shadow:0 0 15px rgba(34,197,94,0.5); }
+    .result-text.lose { color:var(--error); text-shadow:0 0 15px rgba(239,68,68,0.5); }
+
+    .round-score-text {
+      font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.8rem; color:var(--muted-text);
+    }
+
+    /* ---- Leaderboard ---- */
+    #lb-overlay { display:none; position:fixed; inset:0; z-index:500; }
+    #lb-overlay.open { display:block; }
+    #lb-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+    #lb-panel {
+      position:absolute; bottom:0; left:0; right:0; max-height:75vh;
+      background:var(--background); border-top:2px solid var(--primary);
+      border-radius:1rem 1rem 0 0;
+      box-shadow:0 -8px 40px rgba(0,0,0,0.5), 0 -2px 20px var(--primary-glow);
+      transform:translateY(100%); transition:transform 0.3s ease;
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    #lb-overlay.open #lb-panel { transform:translateY(0); }
+    .lb-handle { display:flex; align-items:center; justify-content:space-between; padding:var(--spacing-md) var(--spacing-lg); border-bottom:1px solid var(--border); flex-shrink:0; }
+    .lb-handle-bar { width:2.5rem; height:4px; border-radius:2px; background:var(--muted-text); position:absolute; left:50%; top:0.5rem; transform:translateX(-50%); }
+    .lb-title { font-family:'Orbitron',sans-serif; font-weight:700; font-size:1rem; color:var(--primary); letter-spacing:1px; }
+    .lb-close {
+      font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.85rem;
+      text-transform:uppercase; letter-spacing:1px; color:var(--muted-text);
+      background:none; border:1px solid var(--border); border-radius:0.4rem;
+      padding:0.35rem 0.75rem; cursor:pointer; transition:all 0.2s;
+      min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center;
+    }
+    .lb-close:hover { color:var(--primary); border-color:var(--primary); }
+    #leaderboard-area { flex:1; overflow-y:auto; padding:var(--spacing-md) var(--spacing-lg) var(--spacing-xl); -webkit-overflow-scrolling:touch; }
+    #leaderboard-area::-webkit-scrollbar { width:4px; }
+    #leaderboard-area::-webkit-scrollbar-track { background:var(--muted); }
+    #leaderboard-area::-webkit-scrollbar-thumb { background:var(--primary); border-radius:2px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 767px) {
+      :root { --card-w: clamp(2.2rem, 7.5vw, 3.2rem); }
+      .game-info { font-size:0.65rem; }
+      .btn-sm { font-size:0.65rem; padding:0.2rem 0.4rem; }
+      .footer-links { gap:var(--spacing-md); }
+      .footer-legal { display:none; }
+      .logo-text { font-size:0.95rem; }
+      .logo-coin { width:2rem; height:2rem; }
+      .hand-card { margin-left:-0.8rem; }
+      .score-strip { font-size:0.6rem; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      :root { --card-w: clamp(3rem, 7vw, 4.5rem); }
+      .game-info { font-size:0.85rem; }
+      .btn-sm { font-size:0.8rem; padding:0.35rem 0.7rem; }
+    }
+
+    @media (min-width: 1024px) {
+      :root { --card-w: clamp(3.5rem, 5.5vw, 5rem); }
+      .game-info { font-size:0.95rem; gap:var(--spacing-md); }
+      .btn-sm { font-size:0.9rem; padding:0.4rem 0.9rem; }
+      .hand-card { margin-left:-0.5rem; }
+    }
+
+    @media (min-width: 1400px) {
+      .game-info { font-size:1.05rem; }
+      .btn-sm { font-size:0.95rem; padding:0.45rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="top-bar">
+    <div class="logo-wrap">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
+      <div>
+        <div class="logo-text">xSTIK</div>
+        <div class="logo-sub">SPADES</div>
+      </div>
+    </div>
+    <div class="header-stats"><div id="credit-display"></div></div>
+  </header>
+
+  <!-- ===== GAME ===== -->
+  <main id="game-container">
+    <div class="game-controls">
+      <div class="game-info">
+        <span>Round <strong id="round-num">1</strong></span>
+        <span>Trick <strong id="trick-num">0</strong>/13</span>
+        <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </div>
+
+    <!-- Score Strip -->
+    <div class="score-strip">
+      <div class="team-score team-us">US (You+Partner): <strong id="score-us">0</strong></div>
+      <div class="team-score team-them">THEM: <strong id="score-them">0</strong></div>
+    </div>
+
+    <!-- Spades Table -->
+    <div class="spades-table">
+      <!-- Partner (top / seat 2) -->
+      <div class="seat seat-top" id="seat-2">
+        <div class="seat-label partner" id="label-2">PARTNER</div>
+        <div class="seat-bid" id="bid-2"></div>
+        <div class="seat-cards-mini" id="mini-2"></div>
+      </div>
+
+      <!-- Left opponent (seat 1) -->
+      <div class="seat seat-left" id="seat-1">
+        <div class="seat-label" id="label-1">WEST</div>
+        <div class="seat-bid" id="bid-1"></div>
+        <div class="seat-cards-mini" id="mini-1"></div>
+      </div>
+
+      <!-- Right opponent (seat 3) -->
+      <div class="seat seat-right" id="seat-3">
+        <div class="seat-label" id="label-3">EAST</div>
+        <div class="seat-bid" id="bid-3"></div>
+        <div class="seat-cards-mini" id="mini-3"></div>
+      </div>
+
+      <!-- Trick Area (center) -->
+      <div class="trick-area">
+        <div class="trick-cards" id="trick-cards"></div>
+        <div class="trick-winner-badge" id="trick-winner-badge"></div>
+
+        <!-- Overlays -->
+        <div class="center-overlay" id="overlay-start">
+          <div class="overlay-title">SPADES</div>
+          <div class="overlay-text">Play to 500 points. You and your partner vs the opponents. Spades are always trump.</div>
+          <button class="btn-primary" id="btn-start">PLAY — 50 CREDITS</button>
+        </div>
+
+        <div class="center-overlay" id="overlay-bid">
+          <div class="overlay-title">YOUR BID</div>
+          <div class="overlay-text">How many tricks will you take? (0 = Nil)</div>
+          <div class="bid-row" id="bid-row"></div>
+        </div>
+
+        <div class="center-overlay" id="overlay-round-end">
+          <div class="result-text" id="result-text"></div>
+          <div class="round-score-text" id="round-score-text"></div>
+          <button class="btn-primary" id="btn-next-round">NEXT ROUND</button>
+        </div>
+
+        <div class="center-overlay" id="overlay-game-over">
+          <div class="result-text" id="game-over-text"></div>
+          <div class="round-score-text" id="game-over-score"></div>
+          <button class="btn-primary" id="btn-new-game">NEW GAME</button>
+        </div>
+      </div>
+
+      <!-- Player Hand (bottom / seat 0) -->
+      <div class="player-hand-area">
+        <div class="hand-row" id="player-hand"></div>
+        <div style="font-size:0.55rem;color:var(--muted-text);font-family:'Rajdhani',sans-serif;letter-spacing:1px;">YOUR HAND</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Leaderboard -->
+  <div id="lb-overlay">
+    <div id="lb-backdrop"></div>
+    <div id="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 SPADES LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="game-footer">
+    <div class="footer-links">
+      <a href="https://xstik.art">Home</a>
+      <a href="https://games.xstik.art">Game Hub</a>
+      <a href="https://xstik.art/#ecosystem">Ecosystem</a>
+    </div>
+    <div class="footer-legal"><p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p></div>
+  </footer>
+
+  <!-- ===== SHARED-CORE ===== -->
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+
+  <!-- ===== SPADES v1.0 ===== -->
+  <script>
+  (function () {
+    'use strict';
+
+    const ENTRY_FEE = 50;
+    const WIN_SCORE = 500;
+    const SUIT_ORDER = { 'Clubs':0, 'Diamonds':1, 'Hearts':2, 'Spades':3 };
+    const RANK_ORDER = { '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14 };
+    const NAMES = ['YOU', 'WEST', 'PARTNER', 'EAST'];
+
+    // Seats: 0=South(you), 1=West(opp), 2=North(partner), 3=East(opp)
+    // Teams: us=[0,2], them=[1,3]
+
+    let G = {
+      hands: [[], [], [], []],
+      bids: [0, 0, 0, 0],
+      tricks: [0, 0, 0, 0],
+      scores: { us: 0, them: 0 },
+      bags: { us: 0, them: 0 },
+      round: 1,
+      trickNum: 0,
+      currentTrick: [],
+      leadSeat: 0,
+      currentSeat: 0,
+      spadesBroken: false,
+      phase: 'start',
+      gamesWon: 0,
+      gamesLost: 0
+    };
+
+    let deck = [];
+    let deckIdx = 0;
+
+    // ===== DECK =====
+    function shuffleDeck() { deck = XstikImageLoader.getShuffledDeck(); deckIdx = 0; }
+    function drawCard() { if (deckIdx >= deck.length) shuffleDeck(); return deck[deckIdx++]; }
+
+    // ===== CARD HELPERS =====
+    function suitVal(card) { return SUIT_ORDER[card.suit]; }
+    function rankVal(card) { return RANK_ORDER[card.rank]; }
+    function isSpade(card) { return card.suit === 'Spades'; }
+
+    function sortHand(hand) {
+      return hand.sort((a, b) => {
+        const sd = suitVal(a) - suitVal(b);
+        return sd !== 0 ? sd : rankVal(a) - rankVal(b);
+      });
+    }
+
+    function cardScore(card, leadSuit) {
+      if (isSpade(card)) return 100 + rankVal(card);
+      if (card.suit === leadSuit) return rankVal(card);
+      return 0;
+    }
+
+    function trickWinner(trick) {
+      const leadSuit = trick[0].card.suit;
+      let best = 0;
+      for (let i = 1; i < trick.length; i++) {
+        if (cardScore(trick[i].card, leadSuit) > cardScore(trick[best].card, leadSuit)) best = i;
+      }
+      return trick[best].seat;
+    }
+
+    function legalPlays(hand, leadSuit, spadesBroken) {
+      if (!leadSuit) {
+        if (spadesBroken) return hand;
+        const nonSpades = hand.filter(c => !isSpade(c));
+        return nonSpades.length > 0 ? nonSpades : hand;
+      }
+      const follow = hand.filter(c => c.suit === leadSuit);
+      return follow.length > 0 ? follow : hand;
+    }
+
+    // ===== CARD RENDERING =====
+    function createCardImg(card) {
+      const img = document.createElement('img');
+      img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+      img.alt = card.name;
+      img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      img.draggable = false;
+      return img;
+    }
+
+    function createBackImg() {
+      const img = document.createElement('img');
+      img.src = CARD_BACK_PATH;
+      img.alt = 'Card';
+      img.draggable = false;
+      return img;
+    }
+
+    // ===== RENDER =====
+    function renderPlayerHand() {
+      const el = document.getElementById('player-hand');
+      el.innerHTML = '';
+      const hand = G.hands[0];
+      const leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
+      const legal = G.phase === 'play' && G.currentSeat === 0 ? legalPlays(hand, leadSuit, G.spadesBroken) : [];
+
+      hand.forEach((card, i) => {
+        const div = document.createElement('div');
+        div.className = 'hand-card deal-in';
+        div.style.animationDelay = (i * 0.04) + 's';
+        div.appendChild(createCardImg(card));
+
+        const isLegal = legal.includes(card);
+        if (G.phase === 'play' && G.currentSeat === 0) {
+          if (isLegal) {
+            div.classList.add('playable');
+            div.addEventListener('click', () => playerPlayCard(i));
+          } else {
+            div.classList.add('disabled');
+          }
+        }
+        el.appendChild(div);
+      });
+    }
+
+    function renderMiniHand(seat) {
+      const el = document.getElementById('mini-' + seat);
+      el.innerHTML = '';
+      const count = G.hands[seat].length;
+      const show = Math.min(count, 6);
+      for (let i = 0; i < show; i++) {
+        const d = document.createElement('div');
+        d.className = 'mini-card';
+        d.appendChild(createBackImg());
+        el.appendChild(d);
+      }
+      if (count > show) {
+        const more = document.createElement('div');
+        more.className = 'seat-bid';
+        more.textContent = '+' + (count - show);
+        el.appendChild(more);
+      }
+    }
+
+    function renderTrick() {
+      const el = document.getElementById('trick-cards');
+      el.innerHTML = '';
+      G.currentTrick.forEach(entry => {
+        const d = document.createElement('div');
+        d.className = 'trick-card deal-in';
+        d.dataset.seat = entry.seat;
+        d.appendChild(createCardImg(entry.card));
+        el.appendChild(d);
+      });
+    }
+
+    function renderScores() {
+      document.getElementById('score-us').textContent = G.scores.us;
+      document.getElementById('score-them').textContent = G.scores.them;
+    }
+
+    function renderBids() {
+      for (let s = 1; s <= 3; s++) {
+        const el = document.getElementById('bid-' + s);
+        if (G.bids[s] !== null && G.bids[s] !== undefined && G.phase !== 'start') {
+          el.textContent = 'Bid: ' + G.bids[s] + ' | Won: ' + G.tricks[s];
+        } else {
+          el.textContent = '';
+        }
+      }
+    }
+
+    function renderAll() {
+      renderPlayerHand();
+      for (let s = 1; s <= 3; s++) renderMiniHand(s);
+      renderTrick();
+      renderScores();
+      renderBids();
+      document.getElementById('round-num').textContent = G.round;
+      document.getElementById('trick-num').textContent = G.trickNum;
+
+      // Active seat highlight
+      for (let s = 1; s <= 3; s++) {
+        const lbl = document.getElementById('label-' + s);
+        lbl.classList.toggle('active', G.currentSeat === s && G.phase === 'play');
+      }
+    }
+
+    function hideAllOverlays() {
+      ['overlay-start','overlay-bid','overlay-round-end','overlay-game-over'].forEach(id => {
+        document.getElementById(id).classList.remove('show');
+      });
+    }
+
+    function showOverlay(id) { hideAllOverlays(); document.getElementById(id).classList.add('show'); }
+
+    // ===== GAME FLOW =====
+
+    function startGame() {
+      const balance = XstikCredits.getBalance();
+      if (balance < ENTRY_FEE) {
+        if (XstikCredits.isBankrupt()) XstikCredits.triggerBankruptcy(() => {});
+        return;
+      }
+      XstikCredits.placeBet(ENTRY_FEE, 'spades');
+
+      G.scores = { us: 0, them: 0 };
+      G.bags = { us: 0, them: 0 };
+      G.round = 1;
+      startRound();
+    }
+
+    function startRound() {
+      shuffleDeck();
+      G.hands = [[], [], [], []];
+      G.bids = [null, null, null, null];
+      G.tricks = [0, 0, 0, 0];
+      G.trickNum = 0;
+      G.spadesBroken = false;
+      G.currentTrick = [];
+
+      // Deal 13 cards each
+      for (let i = 0; i < 52; i++) {
+        G.hands[i % 4].push(drawCard());
+      }
+      for (let s = 0; s < 4; s++) sortHand(G.hands[s]);
+
+      // Leader for first trick rotates
+      G.leadSeat = (G.round - 1) % 4;
+
+      hideAllOverlays();
+      renderAll();
+
+      // Bidding phase: AI bids first, then player
+      startBidding();
+    }
+
+    function startBidding() {
+      G.phase = 'bidding';
+      // AI bids (simple: count high cards + spades)
+      for (let s = 1; s <= 3; s++) {
+        G.bids[s] = aiBid(s);
+      }
+      renderBids();
+
+      // Player bids
+      buildBidSelector();
+      showOverlay('overlay-bid');
+    }
+
+    function aiBid(seat) {
+      const hand = G.hands[seat];
+      let est = 0;
+      hand.forEach(c => {
+        if (isSpade(c) && rankVal(c) >= 10) est += 1;
+        else if (isSpade(c) && rankVal(c) >= 7) est += 0.5;
+        else if (rankVal(c) === 14) est += 0.8; // Ace of non-spade
+        else if (rankVal(c) === 13) est += 0.4;
+      });
+      const bid = Math.max(1, Math.min(7, Math.round(est)));
+      return bid;
+    }
+
+    function buildBidSelector() {
+      const row = document.getElementById('bid-row');
+      row.innerHTML = '';
+      for (let b = 0; b <= 7; b++) {
+        const btn = document.createElement('button');
+        btn.className = 'bid-btn' + (b === 0 ? ' nil-btn' : '');
+        btn.textContent = b === 0 ? 'NIL' : b;
+        btn.addEventListener('click', () => playerBid(b));
+        row.appendChild(btn);
+      }
+    }
+
+    function playerBid(b) {
+      G.bids[0] = b;
+      hideAllOverlays();
+      renderBids();
+      startPlaying();
+    }
+
+    function startPlaying() {
+      G.phase = 'play';
+      G.currentSeat = G.leadSeat;
+      G.currentTrick = [];
+      G.trickNum = 1;
+      document.getElementById('trick-num').textContent = G.trickNum;
+      renderAll();
+      nextTurn();
+    }
+
+    function nextTurn() {
+      if (G.phase !== 'play') return;
+      renderAll();
+
+      if (G.currentSeat === 0) {
+        // Wait for player click
+        return;
+      }
+
+      // AI plays
+      setTimeout(() => {
+        aiPlay(G.currentSeat);
+        afterCardPlayed();
+      }, 350);
+    }
+
+    function playerPlayCard(idx) {
+      if (G.phase !== 'play' || G.currentSeat !== 0) return;
+      const hand = G.hands[0];
+      const leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
+      const legal = legalPlays(hand, leadSuit, G.spadesBroken);
+      if (!legal.includes(hand[idx])) return;
+
+      const card = hand.splice(idx, 1)[0];
+      G.currentTrick.push({ seat: 0, card: card });
+      if (isSpade(card)) G.spadesBroken = true;
+      afterCardPlayed();
+    }
+
+    function aiPlay(seat) {
+      const hand = G.hands[seat];
+      const leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
+      const legal = legalPlays(hand, leadSuit, G.spadesBroken);
+
+      // Simple AI: play lowest legal card, but try to win if can
+      let chosen;
+      if (G.currentTrick.length === 0) {
+        // Leading: play lowest non-spade, or lowest spade
+        const nonSpades = legal.filter(c => !isSpade(c));
+        chosen = (nonSpades.length > 0 ? nonSpades : legal)[0];
+      } else {
+        // Following: try to win cheaply
+        const ls = G.currentTrick[0].card.suit;
+        const currentBest = Math.max(...G.currentTrick.map(e => cardScore(e.card, ls)));
+        const winners = legal.filter(c => cardScore(c, ls) > currentBest);
+        chosen = winners.length > 0 ? winners[0] : legal[0]; // cheapest winner or dump lowest
+      }
+
+      const idx = hand.indexOf(chosen);
+      hand.splice(idx, 1);
+      G.currentTrick.push({ seat: seat, card: chosen });
+      if (isSpade(chosen)) G.spadesBroken = true;
+    }
+
+    function afterCardPlayed() {
+      renderAll();
+
+      if (G.currentTrick.length < 4) {
+        G.currentSeat = (G.currentSeat + 1) % 4;
+        nextTurn();
+        return;
+      }
+
+      // Trick complete
+      const winner = trickWinner(G.currentTrick);
+      G.tricks[winner]++;
+
+      const badge = document.getElementById('trick-winner-badge');
+      badge.textContent = NAMES[winner];
+      badge.classList.add('show');
+
+      setTimeout(() => {
+        badge.classList.remove('show');
+        G.currentTrick = [];
+        G.trickNum++;
+
+        if (G.trickNum > 13) {
+          endRound();
+          return;
+        }
+
+        G.leadSeat = winner;
+        G.currentSeat = winner;
+        renderAll();
+        nextTurn();
+      }, 800);
+    }
+
+    function endRound() {
+      G.phase = 'scoring';
+
+      // Score calculation
+      const usBid = G.bids[0] + G.bids[2];
+      const usTricks = G.tricks[0] + G.tricks[2];
+      const themBid = G.bids[1] + G.bids[3];
+      const themTricks = G.tricks[1] + G.tricks[3];
+
+      let usPoints = 0;
+      let themPoints = 0;
+
+      // Nil handling
+      [0, 2].forEach(s => {
+        if (G.bids[s] === 0) {
+          if (G.tricks[s] === 0) usPoints += 100;
+          else usPoints -= 100;
+        }
+      });
+      [1, 3].forEach(s => {
+        if (G.bids[s] === 0) {
+          if (G.tricks[s] === 0) themPoints += 100;
+          else themPoints -= 100;
+        }
+      });
+
+      // Team scoring (exclude nil bidders)
+      const usNonNilBid = [0, 2].filter(s => G.bids[s] > 0).reduce((sum, s) => sum + G.bids[s], 0);
+      const usNonNilTricks = usTricks; // all tricks count for team
+
+      if (usNonNilBid > 0) {
+        if (usNonNilTricks >= usNonNilBid) {
+          usPoints += usNonNilBid * 10;
+          const bags = usNonNilTricks - usNonNilBid;
+          usPoints += bags;
+          G.bags.us += bags;
+          if (G.bags.us >= 10) { usPoints -= 100; G.bags.us -= 10; }
+        } else {
+          usPoints -= usNonNilBid * 10;
+        }
+      }
+
+      const themNonNilBid = [1, 3].filter(s => G.bids[s] > 0).reduce((sum, s) => sum + G.bids[s], 0);
+      if (themNonNilBid > 0) {
+        if (themTricks >= themNonNilBid) {
+          themPoints += themNonNilBid * 10;
+          const bags = themTricks - themNonNilBid;
+          themPoints += bags;
+          G.bags.them += bags;
+          if (G.bags.them >= 10) { themPoints -= 100; G.bags.them -= 10; }
+        } else {
+          themPoints -= themNonNilBid * 10;
+        }
+      }
+
+      G.scores.us += usPoints;
+      G.scores.them += themPoints;
+      renderScores();
+
+      // Check game end
+      if (G.scores.us >= WIN_SCORE || G.scores.them >= WIN_SCORE || G.round >= 20) {
+        endGame();
+        return;
+      }
+
+      const resultEl = document.getElementById('result-text');
+      resultEl.textContent = usPoints >= themPoints ? 'GOOD ROUND!' : 'TOUGH ROUND';
+      resultEl.className = 'result-text show ' + (usPoints >= themPoints ? 'win' : 'lose');
+
+      document.getElementById('round-score-text').textContent =
+        'Us: ' + (usPoints >= 0 ? '+' : '') + usPoints + ' (bid ' + usBid + ', took ' + usTricks + ')' +
+        ' | Them: ' + (themPoints >= 0 ? '+' : '') + themPoints + ' (bid ' + themBid + ', took ' + themTricks + ')';
+
+      showOverlay('overlay-round-end');
+    }
+
+    function nextRound() {
+      G.round++;
+      startRound();
+    }
+
+    function endGame() {
+      G.phase = 'gameover';
+      const won = G.scores.us >= WIN_SCORE && G.scores.us >= G.scores.them;
+
+      if (won) {
+        G.gamesWon++;
+        const payout = Math.floor(ENTRY_FEE * 2.5);
+        XstikCredits.awardWinnings(payout, 'spades');
+      } else {
+        G.gamesLost++;
+      }
+
+      const goText = document.getElementById('game-over-text');
+      goText.textContent = won ? 'VICTORY!' : 'DEFEAT';
+      goText.className = 'result-text show ' + (won ? 'win' : 'lose');
+
+      document.getElementById('game-over-score').textContent =
+        'Final: Us ' + G.scores.us + ' — Them ' + G.scores.them + ' (' + G.round + ' rounds)';
+
+      showOverlay('overlay-game-over');
+
+      // Leaderboard
+      const playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, 'spades', {
+        handsPlayed: G.round,
+        wins: G.gamesWon,
+        losses: G.gamesLost,
+        creditsWon: won ? Math.floor(ENTRY_FEE * 2.5) : 0
+      });
+      XstikLeaderboard.rebuildUnified();
+    }
+
+    // ===== EVENTS =====
+    function wireEvents() {
+      document.getElementById('btn-start').addEventListener('click', startGame);
+      document.getElementById('btn-next-round').addEventListener('click', nextRound);
+      document.getElementById('btn-new-game').addEventListener('click', startGame);
+
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'spades');
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+    }
+
+    // ===== BOOT =====
+    function showPlayerName() {
+      const name = XstikPlayer.getUsername();
+      if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    XstikGameInit.showDisclaimer();
+
+    XstikGameInit.boot('spades', {
+      preloadCards: true,
+      onReady: function () {
+        shuffleDeck();
+        wireEvents();
+        showPlayerName();
+        showOverlay('overlay-start');
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
