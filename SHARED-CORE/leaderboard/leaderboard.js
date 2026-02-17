@@ -16,6 +16,8 @@
  *
  * v1.1 — Added scoring formulas for all 9 games, skill weights,
  *         and weighted normalized unified leaderboard.
+ * v1.2 — Added Hall of Fame toggle (Active Season / previous month),
+ *         unified board previousMonth archiving, month display helper.
  */
 
 const XstikLeaderboard = (function () {
@@ -30,6 +32,20 @@ const XstikLeaderboard = (function () {
   function _monthStr() {
     const d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+  /**
+   * Convert "2026-01" to "January 2026" for display.
+   */
+  function _monthDisplay(monthStr) {
+    if (!monthStr) return '';
+    var parts = monthStr.split('-');
+    if (parts.length !== 2) return monthStr;
+    var names = ['January','February','March','April','May','June',
+                 'July','August','September','October','November','December'];
+    var idx = parseInt(parts[1], 10) - 1;
+    if (idx < 0 || idx > 11) return monthStr;
+    return names[idx] + ' ' + parts[0];
   }
 
   function _getBoard(key) {
@@ -320,9 +336,23 @@ const XstikLeaderboard = (function () {
    *
    * Formula: Global Score = Σ(gamePercentile × skillWeight) + log10(totalCredits + 1)
    *
+   * v1.2: Also archives previousMonth for the unified board.
+   *
    * Call after any game score submission.
    */
   function rebuildUnified() {
+    // v1.2: Check if existing unified board needs archiving
+    var existingBoard = _getBoard(UNIFIED_KEY);
+    var previousMonth = null;
+    if (existingBoard && existingBoard.currentMonth && existingBoard.currentMonth !== _monthStr()) {
+      previousMonth = {
+        month: existingBoard.currentMonth,
+        scores: (existingBoard.scores || []).slice(0, 20)
+      };
+    } else if (existingBoard && existingBoard.previousMonth) {
+      previousMonth = existingBoard.previousMonth;
+    }
+
     var gameBoards = {};
 
     // Step 1: Collect all per-game boards
@@ -381,6 +411,7 @@ const XstikLeaderboard = (function () {
     var board = {
       currentMonth: _monthStr(),
       scores: sorted,
+      previousMonth: previousMonth,
       lastUpdated: new Date().toISOString()
     };
 
@@ -390,55 +421,120 @@ const XstikLeaderboard = (function () {
 
   /**
    * Get unified leaderboard.
+   * v1.2: Returns full object with previousMonth (like getGameLeaderboard).
    */
   function getUnifiedLeaderboard(limit) {
     const board = _getBoard(UNIFIED_KEY);
-    if (!board) return [];
-    return board.scores.slice(0, limit || 10);
+    if (!board) return { currentMonth: _monthStr(), scores: [], previousMonth: null };
+    return {
+      currentMonth: board.currentMonth,
+      scores: (board.scores || []).slice(0, limit || 10),
+      previousMonth: board.previousMonth || null
+    };
   }
 
   // ---- Leaderboard UI Widget ----
 
   /**
-   * Render a simple leaderboard table into a container.
+   * Render a leaderboard table with Active Season / Hall of Fame toggle.
    * mode: "game" (per-game) or "unified"
    * gameName: required if mode is "game"
+   * season: "current" (default) or "hallOfFame" — optional, backwards compatible
+   *
+   * v1.2: Added season toggle. All existing game calls (without 4th param)
+   *       default to 'current' and work identically to v1.1.
    */
-  function renderLeaderboard(containerSelector, mode, gameName) {
-    const container = document.querySelector(containerSelector);
+  function renderLeaderboard(containerSelector, mode, gameName, season) {
+    var container = document.querySelector(containerSelector);
     if (!container) return;
 
-    let scores, title;
+    var activeSeason = season || 'current';
+    var scores, title, previousMonth, currentMonth;
+
     if (mode === 'unified') {
-      const data = getUnifiedLeaderboard(10);
-      scores = data.map(s => ({ name: s.playerName, score: s.totalScore }));
-      title = 'GAME HUB LEADERBOARD';
+      var uData = getUnifiedLeaderboard(10);
+      currentMonth = uData.currentMonth;
+      previousMonth = uData.previousMonth;
+
+      if (activeSeason === 'hallOfFame' && previousMonth && previousMonth.scores) {
+        scores = previousMonth.scores.map(function (s) {
+          return { name: s.playerName, score: s.totalScore || s.score || 0 };
+        });
+        title = 'GAME HUB HALL OF FAME — ' + _monthDisplay(previousMonth.month);
+      } else {
+        scores = uData.scores.map(function (s) {
+          return { name: s.playerName, score: s.totalScore };
+        });
+        title = 'GAME HUB LEADERBOARD';
+        activeSeason = 'current';
+      }
     } else {
-      const data = getGameLeaderboard(gameName, 10);
-      scores = data.scores.map(s => ({ name: s.playerName, score: s.score }));
-      title = (gameName || 'GAME').toUpperCase() + ' LEADERBOARD';
+      var gData = getGameLeaderboard(gameName, 10);
+      currentMonth = gData.currentMonth;
+      previousMonth = gData.previousMonth;
+
+      if (activeSeason === 'hallOfFame' && previousMonth && previousMonth.scores) {
+        scores = previousMonth.scores.map(function (s) {
+          return { name: s.playerName, score: s.score || 0 };
+        });
+        title = (gameName || 'GAME').toUpperCase().replace(/-/g, ' ') + ' HALL OF FAME — ' + _monthDisplay(previousMonth.month);
+      } else {
+        scores = gData.scores.map(function (s) {
+          return { name: s.playerName, score: s.score };
+        });
+        title = (gameName || 'GAME').toUpperCase().replace(/-/g, ' ') + ' LEADERBOARD';
+        activeSeason = 'current';
+      }
     }
 
-    const medals = ['🥇', '🥈', '🥉'];
-    const rows = scores.map((s, i) => `
-      <tr style="border-bottom:1px solid rgba(245,197,24,0.1);">
-        <td style="padding:0.5rem;text-align:center;font-weight:600;${i < 3 ? 'font-size:1.2rem' : 'color:var(--muted-text,#B3B3B3)'}">${i < 3 ? medals[i] : i + 1}</td>
-        <td style="padding:0.5rem;font-weight:500;">${s.name}</td>
-        <td style="padding:0.5rem;text-align:right;color:var(--primary,#F5C518);font-weight:700;">${s.score.toLocaleString()}</td>
-      </tr>
-    `).join('');
+    // Escape selector for use in onclick attributes
+    var safeSelector = containerSelector.replace(/'/g, "\\'");
+    var safeMode = mode || 'game';
+    var safeGame = (gameName || '').replace(/'/g, "\\'");
 
-    const empty = scores.length === 0 ? '<p style="text-align:center;color:var(--muted-text,#B3B3B3);padding:2rem;font-family:Rajdhani,sans-serif;">No scores yet — be the first!</p>' : '';
+    // Tab styles
+    var activeStyle = 'background:var(--primary,#F5C518);color:#0D0D0D;border:1px solid var(--primary,#F5C518);';
+    var inactiveStyle = 'background:transparent;border:1px solid var(--primary,#F5C518);color:var(--primary,#F5C518);';
+    var tabBase = 'font-family:Rajdhani,sans-serif;font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;padding:0.35rem 0.75rem;border-radius:0.4rem;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center;transition:background 0.2s;';
 
-    container.innerHTML = `
-      <div style="background:rgba(31,31,31,0.6);backdrop-filter:blur(24px);border:1px solid rgba(245,197,24,0.2);border-radius:0.5rem;padding:1rem;max-width:28rem;margin:0 auto;">
-        <h3 style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:0.95rem;color:var(--primary,#F5C518);text-align:center;margin-bottom:0.75rem;letter-spacing:1px;">${title}</h3>
-        ${empty}
-        <table style="width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif;font-size:0.95rem;color:var(--foreground,#FAFAFA);">
-          ${rows}
-        </table>
-      </div>
-    `;
+    var currentTabStyle = activeSeason === 'current' ? activeStyle : inactiveStyle;
+    var hofTabStyle = activeSeason === 'hallOfFame' ? activeStyle : inactiveStyle;
+
+    var tabsHTML = '<div style="display:flex;gap:0.5rem;justify-content:center;margin-bottom:0.75rem;">' +
+      '<button style="' + tabBase + currentTabStyle + '" onclick="XstikLeaderboard.renderLeaderboard(\'' + safeSelector + '\',\'' + safeMode + '\',\'' + safeGame + '\',\'current\')">ACTIVE SEASON</button>' +
+      '<button style="' + tabBase + hofTabStyle + '" onclick="XstikLeaderboard.renderLeaderboard(\'' + safeSelector + '\',\'' + safeMode + '\',\'' + safeGame + '\',\'hallOfFame\')">HALL OF FAME</button>' +
+      '</div>';
+
+    // Score table
+    var medals = ['🥇', '🥈', '🥉'];
+    var rows = scores.map(function (s, i) {
+      return '<tr style="border-bottom:1px solid rgba(245,197,24,0.1);">' +
+        '<td style="padding:0.5rem;text-align:center;font-weight:600;' + (i < 3 ? 'font-size:1.2rem' : 'color:var(--muted-text,#B3B3B3)') + '">' + (i < 3 ? medals[i] : i + 1) + '</td>' +
+        '<td style="padding:0.5rem;font-weight:500;">' + s.name + '</td>' +
+        '<td style="padding:0.5rem;text-align:right;color:var(--primary,#F5C518);font-weight:700;">' + (typeof s.score === 'number' ? s.score.toLocaleString() : s.score) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    var empty;
+    if (scores.length === 0) {
+      if (activeSeason === 'hallOfFame') {
+        empty = '<p style="text-align:center;color:var(--muted-text,#B3B3B3);padding:2rem;font-family:Rajdhani,sans-serif;">No previous season data yet — check back next month!</p>';
+      } else {
+        empty = '<p style="text-align:center;color:var(--muted-text,#B3B3B3);padding:2rem;font-family:Rajdhani,sans-serif;">No scores yet — be the first!</p>';
+      }
+    } else {
+      empty = '';
+    }
+
+    container.innerHTML =
+      '<div style="background:rgba(31,31,31,0.6);backdrop-filter:blur(24px);border:1px solid rgba(245,197,24,0.2);border-radius:0.5rem;padding:1rem;max-width:28rem;margin:0 auto;">' +
+        tabsHTML +
+        '<h3 style="font-family:Orbitron,sans-serif;font-weight:700;font-size:0.95rem;color:var(--primary,#F5C518);text-align:center;margin-bottom:0.75rem;letter-spacing:1px;">' + title + '</h3>' +
+        empty +
+        '<table style="width:100%;border-collapse:collapse;font-family:Rajdhani,sans-serif;font-size:0.95rem;color:var(--foreground,#FAFAFA);">' +
+          rows +
+        '</table>' +
+      '</div>';
   }
 
   return {
