@@ -59,7 +59,7 @@
 
       /* Card sizing (game-specific, safe to modify) */
       --card-w: clamp(4rem, 10vw, 7rem);
-      --card-h: calc(var(--card-w) * 1.5);
+      --card-h: calc(var(--card-w) * 1.4);
       --face-down-offset: 0.45rem;
       --face-up-offset: 1.8rem;
     }
@@ -276,7 +276,7 @@
     }
     .pile-slot {
       width: 100%;
-      aspect-ratio: 2/3;
+      aspect-ratio: 5/7;
       border: 2px dashed rgba(245, 197, 24, 0.2);
       border-radius: 0.4rem;
       display: flex;
@@ -315,7 +315,7 @@
     /* ---- Card Element ---- */
     .card {
       width: 100%;
-      aspect-ratio: 2/3;
+      aspect-ratio: 5/7;
       border-radius: 0.35rem;
       overflow: hidden;
       cursor: pointer;
@@ -327,7 +327,7 @@
     .card img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       display: block;
       pointer-events: none;
     }
@@ -351,12 +351,19 @@
       margin-top: calc(-1 * var(--card-h) + var(--face-up-offset));
     }
 
-    /* Condensed mode: override offsets when column overflows */
-    .tableau-col.condensed .card:not(:first-child).face-down {
-      margin-top: calc(-1 * var(--card-h) + 0.2rem);
+    /* Condensed mode: hide middle cards, show top + last 3 */
+    .tableau-col .card.condensed-hidden {
+      margin-top: calc(-1 * var(--card-h));
+      height: 0;
+      min-height: 0;
+      aspect-ratio: unset;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
     }
-    .tableau-col.condensed .card:not(:first-child).face-up {
-      margin-top: calc(-1 * var(--card-h) + var(--condensed-offset, 1rem));
+    /* Thin sliver for the first visible condensed card (indicates hidden cards) */
+    .tableau-col .card.condensed-peek {
+      margin-top: calc(-1 * var(--card-h) + 0.15rem);
     }
 
     /* "+N" badge on condensed stacks */
@@ -557,7 +564,7 @@
       :root {
         --card-w: clamp(2.8rem, 12.5vw, 4.5rem);
         --face-down-offset: 0.25rem;
-        --face-up-offset: 1.2rem;
+        --face-up-offset: 1.1rem;
       }
       .game-info { font-size: 0.75rem; gap: var(--spacing-sm); }
       .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
@@ -570,6 +577,21 @@
 
     @media (min-width: 768px) and (max-width: 1023px) {
       :root { --card-w: clamp(4rem, 9vw, 5.5rem); }
+      .game-info { font-size: 0.95rem; }
+      .btn-sm { font-size: 0.85rem; padding: 0.4rem 0.85rem; }
+    }
+
+    /* Desktop: larger controls and text */
+    @media (min-width: 1024px) {
+      .game-info { font-size: 1.05rem; gap: var(--spacing-lg); }
+      .btn-sm { font-size: 0.95rem; padding: 0.45rem 1rem; }
+      .pile-slot .slot-label { font-size: 0.7rem; }
+    }
+
+    /* Large desktop: even more readable */
+    @media (min-width: 1400px) {
+      .game-info { font-size: 1.15rem; }
+      .btn-sm { font-size: 1rem; padding: 0.5rem 1.1rem; }
     }
   </style>
 </head>
@@ -839,51 +861,43 @@
     function renderTableau() {
       const tableauArea = document.getElementById('tableau-area');
       const areaHeight = tableauArea.getBoundingClientRect().height;
+      const remToPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
       state.tableau.forEach((col, colIdx) => {
         const el = document.getElementById('tab-' + colIdx);
         el.innerHTML = '';
-        el.classList.remove('condensed');
-        el.style.removeProperty('--condensed-offset');
 
         if (col.length === 0) {
           el.innerHTML = '<div class="pile-slot" style="border-style:dashed;width:100%;"><span class="slot-label">K</span></div>';
           return;
         }
 
-        // Calculate stack height to decide condensing
+        // Estimate full stack height to decide if condensing is needed
         const faceDownCount = col.filter(e => !e.faceUp).length;
         const faceUpCount = col.filter(e => e.faceUp).length;
-        const cardW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-w'));
-        const cardH = cardW * 1.5;
-        const fdOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--face-down-offset')) * 16;
-        const fuOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--face-up-offset')) * 16;
-        const naturalHeight = cardH * 16 + (faceDownCount > 0 ? (faceDownCount - (faceDownCount > 0 ? 0 : 0)) * fdOffset : 0) + (faceUpCount > 1 ? (faceUpCount - 1) * fuOffset : 0);
+        const cardHpx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-w')) * 1.4 * remToPx;
+        const fdPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--face-down-offset')) * remToPx;
+        const fuPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--face-up-offset')) * remToPx;
+        const estHeight = cardHpx + (faceDownCount * fdPx) + ((faceUpCount > 1 ? faceUpCount - 1 : 0) * fuPx);
 
-        let needsCondense = false;
-        if (areaHeight > 0 && col.length > 4) {
-          // Estimate pixel height
-          const estHeight = cardH + faceDownCount * (fdOffset / 16) * 16 + (faceUpCount > 1 ? (faceUpCount - 1) * (fuOffset / 16) * 16 : 0);
-          // rough estimate using rem
-          const remToPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
-          const cardHpx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-h') || (cardW * 1.5)) || (cardW * 1.5 * remToPx);
+        const needsCondense = areaHeight > 0 && col.length > 5 && estHeight > areaHeight * 0.92;
 
-          const estPx = (cardW * 1.5 * remToPx) + (faceDownCount * 0.45 * remToPx) + ((faceUpCount > 1 ? faceUpCount - 1 : 0) * 1.8 * remToPx);
-          if (estPx > areaHeight * 0.92) {
-            needsCondense = true;
-          }
-        }
+        // Determine which cards to show fully vs hide
+        // Strategy: show first card (top of pile), last 3 face-up cards fully, hide middle
+        let hiddenSet = new Set();
+        let peekIdx = -1;
 
         if (needsCondense) {
-          el.classList.add('condensed');
-          // Calculate how much to shrink face-up offset
-          const remToPx2 = parseFloat(getComputedStyle(document.documentElement).fontSize);
-          const targetH = areaHeight * 0.88;
-          const baseCardH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-w')) * 1.5 * remToPx2;
-          const fdPx = 0.2 * remToPx2;
-          const remaining = targetH - baseCardH - (faceDownCount * fdPx);
-          const newFuOffset = faceUpCount > 1 ? Math.max(0.5, remaining / (faceUpCount - 1) / remToPx2) : 1;
-          el.style.setProperty('--condensed-offset', newFuOffset + 'rem');
+          // Find range of cards to condense:
+          // Keep index 0 (first card visible), hide indices 1 through (len - 4), show last 3
+          const lastVisibleStart = Math.max(1, col.length - 3);
+          for (let i = 1; i < lastVisibleStart; i++) {
+            hiddenSet.add(i);
+          }
+          // The card right after the hidden block gets the "peek" indicator
+          if (hiddenSet.size > 0 && lastVisibleStart < col.length) {
+            peekIdx = lastVisibleStart;
+          }
         }
 
         col.forEach((entry, cardIdx) => {
@@ -891,12 +905,28 @@
           cardEl.dataset.col = colIdx;
           cardEl.dataset.idx = cardIdx;
 
+          if (hiddenSet.has(cardIdx)) {
+            cardEl.classList.add('condensed-hidden');
+          }
+          if (cardIdx === peekIdx) {
+            cardEl.classList.add('condensed-peek');
+          }
+
           if (state.selected && state.selected.source === 'tableau' &&
               state.selected.colIdx === colIdx && cardIdx >= state.selected.cardIdx) {
             cardEl.classList.add('selected');
           }
           el.appendChild(cardEl);
         });
+
+        // Add "+N" badge if cards are hidden
+        if (hiddenSet.size > 0) {
+          const badge = document.createElement('div');
+          badge.className = 'condense-badge';
+          badge.textContent = '+' + hiddenSet.size;
+          el.style.position = 'relative';
+          el.appendChild(badge);
+        }
       });
     }
 
@@ -1511,6 +1541,7 @@
       const wasteEl = document.getElementById('waste');
       let wasteDownPos = null;
       let wasteDownTime = 0;
+      let wasteLastClickTime = 0;
 
       wasteEl.addEventListener('mousedown', (e) => { wasteDownPos = { x: e.clientX, y: e.clientY }; wasteDownTime = Date.now(); });
       wasteEl.addEventListener('touchstart', (e) => { const t = e.touches[0]; wasteDownPos = { x: t.clientX, y: t.clientY }; wasteDownTime = Date.now(); }, { passive: true });
@@ -1539,18 +1570,23 @@
         }
       }, { passive: false });
 
-      wasteEl.addEventListener('mouseup', (e) => {
-        if (wasteDownPos && !drag.active) handleWasteClick();
+      function handleWasteUp() {
+        if (!wasteDownPos || drag.active) { wasteDownPos = null; return; }
+        const now = Date.now();
+        // Double-tap: auto-foundation
+        if (state.waste.length > 0 && (now - wasteLastClickTime) < 400) {
+          autoFoundation(state.waste[state.waste.length - 1], 'waste');
+          wasteLastClickTime = 0;
+          wasteDownPos = null;
+          return;
+        }
+        wasteLastClickTime = now;
+        handleWasteClick();
         wasteDownPos = null;
-      });
-      wasteEl.addEventListener('touchend', (e) => {
-        if (wasteDownPos && !drag.active) handleWasteClick();
-        wasteDownPos = null;
-      });
+      }
 
-      wasteEl.addEventListener('dblclick', () => {
-        if (state.waste.length > 0) autoFoundation(state.waste[state.waste.length - 1], 'waste');
-      });
+      wasteEl.addEventListener('mouseup', handleWasteUp);
+      wasteEl.addEventListener('touchend', handleWasteUp);
 
       // Foundation clicks
       for (let f = 0; f < 4; f++) {
@@ -1563,6 +1599,8 @@
         let downPos = null;
         let downCardIdx = null;
         let downTime = 0;
+        let lastClickTime = 0;
+        let lastClickIdx = null;
 
         function getCardIdx(e) {
           const cardEl = (e.target || e.srcElement).closest('.card');
@@ -1603,36 +1641,35 @@
           tryStartDrag(t.clientX, t.clientY, e);
         }, { passive: false });
 
-        colEl.addEventListener('mouseup', (e) => {
-          if (downPos && !drag.active) {
-            const idx = getCardIdx(e);
-            if (idx !== null) handleTableauClick(c, idx);
-            else handleEmptyTableauClick(c);
+        function handleUp(idx) {
+          if (!downPos || drag.active) { downPos = null; downCardIdx = null; return; }
+
+          const now = Date.now();
+          // Double-tap detection: same card, within 400ms
+          if (idx !== null && idx === lastClickIdx && (now - lastClickTime) < 400) {
+            const col = state.tableau[c];
+            if (idx === col.length - 1 && col[idx] && col[idx].faceUp) {
+              autoFoundation(col[idx].card, 'tableau', c, idx);
+              lastClickTime = 0;
+              lastClickIdx = null;
+              downPos = null;
+              downCardIdx = null;
+              return;
+            }
           }
+
+          lastClickTime = now;
+          lastClickIdx = idx;
+
+          if (idx !== null) handleTableauClick(c, idx);
+          else handleEmptyTableauClick(c);
+
           downPos = null;
           downCardIdx = null;
-        });
+        }
 
-        colEl.addEventListener('touchend', (e) => {
-          if (downPos && !drag.active) {
-            const idx = downCardIdx;
-            if (idx !== null) handleTableauClick(c, idx);
-            else handleEmptyTableauClick(c);
-          }
-          downPos = null;
-          downCardIdx = null;
-        });
-
-        // Double-click auto-foundation
-        colEl.addEventListener('dblclick', (e) => {
-          const cardEl = e.target.closest('.card');
-          if (!cardEl) return;
-          const idx = parseInt(cardEl.dataset.idx);
-          const col = state.tableau[c];
-          if (idx === col.length - 1 && col[idx].faceUp) {
-            autoFoundation(col[idx].card, 'tableau', c, idx);
-          }
-        });
+        colEl.addEventListener('mouseup', (e) => handleUp(getCardIdx(e)));
+        colEl.addEventListener('touchend', (e) => handleUp(downCardIdx));
 
         // Empty pile-slot click
         colEl.addEventListener('click', (e) => {
