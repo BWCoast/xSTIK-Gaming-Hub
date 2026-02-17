@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>xSTIK Pyramid — Play on XRPL</title>
+
+  <!-- OG Meta -->
+  <meta property="og:title" content="xSTIK Pyramid Solitaire">
+  <meta property="og:description" content="Play Pyramid Solitaire with NFT playing cards on XRPL. Pair cards totaling 13 to clear the pyramid.">
+  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
+  <meta property="og:url" content="https://games.xstik.art/pyramid">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
+
+  <!-- REQUIRED: xSTIK Brand Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================
+       xSTIK BRAND FOUNDATION — DO NOT MODIFY
+       ================================================================ */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      /* xSTIK Brand Colors — IMMUTABLE */
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+
+      /* Dark Theme — Default */
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+
+      /* Semantic */
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+
+      /* Spacing Scale */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+
+      /* Card sizing */
+      --card-w: clamp(2.8rem, 8vw, 5.5rem);
+      --card-h: calc(var(--card-w) * 1.4);
+    }
+
+    html, body {
+      background: var(--background);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--foreground);
+      overflow: hidden;
+      width: 100%; height: 100vh; height: 100dvh; position: fixed;
+    }
+
+    /* ========== STANDARD HEADER (DO NOT MODIFY) ========== */
+    .top-bar {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-left))
+               var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-right));
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.2);
+      position: relative; z-index: 100; height: 3.5rem;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: var(--spacing-sm); }
+    .logo-coin {
+      width: 2.25rem; height: 2.25rem; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(245, 197, 24, 0.4); box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .logo-text {
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
+      color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow);
+    }
+    .logo-sub {
+      font-size: 0.6rem; color: var(--accent); letter-spacing: 2px;
+      text-transform: uppercase; margin-top: -2px;
+    }
+    .header-stats { display: flex; align-items: center; gap: var(--spacing-md); }
+
+    /* ========== STANDARD FOOTER (DO NOT MODIFY) ========== */
+    .game-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(245, 197, 24, 0.2);
+      padding: 0.75rem max(var(--spacing-md), env(safe-area-inset-left))
+               max(0.75rem, env(safe-area-inset-bottom))
+               max(var(--spacing-md), env(safe-area-inset-right));
+      z-index: 90; display: flex; justify-content: space-between;
+      align-items: center; font-size: 0.85rem;
+    }
+    .footer-links { display: flex; gap: var(--spacing-lg); align-items: center; }
+    .footer-links a { color: var(--primary); text-decoration: none; transition: color 0.3s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-legal { color: var(--muted-text); font-size: 0.75rem; }
+
+    /* ========== UTILITY ========== */
+    .btn-primary {
+      background: var(--primary); color: #0D0D0D;
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 0.65rem 1.3rem; border: none; border-radius: 0.5rem;
+      cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 0 20px var(--primary-glow); min-height: 44px;
+    }
+    .btn-primary:hover { background: var(--accent); box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-2px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-sm {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 0.35rem 0.75rem; border-radius: 0.4rem;
+      border: 1px solid var(--primary); background: transparent; color: var(--primary);
+      cursor: pointer; transition: all 0.2s;
+      min-height: 44px; min-width: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-sm:hover { background: rgba(245, 197, 24, 0.12); }
+
+    /* ================================================================
+       PYRAMID SOLITAIRE — GAME STYLES
+       ================================================================ */
+
+    #game-container {
+      max-width: 1200px; margin: 0 auto;
+      padding: var(--spacing-xs) max(var(--spacing-sm), env(safe-area-inset-left));
+      height: calc(100vh - 3.5rem - 2.75rem);
+      height: calc(100dvh - 3.5rem - 2.75rem);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ---- Controls ---- */
+    .game-controls {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.2rem 0; gap: var(--spacing-sm); flex-shrink: 0;
+    }
+    .game-info {
+      display: flex; gap: var(--spacing-md); align-items: center;
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+    .game-info span strong { color: var(--primary); font-weight: 700; }
+    .game-controls .btn-group { display: flex; gap: var(--spacing-xs); }
+
+    /* ---- Pyramid ---- */
+    .pyramid-area {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      overflow: hidden; gap: 0; padding-top: var(--spacing-xs);
+    }
+
+    .pyramid-row {
+      display: flex; justify-content: center;
+      margin-bottom: calc(var(--card-h) * -0.35);
+      position: relative; z-index: 1;
+    }
+    .pyramid-row:last-child { margin-bottom: 0; }
+
+    .pyr-card {
+      width: var(--card-w); aspect-ratio: 5/7; border-radius: 0.3rem;
+      overflow: hidden; background: var(--card-bg);
+      border: 2px solid var(--border); cursor: pointer;
+      transition: all 0.15s ease; position: relative;
+      margin: 0 calc(var(--card-w) * 0.06);
+    }
+    .pyr-card img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; pointer-events: none;
+    }
+    .pyr-card.face-down { cursor: default; opacity: 0.6; }
+    .pyr-card.blocked { cursor: default; }
+    .pyr-card.available { border-color: rgba(245, 197, 24, 0.3); }
+    .pyr-card.available:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+      transform: translateY(-3px); z-index: 10;
+    }
+    .pyr-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 14px var(--primary-glow), 0 0 28px var(--accent-glow);
+      transform: translateY(-4px); z-index: 10;
+    }
+    .pyr-card.removed {
+      animation: cardRemove 0.4s ease-out forwards;
+    }
+    .pyr-card.king-flash {
+      animation: kingFlash 0.5s ease;
+    }
+    .pyr-card.placeholder {
+      visibility: hidden;
+    }
+
+    @keyframes cardRemove {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 20px var(--primary-glow); }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    @keyframes kingFlash {
+      0% { box-shadow: 0 0 0 var(--primary-glow); }
+      50% { box-shadow: 0 0 25px var(--primary-glow), 0 0 50px var(--accent-glow); }
+      100% { box-shadow: 0 0 0 var(--primary-glow); }
+    }
+
+    /* ---- Stock & Waste ---- */
+    .stock-waste-area {
+      display: flex; gap: var(--spacing-md); align-items: center;
+      justify-content: center; flex-shrink: 0;
+      padding: var(--spacing-sm) 0;
+    }
+
+    .stock-pile, .waste-pile {
+      width: var(--card-w); aspect-ratio: 5/7; border-radius: 0.3rem;
+      border: 2px dashed var(--border); position: relative;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; min-height: 44px;
+    }
+    .stock-pile:hover { border-color: var(--primary); }
+
+    .stock-pile .card-in-pile,
+    .waste-pile .card-in-pile {
+      position: absolute; inset: 0; border-radius: 0.3rem;
+      overflow: hidden;
+    }
+    .stock-pile .card-in-pile img,
+    .waste-pile .card-in-pile img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+
+    .waste-pile .card-in-pile {
+      border: 2px solid var(--border); transition: all 0.15s;
+    }
+    .waste-pile.available .card-in-pile {
+      border-color: rgba(245, 197, 24, 0.3);
+    }
+    .waste-pile.available:hover .card-in-pile {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .waste-pile.selected .card-in-pile {
+      border-color: var(--primary);
+      box-shadow: 0 0 14px var(--primary-glow), 0 0 28px var(--accent-glow);
+    }
+
+    .pile-label {
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.6rem;
+      color: var(--muted-text); letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    .stock-count {
+      position: absolute; bottom: -1.1rem; left: 50%; transform: translateX(-50%);
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.6rem;
+      color: var(--muted-text); white-space: nowrap;
+    }
+
+    .recycle-icon {
+      font-size: 1.2rem; color: var(--muted-text);
+    }
+
+    /* ---- Score & Result ---- */
+    .result-overlay {
+      position: absolute; inset: 0; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: var(--spacing-sm); z-index: 50;
+      background: rgba(20, 20, 20, 0.92); backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px); border-radius: 0.5rem;
+    }
+    .result-overlay.show { display: flex; }
+
+    .result-text {
+      font-family: 'Orbitron', sans-serif; font-weight: 900;
+      font-size: clamp(1.2rem, 4vw, 2rem); letter-spacing: 2px;
+    }
+    .result-text.win { color: var(--success); text-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+    .result-text.lose { color: var(--error); text-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+
+    .result-details {
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.9rem;
+      color: var(--muted-text); text-align: center;
+    }
+
+    /* ---- Leaderboard ---- */
+    #lb-overlay { display: none; position: fixed; inset: 0; z-index: 500; }
+    #lb-overlay.open { display: block; }
+    #lb-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    #lb-panel {
+      position: absolute; bottom: 0; left: 0; right: 0; max-height: 75vh;
+      background: var(--background); border-top: 2px solid var(--primary);
+      border-radius: 1rem 1rem 0 0;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5), 0 -2px 20px var(--primary-glow);
+      transform: translateY(100%); transition: transform 0.3s ease;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    #lb-overlay.open #lb-panel { transform: translateY(0); }
+    .lb-handle { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .lb-handle-bar { width: 2.5rem; height: 4px; border-radius: 2px; background: var(--muted-text); position: absolute; left: 50%; top: 0.5rem; transform: translateX(-50%); }
+    .lb-title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; color: var(--primary); letter-spacing: 1px; }
+    .lb-close {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.85rem;
+      text-transform: uppercase; letter-spacing: 1px; color: var(--muted-text);
+      background: none; border: 1px solid var(--border); border-radius: 0.4rem;
+      padding: 0.35rem 0.75rem; cursor: pointer; transition: all 0.2s;
+      min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
+    }
+    .lb-close:hover { color: var(--primary); border-color: var(--primary); }
+    #leaderboard-area { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl); -webkit-overflow-scrolling: touch; }
+    #leaderboard-area::-webkit-scrollbar { width: 4px; }
+    #leaderboard-area::-webkit-scrollbar-track { background: var(--muted); }
+    #leaderboard-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 767px) {
+      :root { --card-w: clamp(2.2rem, 10vw, 3.2rem); }
+      .game-info { font-size: 0.7rem; gap: var(--spacing-sm); }
+      .btn-sm { font-size: 0.65rem; padding: 0.2rem 0.4rem; }
+      .footer-links { gap: var(--spacing-md); }
+      .footer-legal { display: none; }
+      .logo-text { font-size: 0.95rem; }
+      .logo-coin { width: 2rem; height: 2rem; }
+      .pyramid-row { margin-bottom: calc(var(--card-h) * -0.4); }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      :root { --card-w: clamp(3rem, 7vw, 4.5rem); }
+      .game-info { font-size: 0.9rem; }
+      .btn-sm { font-size: 0.8rem; padding: 0.35rem 0.7rem; }
+    }
+
+    @media (min-width: 1024px) {
+      :root { --card-w: clamp(3.5rem, 5.5vw, 5.5rem); }
+      .game-info { font-size: 1rem; gap: var(--spacing-lg); }
+      .btn-sm { font-size: 0.9rem; padding: 0.4rem 0.9rem; }
+    }
+
+    @media (min-width: 1400px) {
+      .game-info { font-size: 1.1rem; }
+      .btn-sm { font-size: 0.95rem; padding: 0.45rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <header class="top-bar">
+    <div class="logo-wrap">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
+      <div>
+        <div class="logo-text">xSTIK</div>
+        <div class="logo-sub">PYRAMID</div>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div id="credit-display"></div>
+    </div>
+  </header>
+
+  <!-- ===== GAME AREA ===== -->
+  <main id="game-container">
+
+    <div class="game-controls">
+      <div class="game-info">
+        <span>Pairs <strong id="pairs-cleared">0</strong></span>
+        <span>Left <strong id="cards-left">28</strong></span>
+        <span id="player-name-display" style="color: var(--primary); font-weight: 600;"></span>
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" id="btn-undo" title="Undo">↩</button>
+        <button class="btn-sm" id="btn-new" title="New Game">NEW</button>
+        <button class="btn-sm" id="btn-leaderboard" title="Leaderboard">🏆</button>
+      </div>
+    </div>
+
+    <div class="pyramid-area" id="pyramid-area" style="position: relative;">
+      <!-- Pyramid rows rendered by JS -->
+      <div id="pyramid-container"></div>
+
+      <!-- Stock & Waste below pyramid -->
+      <div class="stock-waste-area">
+        <div class="stock-pile" id="stock-pile" title="Draw card">
+          <span class="pile-label">STOCK</span>
+          <span class="stock-count" id="stock-count">24</span>
+        </div>
+        <div class="waste-pile" id="waste-pile" title="Waste card">
+          <span class="pile-label">WASTE</span>
+        </div>
+      </div>
+
+      <!-- Result Overlay -->
+      <div class="result-overlay" id="result-overlay">
+        <div class="result-text" id="result-title"></div>
+        <div class="result-details" id="result-details"></div>
+        <button class="btn-primary" id="btn-play-again">PLAY AGAIN — 50 CREDITS</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Leaderboard -->
+  <div id="lb-overlay">
+    <div id="lb-backdrop"></div>
+    <div id="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 PYRAMID LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <footer class="game-footer">
+    <div class="footer-links">
+      <a href="https://xstik.art">Home</a>
+      <a href="https://games.xstik.art">Game Hub</a>
+      <a href="https://xstik.art/#ecosystem">Ecosystem</a>
+    </div>
+    <div class="footer-legal">
+      <p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p>
+    </div>
+  </footer>
+
+  <!-- ===== SHARED-CORE SCRIPTS (absolute paths, load order matters) ===== -->
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+
+  <!-- ===== PYRAMID SOLITAIRE v1.0 GAME LOGIC ===== -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ===== CONSTANTS =====
+    const ENTRY_FEE = 50;
+    const PYRAMID_ROWS = 7;
+    const PYRAMID_CARDS = 28; // 1+2+3+4+5+6+7
+    const RANK_VAL = { 'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13 };
+
+    // ===== STATE =====
+    let deck = [];
+    let deckIdx = 0;
+
+    // Pyramid: 2D array [row][col], each cell = { card, removed }
+    let pyramid = [];
+    let stock = [];
+    let waste = [];
+    let selectedCard = null; // { type:'pyramid'|'waste', row, col } or { type:'waste' }
+    let pairsCleared = 0;
+    let gamesPlayed = 0;
+    let gamesWon = 0;
+    let undoStack = [];
+
+    // ===== DECK =====
+    function shuffleDeck() { deck = XstikImageLoader.getShuffledDeck(); deckIdx = 0; }
+    function drawCard() { if (deckIdx >= deck.length) shuffleDeck(); return deck[deckIdx++]; }
+
+    // ===== CARD RENDERING =====
+    function createCardImg(card) {
+      var img = document.createElement('img');
+      img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+      img.alt = card.name;
+      img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      img.draggable = false;
+      return img;
+    }
+
+    function createBackImg() {
+      var img = document.createElement('img');
+      img.src = CARD_BACK_PATH;
+      img.alt = 'Card back';
+      img.draggable = false;
+      return img;
+    }
+
+    // ===== GAME LOGIC =====
+    function isExposed(row, col) {
+      if (row === PYRAMID_ROWS - 1) return true; // bottom row always exposed
+      // Exposed = both children removed
+      var leftChild = pyramid[row + 1] && pyramid[row + 1][col];
+      var rightChild = pyramid[row + 1] && pyramid[row + 1][col + 1];
+      return (!leftChild || leftChild.removed) && (!rightChild || rightChild.removed);
+    }
+
+    function cardValue(card) { return RANK_VAL[card.rank]; }
+
+    function canPair(cardA, cardB) {
+      return cardValue(cardA) + cardValue(cardB) === 13;
+    }
+
+    function isKing(card) { return card.rank === 'K'; }
+
+    function pyramidCardsRemaining() {
+      var count = 0;
+      for (var r = 0; r < pyramid.length; r++) {
+        for (var c = 0; c < pyramid[r].length; c++) {
+          if (!pyramid[r][c].removed) count++;
+        }
+      }
+      return count;
+    }
+
+    function hasMovesLeft() {
+      // Collect all available cards
+      var available = [];
+      for (var r = 0; r < pyramid.length; r++) {
+        for (var c = 0; c < pyramid[r].length; c++) {
+          if (!pyramid[r][c].removed && isExposed(r, c)) {
+            available.push(pyramid[r][c].card);
+          }
+        }
+      }
+      if (waste.length > 0) available.push(waste[waste.length - 1]);
+
+      // Check kings
+      for (var i = 0; i < available.length; i++) {
+        if (isKing(available[i])) return true;
+      }
+
+      // Check pairs
+      for (var a = 0; a < available.length; a++) {
+        for (var b = a + 1; b < available.length; b++) {
+          if (canPair(available[a], available[b])) return true;
+        }
+      }
+
+      // Can still draw
+      if (stock.length > 0) return true;
+
+      return false;
+    }
+
+    // ===== RENDERING =====
+    function renderPyramid() {
+      var container = document.getElementById('pyramid-container');
+      container.innerHTML = '';
+
+      for (var r = 0; r < pyramid.length; r++) {
+        var rowDiv = document.createElement('div');
+        rowDiv.className = 'pyramid-row';
+
+        for (var c = 0; c < pyramid[r].length; c++) {
+          var cell = pyramid[r][c];
+          var el = document.createElement('div');
+          el.className = 'pyr-card';
+          el.dataset.row = r;
+          el.dataset.col = c;
+
+          if (cell.removed) {
+            el.classList.add('placeholder');
+          } else {
+            el.appendChild(createCardImg(cell.card));
+
+            if (isExposed(r, c)) {
+              el.classList.add('available');
+              el.addEventListener('click', handlePyramidClick);
+            } else {
+              el.classList.add('blocked');
+            }
+
+            // Highlight selected
+            if (selectedCard && selectedCard.type === 'pyramid' &&
+                selectedCard.row === r && selectedCard.col === c) {
+              el.classList.add('selected');
+            }
+          }
+          rowDiv.appendChild(el);
+        }
+        container.appendChild(rowDiv);
+      }
+    }
+
+    function renderStockWaste() {
+      var stockEl = document.getElementById('stock-pile');
+      var wasteEl = document.getElementById('waste-pile');
+
+      // Stock
+      stockEl.innerHTML = '';
+      if (stock.length > 0) {
+        var backWrap = document.createElement('div');
+        backWrap.className = 'card-in-pile';
+        backWrap.appendChild(createBackImg());
+        stockEl.appendChild(backWrap);
+      } else {
+        var recycleSpan = document.createElement('span');
+        recycleSpan.className = 'recycle-icon';
+        recycleSpan.textContent = '♻';
+        stockEl.appendChild(recycleSpan);
+      }
+      var countEl = document.createElement('span');
+      countEl.className = 'stock-count';
+      countEl.id = 'stock-count';
+      countEl.textContent = stock.length;
+      stockEl.appendChild(countEl);
+
+      // Waste
+      wasteEl.innerHTML = '';
+      wasteEl.classList.remove('available', 'selected');
+      if (waste.length > 0) {
+        var topWaste = waste[waste.length - 1];
+        var wrap = document.createElement('div');
+        wrap.className = 'card-in-pile';
+        wrap.appendChild(createCardImg(topWaste));
+        wasteEl.appendChild(wrap);
+        wasteEl.classList.add('available');
+
+        if (selectedCard && selectedCard.type === 'waste') {
+          wasteEl.classList.add('selected');
+        }
+      } else {
+        var label = document.createElement('span');
+        label.className = 'pile-label';
+        label.textContent = 'WASTE';
+        wasteEl.appendChild(label);
+      }
+    }
+
+    function renderStats() {
+      document.getElementById('pairs-cleared').textContent = pairsCleared;
+      document.getElementById('cards-left').textContent = pyramidCardsRemaining();
+    }
+
+    function renderAll() {
+      renderPyramid();
+      renderStockWaste();
+      renderStats();
+    }
+
+    // ===== INTERACTION =====
+    function handlePyramidClick(e) {
+      var el = e.currentTarget;
+      var row = parseInt(el.dataset.row);
+      var col = parseInt(el.dataset.col);
+      var cell = pyramid[row][col];
+      if (cell.removed || !isExposed(row, col)) return;
+
+      var card = cell.card;
+
+      // King: auto-remove
+      if (isKing(card)) {
+        saveUndo();
+        cell.removed = true;
+        pairsCleared++;
+        el.classList.add('king-flash');
+        setTimeout(function () { el.classList.add('removed'); }, 100);
+        setTimeout(function () { selectedCard = null; renderAll(); checkGameState(); }, 500);
+        return;
+      }
+
+      // Nothing selected yet
+      if (!selectedCard) {
+        selectedCard = { type: 'pyramid', row: row, col: col };
+        renderAll();
+        return;
+      }
+
+      // Clicking same card — deselect
+      if (selectedCard.type === 'pyramid' && selectedCard.row === row && selectedCard.col === col) {
+        selectedCard = null;
+        renderAll();
+        return;
+      }
+
+      // Try to pair
+      var otherCard;
+      if (selectedCard.type === 'pyramid') {
+        otherCard = pyramid[selectedCard.row][selectedCard.col].card;
+      } else {
+        otherCard = waste[waste.length - 1];
+      }
+
+      if (canPair(card, otherCard)) {
+        saveUndo();
+        cell.removed = true;
+        if (selectedCard.type === 'pyramid') {
+          pyramid[selectedCard.row][selectedCard.col].removed = true;
+        } else {
+          waste.pop();
+        }
+        pairsCleared++;
+        selectedCard = null;
+        renderAll();
+        setTimeout(checkGameState, 300);
+      } else {
+        // Switch selection
+        selectedCard = { type: 'pyramid', row: row, col: col };
+        renderAll();
+      }
+    }
+
+    function handleWasteClick() {
+      if (waste.length === 0) return;
+      var topWaste = waste[waste.length - 1];
+
+      // King: auto-remove
+      if (isKing(topWaste)) {
+        saveUndo();
+        waste.pop();
+        pairsCleared++;
+        selectedCard = null;
+        renderAll();
+        setTimeout(checkGameState, 300);
+        return;
+      }
+
+      // Nothing selected — select waste
+      if (!selectedCard) {
+        selectedCard = { type: 'waste' };
+        renderAll();
+        return;
+      }
+
+      // Deselect if waste already selected
+      if (selectedCard.type === 'waste') {
+        selectedCard = null;
+        renderAll();
+        return;
+      }
+
+      // Try to pair with pyramid selection
+      var pyrCard = pyramid[selectedCard.row][selectedCard.col].card;
+      if (canPair(pyrCard, topWaste)) {
+        saveUndo();
+        pyramid[selectedCard.row][selectedCard.col].removed = true;
+        waste.pop();
+        pairsCleared++;
+        selectedCard = null;
+        renderAll();
+        setTimeout(checkGameState, 300);
+      } else {
+        selectedCard = { type: 'waste' };
+        renderAll();
+      }
+    }
+
+    function handleStockClick() {
+      if (stock.length > 0) {
+        saveUndo();
+        waste.push(stock.pop());
+        selectedCard = null;
+        renderAll();
+        setTimeout(checkGameState, 200);
+      }
+      // No recycling in classic Pyramid
+    }
+
+    // ===== UNDO =====
+    function saveUndo() {
+      undoStack.push({
+        pyramid: pyramid.map(function (row) {
+          return row.map(function (cell) {
+            return { card: cell.card, removed: cell.removed };
+          });
+        }),
+        stock: stock.slice(),
+        waste: waste.slice(),
+        pairsCleared: pairsCleared,
+        selectedCard: null
+      });
+      if (undoStack.length > 30) undoStack.shift();
+    }
+
+    function undo() {
+      if (undoStack.length === 0) return;
+      var snap = undoStack.pop();
+      pyramid = snap.pyramid;
+      stock = snap.stock;
+      waste = snap.waste;
+      pairsCleared = snap.pairsCleared;
+      selectedCard = null;
+      renderAll();
+    }
+
+    // ===== GAME STATE =====
+    function checkGameState() {
+      var remaining = pyramidCardsRemaining();
+
+      if (remaining === 0) {
+        // WIN!
+        endGame(true);
+        return;
+      }
+
+      if (!hasMovesLeft()) {
+        // No moves — lose
+        endGame(false);
+      }
+    }
+
+    function endGame(won) {
+      gamesPlayed++;
+      var creditsWon = 0;
+
+      if (won) {
+        gamesWon++;
+        // Payout based on how clean: full clear = 200, partial bonus for fewer cards
+        creditsWon = 200;
+        XstikCredits.awardWinnings(creditsWon, 'pyramid');
+      } else {
+        // Partial payout for clearing most of the pyramid
+        var cleared = PYRAMID_CARDS - pyramidCardsRemaining();
+        if (cleared >= 24) { creditsWon = 100; }
+        else if (cleared >= 20) { creditsWon = 60; }
+        else if (cleared >= 15) { creditsWon = 30; }
+        if (creditsWon > 0) XstikCredits.awardWinnings(creditsWon, 'pyramid');
+      }
+
+      // Show result
+      var titleEl = document.getElementById('result-title');
+      var detailsEl = document.getElementById('result-details');
+
+      if (won) {
+        titleEl.textContent = 'PYRAMID CLEARED!';
+        titleEl.className = 'result-text win';
+      } else {
+        titleEl.textContent = 'NO MOVES LEFT';
+        titleEl.className = 'result-text lose';
+      }
+
+      var cleared = PYRAMID_CARDS - pyramidCardsRemaining();
+      detailsEl.textContent = 'Pairs: ' + pairsCleared + ' | Cleared: ' + cleared + '/' + PYRAMID_CARDS +
+        (creditsWon > 0 ? ' | Won: +' + creditsWon : ' | No payout');
+
+      document.getElementById('result-overlay').classList.add('show');
+
+      // Leaderboard
+      var playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, 'pyramid', {
+        handsPlayed: gamesPlayed,
+        wins: gamesWon,
+        losses: gamesPlayed - gamesWon,
+        creditsWon: creditsWon
+      });
+      XstikLeaderboard.rebuildUnified();
+    }
+
+    // ===== NEW GAME =====
+    function startNewGame() {
+      var balance = XstikCredits.getBalance();
+      if (balance < ENTRY_FEE) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function () { startNewGame(); });
+        }
+        return;
+      }
+
+      XstikCredits.payEntryFee(ENTRY_FEE, 'pyramid');
+      document.getElementById('result-overlay').classList.remove('show');
+
+      shuffleDeck();
+      pyramid = [];
+      stock = [];
+      waste = [];
+      selectedCard = null;
+      pairsCleared = 0;
+      undoStack = [];
+
+      // Build pyramid: 7 rows (1,2,3,4,5,6,7 cards)
+      for (var r = 0; r < PYRAMID_ROWS; r++) {
+        pyramid[r] = [];
+        for (var c = 0; c <= r; c++) {
+          pyramid[r][c] = { card: drawCard(), removed: false };
+        }
+      }
+
+      // Remaining 24 cards go to stock
+      for (var i = 0; i < 24; i++) {
+        stock.push(drawCard());
+      }
+
+      renderAll();
+    }
+
+    // ===== EVENTS =====
+    function wireEvents() {
+      document.getElementById('stock-pile').addEventListener('click', handleStockClick);
+      document.getElementById('waste-pile').addEventListener('click', handleWasteClick);
+      document.getElementById('btn-undo').addEventListener('click', undo);
+      document.getElementById('btn-new').addEventListener('click', startNewGame);
+      document.getElementById('btn-play-again').addEventListener('click', startNewGame);
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'pyramid');
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+    }
+
+    // ===== BOOT =====
+    function showPlayerName() {
+      var name = XstikPlayer.getUsername();
+      if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    XstikGameInit.showDisclaimer();
+
+    XstikGameInit.boot('pyramid', {
+      preloadCards: true,
+      onReady: function () {
+        shuffleDeck();
+        wireEvents();
+        showPlayerName();
+        startNewGame();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
