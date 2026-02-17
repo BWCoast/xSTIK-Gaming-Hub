@@ -1,0 +1,272 @@
+/**
+ * xSTIK BRAND CSS — Master Variables & Base Styles
+ * ==================================================
+ * PROTECTED FILE — DO NOT MODIFY
+ * Source: BRAND-RULES.md v1.0
+ */
+
+/* ===== CSS VARIABLES ===== */
+
+:root {
+  /* Primary Brand */
+  --primary: #F5C518;
+  --accent: #E8A902;
+
+  /* Dark Theme (DEFAULT) */
+  --background: #141414;
+  --foreground: #FAFAFA;
+  --card-bg: #1F1F1F;
+  --muted: #262626;
+  --muted-text: #B3B3B3;
+  --border: #1C1B19;
+
+  /* Glow Effects */
+  --glow-primary: rgba(245, 197, 24, 0.4);
+  --glow-accent: rgba(232, 169, 2, 0.4);
+
+  /* NFT Tier Colors */
+  --tier-legendary: #FFD700;
+  --tier-epic: #9C27B0;
+  --tier-diamond: #00BCD4;
+  --tier-rare: #2196F3;
+  --tier-original: #FF9800;
+  --tier-common: #4CAF50;
+  --tier-poker: #E91E63;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+}
+
+/* ===== BASE RESET ===== */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ===== TYPOGRAPHY ===== */
+
+h1, h2, h3, h4 {
+  font-family: 'Orbitron', sans-serif;
+  line-height: 1.2;
+}
+
+/* ===== STANDARD HEADER ===== */
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem max(1rem, env(safe-area-inset-left));
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 3.5rem;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-coin {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--glow-primary);
+  box-shadow: 0 0 10px var(--glow-primary);
+}
+
+.logo-text {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--primary);
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--glow-primary);
+}
+
+.logo-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: -0.15rem;
+}
+
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ===== BUTTONS ===== */
+
+.btn-primary {
+  background: var(--primary);
+  color: #0D0D0D;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px var(--glow-primary);
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+  box-shadow: 0 0 30px var(--glow-accent);
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(245, 197, 24, 0.1);
+}
+
+/* ===== GLASS CARDS ===== */
+
+.glass-card {
+  background: rgba(31, 31, 31, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 197, 24, 0.2);
+  border-radius: 0.5rem;
+}
+
+/* ===== GLOW EFFECTS ===== */
+
+.glow-primary {
+  box-shadow: 0 0 20px var(--glow-primary), 0 0 60px rgba(245, 197, 24, 0.15);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== STANDARD FOOTER ===== */
+
+.game-footer {
+  padding: 1.5rem max(1rem, env(safe-area-inset-left));
+  border-top: 1px solid var(--border);
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--muted-text);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--primary);
+}
+
+.footer-legal {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted-text);
+  margin-top: 0.5rem;
+}
+
+/* ===== TOAST NOTIFICATIONS ===== */
+
+.xstik-toast {
+  position: fixed;
+  top: 4.5rem;
+  right: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  color: var(--foreground);
+  box-shadow: 0 0 20px var(--glow-primary);
+  z-index: 9000;
+  animation: toastSlide 0.3s ease;
+}
+
+@keyframes toastSlide {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 767px) {
+  .top-bar { padding: 0.4rem 0.75rem; height: 3rem; }
+  .logo-text { font-size: 0.95rem; }
+  .logo-sub { font-size: 0.6rem; }
+  .logo-coin { width: 1.85rem; height: 1.85rem; }
+  .btn-primary { padding: 0.5rem 1rem; font-size: 0.85rem; }
+  .footer-links { gap: 1rem; }
+}
+
+@media (min-width: 1400px) {
+  body { max-width: 1400px; margin: 0 auto; }
+}
