@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>xSTIK Baccarat — Play on XRPL</title>
+
+  <!-- OG Meta -->
+  <meta property="og:title" content="xSTIK Baccarat">
+  <meta property="og:description" content="Play classic Baccarat with NFT playing cards on XRPL. Bet on Player, Banker, or Tie — climb leaderboards.">
+  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
+  <meta property="og:url" content="https://games.xstik.art/baccarat">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
+
+  <!-- REQUIRED: xSTIK Brand Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================
+       xSTIK BRAND FOUNDATION — DO NOT MODIFY
+       Source: BRAND-RULES.md + GAME-MASTER-TEMPLATE.html
+       ================================================================ */
+
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      /* xSTIK Brand Colors — IMMUTABLE */
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+
+      /* Dark Theme — Default */
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+
+      /* Semantic */
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+
+      /* Spacing Scale */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+
+      /* Card sizing */
+      --card-w: clamp(4rem, 10vw, 7rem);
+      --card-h: calc(var(--card-w) * 1.4);
+    }
+
+    html, body {
+      background: var(--background);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--foreground);
+      overflow: hidden;
+      width: 100%; height: 100vh; height: 100dvh; position: fixed;
+    }
+
+    /* ========== STANDARD HEADER (DO NOT MODIFY) ========== */
+    .top-bar {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-left))
+               var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-right));
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.2);
+      position: relative; z-index: 100; height: 3.5rem;
+    }
+
+    .logo-wrap { display: flex; align-items: center; gap: var(--spacing-sm); }
+    .logo-coin {
+      width: 2.25rem; height: 2.25rem; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(245, 197, 24, 0.4); box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .logo-text {
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
+      color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow);
+    }
+    .logo-sub {
+      font-size: 0.6rem; color: var(--accent); letter-spacing: 2px;
+      text-transform: uppercase; margin-top: -2px;
+    }
+    .header-stats { display: flex; align-items: center; gap: var(--spacing-md); }
+
+    /* ========== STANDARD FOOTER (DO NOT MODIFY) ========== */
+    .game-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(245, 197, 24, 0.2);
+      padding: 0.75rem max(var(--spacing-md), env(safe-area-inset-left))
+               max(0.75rem, env(safe-area-inset-bottom))
+               max(var(--spacing-md), env(safe-area-inset-right));
+      z-index: 90; display: flex; justify-content: space-between;
+      align-items: center; font-size: 0.85rem;
+    }
+    .footer-links { display: flex; gap: var(--spacing-lg); align-items: center; }
+    .footer-links a { color: var(--primary); text-decoration: none; transition: color 0.3s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-legal { color: var(--muted-text); font-size: 0.75rem; }
+
+    /* ========== UTILITY ==========  */
+    .btn-primary {
+      background: var(--primary); color: #0D0D0D;
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 0.65rem 1.3rem; border: none; border-radius: 0.5rem;
+      cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 0 20px var(--primary-glow); min-height: 44px;
+    }
+    .btn-primary:hover { background: var(--accent); box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-2px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-sm {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 0.35rem 0.75rem; border-radius: 0.4rem;
+      border: 1px solid var(--primary); background: transparent; color: var(--primary);
+      cursor: pointer; transition: all 0.2s;
+      min-height: 44px; min-width: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-sm:hover { background: rgba(245, 197, 24, 0.12); }
+
+    /* ================================================================
+       BACCARAT-SPECIFIC STYLES
+       ================================================================ */
+
+    #game-container {
+      max-width: 1200px; margin: 0 auto;
+      padding: var(--spacing-xs) max(var(--spacing-sm), env(safe-area-inset-left));
+      height: calc(100vh - 3.5rem - 2.75rem);
+      height: calc(100dvh - 3.5rem - 2.75rem);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ---- Controls Bar ---- */
+    .game-controls {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.25rem 0; gap: var(--spacing-sm); flex-shrink: 0;
+    }
+    .game-info {
+      display: flex; gap: var(--spacing-md); align-items: center;
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+    .game-info span strong { color: var(--primary); font-weight: 700; }
+    .game-controls .btn-group { display: flex; gap: var(--spacing-xs); }
+
+    /* ---- Baccarat Table ---- */
+    .baccarat-table {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: space-between; align-items: center;
+      overflow: hidden; gap: var(--spacing-xs);
+    }
+
+    /* ---- Hand Area ---- */
+    .hand-area {
+      display: flex; flex-direction: column; align-items: center; gap: var(--spacing-xs);
+    }
+
+    .hand-label {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.7rem;
+      color: var(--muted-text); letter-spacing: 2px; text-transform: uppercase;
+    }
+
+    .hand-score {
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.4rem;
+      color: var(--primary); text-shadow: 0 0 10px var(--primary-glow);
+      min-width: 2rem; text-align: center;
+    }
+    .hand-score.natural { color: var(--success); text-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+
+    .hand-cards {
+      display: flex; justify-content: center; gap: 0.3rem;
+      min-height: var(--card-h);
+    }
+
+    /* ---- Card ---- */
+    .card {
+      width: var(--card-w); aspect-ratio: 5/7; border-radius: 0.35rem;
+      overflow: hidden; position: relative; background: var(--card-bg);
+      border: 1px solid var(--border);
+      transition: transform 0.3s ease, box-shadow 0.3s ease; flex-shrink: 0;
+    }
+    .card img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; pointer-events: none;
+    }
+    .card.deal-in { animation: dealCard 0.4s ease-out; }
+    .card.third-card { animation: dealThird 0.5s ease-out; }
+    .card.winning-glow { box-shadow: 0 0 15px var(--primary-glow), 0 0 30px var(--accent-glow); }
+    .card.losing-glow { box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); opacity: 0.65; }
+
+    @keyframes dealCard {
+      from { transform: translateY(-50px) scale(0.7) rotate(-6deg); opacity: 0; }
+      to   { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes dealThird {
+      from { transform: translateX(40px) scale(0.6) rotate(10deg); opacity: 0; }
+      to   { transform: translateX(0) scale(1) rotate(0); opacity: 1; }
+    }
+
+    /* ---- Center / Result ---- */
+    .center-area {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: var(--spacing-sm);
+      text-align: center; width: 100%;
+    }
+
+    .result-text {
+      font-family: 'Orbitron', sans-serif; font-weight: 900;
+      font-size: clamp(1.2rem, 4vw, 2rem); letter-spacing: 2px;
+      text-shadow: 0 0 15px var(--primary-glow);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .result-text.show { opacity: 1; }
+    .result-text.win { color: var(--success); text-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+    .result-text.lose { color: var(--error); text-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+    .result-text.tie { color: var(--warning); text-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+
+    .payout-text {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem;
+      min-height: 1.2rem;
+    }
+    .payout-text.win-pay { color: var(--success); }
+    .payout-text.lose-pay { color: var(--error); }
+    .payout-text.tie-pay { color: var(--warning); }
+
+    /* ---- Bet Selection ---- */
+    .bet-phase {
+      display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm);
+    }
+
+    .bet-choice-row {
+      display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap;
+    }
+
+    .bet-choice {
+      display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+      padding: 0.6rem 1.2rem; border-radius: 0.5rem; cursor: pointer;
+      border: 2px solid var(--border); background: rgba(31, 31, 31, 0.5);
+      transition: all 0.2s; min-height: 44px; min-width: 70px;
+    }
+    .bet-choice:hover { border-color: var(--primary); background: rgba(245, 197, 24, 0.06); }
+    .bet-choice.selected { border-color: var(--primary); background: rgba(245, 197, 24, 0.12); box-shadow: 0 0 12px var(--primary-glow); }
+
+    .bet-choice-label {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+    .bet-choice-odds {
+      font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 0.65rem;
+      color: var(--muted-text);
+    }
+
+    .bet-player .bet-choice-label { color: var(--info); }
+    .bet-banker .bet-choice-label { color: var(--error); }
+    .bet-tie .bet-choice-label { color: var(--primary); }
+
+    /* ---- Chip Row ---- */
+    .chip-row {
+      display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap;
+    }
+
+    .chip {
+      width: 3rem; height: 3rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.65rem;
+      cursor: pointer; transition: all 0.2s; border: 3px solid;
+      min-height: 44px; min-width: 44px;
+    }
+    .chip:hover { transform: scale(1.1); }
+    .chip:active { transform: scale(0.95); }
+
+    .chip-10  { background: rgba(59, 130, 246, 0.2);  border-color: var(--info);    color: var(--info); }
+    .chip-25  { background: rgba(34, 197, 94, 0.2);   border-color: var(--success); color: var(--success); }
+    .chip-50  { background: rgba(245, 158, 11, 0.2);  border-color: var(--warning); color: var(--warning); }
+    .chip-100 { background: rgba(245, 197, 24, 0.2);  border-color: var(--primary); color: var(--primary); }
+
+    .bet-amount-display {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.2rem;
+      color: var(--primary); text-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .bet-action-row {
+      display: flex; gap: var(--spacing-sm); align-items: center;
+    }
+
+    .btn-clear {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.85rem;
+      text-transform: uppercase; padding: 0.5rem 1rem; border-radius: 0.4rem;
+      border: 1px solid var(--error); background: transparent; color: var(--error);
+      cursor: pointer; transition: all 0.2s; min-height: 44px;
+    }
+    .btn-clear:hover { background: rgba(239, 68, 68, 0.12); }
+
+    /* ---- Stats Row ---- */
+    .stats-row {
+      display: flex; gap: var(--spacing-md); justify-content: center;
+      font-size: 0.8rem; color: var(--muted-text); padding: var(--spacing-xs) 0;
+    }
+    .stats-row .stat-win { color: var(--success); }
+    .stats-row .stat-loss { color: var(--error); }
+
+    /* ---- Leaderboard Slide-Up Panel ---- */
+    #lb-overlay { display: none; position: fixed; inset: 0; z-index: 500; }
+    #lb-overlay.open { display: block; }
+    #lb-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    #lb-panel {
+      position: absolute; bottom: 0; left: 0; right: 0; max-height: 75vh;
+      background: var(--background); border-top: 2px solid var(--primary);
+      border-radius: 1rem 1rem 0 0;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5), 0 -2px 20px var(--primary-glow);
+      transform: translateY(100%); transition: transform 0.3s ease;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    #lb-overlay.open #lb-panel { transform: translateY(0); }
+    .lb-handle { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .lb-handle-bar { width: 2.5rem; height: 4px; border-radius: 2px; background: var(--muted-text); position: absolute; left: 50%; top: 0.5rem; transform: translateX(-50%); }
+    .lb-title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; color: var(--primary); letter-spacing: 1px; }
+    .lb-close {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.85rem;
+      text-transform: uppercase; letter-spacing: 1px; color: var(--muted-text);
+      background: none; border: 1px solid var(--border); border-radius: 0.4rem;
+      padding: 0.35rem 0.75rem; cursor: pointer; transition: all 0.2s;
+      min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
+    }
+    .lb-close:hover { color: var(--primary); border-color: var(--primary); }
+    #leaderboard-area { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl); -webkit-overflow-scrolling: touch; }
+    #leaderboard-area::-webkit-scrollbar { width: 4px; }
+    #leaderboard-area::-webkit-scrollbar-track { background: var(--muted); }
+    #leaderboard-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 767px) {
+      :root { --card-w: clamp(3rem, 14vw, 4.5rem); }
+      .game-info { font-size: 0.75rem; gap: var(--spacing-sm); }
+      .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+      .footer-links { gap: var(--spacing-md); }
+      .footer-legal { display: none; }
+      .logo-text { font-size: 0.95rem; }
+      .logo-coin { width: 2rem; height: 2rem; }
+      .hand-score { font-size: 1.1rem; }
+      .chip { width: 2.6rem; height: 2.6rem; font-size: 0.55rem; min-height: 44px; min-width: 44px; }
+      .bet-choice { padding: 0.4rem 0.8rem; min-width: 60px; }
+      .bet-choice-label { font-size: 0.65rem; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      :root { --card-w: clamp(4.5rem, 9vw, 6rem); }
+      .game-info { font-size: 0.95rem; }
+      .btn-sm { font-size: 0.85rem; padding: 0.4rem 0.85rem; }
+    }
+
+    @media (min-width: 1024px) {
+      .game-info { font-size: 1.05rem; gap: var(--spacing-lg); }
+      .btn-sm { font-size: 0.95rem; padding: 0.45rem 1rem; }
+      .hand-score { font-size: 1.7rem; }
+      .chip { width: 3.5rem; height: 3.5rem; font-size: 0.75rem; }
+      .bet-choice { padding: 0.8rem 1.5rem; }
+    }
+
+    @media (min-width: 1400px) {
+      .game-info { font-size: 1.15rem; }
+      .btn-sm { font-size: 1rem; padding: 0.5rem 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <header class="top-bar">
+    <div class="logo-wrap">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
+      <div>
+        <div class="logo-text">xSTIK</div>
+        <div class="logo-sub">BACCARAT</div>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div id="credit-display"></div>
+    </div>
+  </header>
+
+  <!-- ===== GAME AREA ===== -->
+  <main id="game-container">
+
+    <div class="game-controls">
+      <div class="game-info">
+        <span>🃏 <strong id="hands-played">0</strong></span>
+        <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" id="btn-leaderboard" title="Leaderboard">🏆</button>
+      </div>
+    </div>
+
+    <div class="baccarat-table">
+
+      <!-- Banker Hand -->
+      <div class="hand-area" id="banker-area">
+        <div class="hand-label">BANKER</div>
+        <div class="hand-score" id="banker-score">—</div>
+        <div class="hand-cards" id="banker-cards"></div>
+      </div>
+
+      <!-- Center -->
+      <div class="center-area">
+        <div class="result-text" id="result-text"></div>
+        <div class="payout-text" id="payout-text"></div>
+
+        <div class="stats-row">
+          <span>W: <strong class="stat-win" id="stat-wins">0</strong></span>
+          <span>L: <strong class="stat-loss" id="stat-losses">0</strong></span>
+          <span>T: <strong id="stat-ties">0</strong></span>
+        </div>
+
+        <!-- Bet Phase -->
+        <div class="bet-phase" id="bet-phase">
+          <!-- Step 1: Choose side -->
+          <div class="bet-choice-row" id="bet-choice-row">
+            <button class="bet-choice bet-player" data-side="player">
+              <span class="bet-choice-label">PLAYER</span>
+              <span class="bet-choice-odds">1 : 1</span>
+            </button>
+            <button class="bet-choice bet-tie" data-side="tie">
+              <span class="bet-choice-label">TIE</span>
+              <span class="bet-choice-odds">8 : 1</span>
+            </button>
+            <button class="bet-choice bet-banker" data-side="banker">
+              <span class="bet-choice-label">BANKER</span>
+              <span class="bet-choice-odds">0.95 : 1</span>
+            </button>
+          </div>
+
+          <!-- Step 2: Choose amount -->
+          <div class="chip-row">
+            <button class="chip chip-10" data-value="10">10</button>
+            <button class="chip chip-25" data-value="25">25</button>
+            <button class="chip chip-50" data-value="50">50</button>
+            <button class="chip chip-100" data-value="100">100</button>
+          </div>
+
+          <div class="bet-amount-display" id="bet-amount-display">BET: 0</div>
+
+          <div class="bet-action-row">
+            <button class="btn-clear" id="btn-clear-bet">CLEAR</button>
+            <button class="btn-primary" id="btn-deal" disabled>DEAL</button>
+          </div>
+        </div>
+
+        <!-- New Hand -->
+        <button class="btn-primary" id="btn-new-hand" style="display:none;">NEW HAND</button>
+      </div>
+
+      <!-- Player Hand -->
+      <div class="hand-area" id="player-hand-area">
+        <div class="hand-cards" id="player-cards"></div>
+        <div class="hand-score" id="player-score">—</div>
+        <div class="hand-label">PLAYER</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Leaderboard Slide-Up Panel -->
+  <div id="lb-overlay">
+    <div id="lb-backdrop"></div>
+    <div id="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 BACCARAT LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <footer class="game-footer">
+    <div class="footer-links">
+      <a href="https://xstik.art">Home</a>
+      <a href="https://games.xstik.art">Game Hub</a>
+      <a href="https://xstik.art/#ecosystem">Ecosystem</a>
+    </div>
+    <div class="footer-legal">
+      <p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p>
+    </div>
+  </footer>
+
+  <!-- ===== SHARED-CORE SCRIPTS (absolute paths, load order matters) ===== -->
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+
+  <!-- ===== BACCARAT v1.0 GAME LOGIC ===== -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ===== CONSTANTS =====
+    const MIN_BET = 10;
+    const PAYOUTS = { player: 2, banker: 1.95, tie: 9 }; // includes stake back
+
+    // ===== BACCARAT CARD VALUES =====
+    // Baccarat: A=1, 2-9 face value, 10/J/Q/K=0
+    function bacVal(card) {
+      const r = card.rank;
+      if (r === 'A') return 1;
+      if (r === 'J' || r === 'Q' || r === 'K' || r === '10') return 0;
+      return parseInt(r);
+    }
+
+    function handTotal(hand) {
+      let sum = 0;
+      for (const c of hand) sum += bacVal(c);
+      return sum % 10;
+    }
+
+    // ===== GAME STATE =====
+    let state = {
+      deck: [],
+      deckIdx: 0,
+      playerHand: [],
+      bankerHand: [],
+      betSide: null,    // 'player' | 'banker' | 'tie'
+      betAmount: 0,
+      pendingBet: 0,
+      handsPlayed: 0,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      phase: 'betting',
+      lastBet: 0,
+      lastSide: null
+    };
+
+    // ===== DECK =====
+
+    function shuffleDeck() {
+      state.deck = XstikImageLoader.getShuffledDeck();
+      state.deckIdx = 0;
+    }
+
+    function drawCard() {
+      if (state.deckIdx >= state.deck.length) shuffleDeck();
+      return state.deck[state.deckIdx++];
+    }
+
+    // ===== CARD RENDERING =====
+
+    function createCardEl(card, faceUp, isThird) {
+      const el = document.createElement('div');
+      el.className = 'card ' + (isThird ? 'third-card' : 'deal-in');
+      const img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      img.draggable = false;
+      el.appendChild(img);
+      return el;
+    }
+
+    function renderHand(containerId, hand, thirdIdx) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+      hand.forEach((card, i) => {
+        el.appendChild(createCardEl(card, true, i === thirdIdx));
+      });
+    }
+
+    function renderScore(elementId, hand) {
+      const el = document.getElementById(elementId);
+      if (hand.length === 0) {
+        el.textContent = '—';
+        el.className = 'hand-score';
+        return;
+      }
+      const total = handTotal(hand);
+      el.textContent = total;
+      el.className = 'hand-score';
+      if (hand.length === 2 && (total === 8 || total === 9)) el.classList.add('natural');
+    }
+
+    function renderAll() {
+      renderHand('player-cards', state.playerHand, state.playerHand.length === 3 ? 2 : -1);
+      renderHand('banker-cards', state.bankerHand, state.bankerHand.length === 3 ? 2 : -1);
+      renderScore('player-score', state.playerHand);
+      renderScore('banker-score', state.bankerHand);
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('hands-played').textContent = state.handsPlayed;
+      document.getElementById('stat-wins').textContent = state.wins;
+      document.getElementById('stat-losses').textContent = state.losses;
+      document.getElementById('stat-ties').textContent = state.ties;
+    }
+
+    // ===== UI PHASES =====
+
+    function showBetting() {
+      state.phase = 'betting';
+      state.pendingBet = state.lastBet || 0;
+      state.betSide = state.lastSide || null;
+
+      document.getElementById('bet-phase').style.display = 'flex';
+      document.getElementById('btn-new-hand').style.display = 'none';
+      document.getElementById('result-text').classList.remove('show');
+      document.getElementById('payout-text').textContent = '';
+
+      // Clear table
+      document.getElementById('player-cards').innerHTML = '';
+      document.getElementById('banker-cards').innerHTML = '';
+      document.getElementById('player-score').textContent = '—';
+      document.getElementById('player-score').className = 'hand-score';
+      document.getElementById('banker-score').textContent = '—';
+      document.getElementById('banker-score').className = 'hand-score';
+
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('winning-glow', 'losing-glow'));
+
+      // Restore last selection
+      updateSideSelection();
+      updateBetDisplay();
+    }
+
+    function updateSideSelection() {
+      document.querySelectorAll('.bet-choice').forEach(el => {
+        el.classList.toggle('selected', el.dataset.side === state.betSide);
+      });
+    }
+
+    function updateBetDisplay() {
+      document.getElementById('bet-amount-display').textContent = 'BET: ' + state.pendingBet;
+      document.getElementById('btn-deal').disabled = state.pendingBet < MIN_BET || !state.betSide;
+    }
+
+    // ===== BACCARAT THIRD-CARD RULES =====
+
+    function playerDrawsThird(playerTotal) {
+      return playerTotal <= 5;
+    }
+
+    function bankerDrawsThird(bankerTotal, playerThirdValue) {
+      // playerThirdValue: baccarat value of player's third card (null if player stood)
+      if (playerThirdValue === null) {
+        // Player stood — banker draws on 0-5, stands on 6-7
+        return bankerTotal <= 5;
+      }
+      // Banker drawing rules based on banker's total and player's third card
+      if (bankerTotal <= 2) return true;
+      if (bankerTotal === 3) return playerThirdValue !== 8;
+      if (bankerTotal === 4) return playerThirdValue >= 2 && playerThirdValue <= 7;
+      if (bankerTotal === 5) return playerThirdValue >= 4 && playerThirdValue <= 7;
+      if (bankerTotal === 6) return playerThirdValue === 6 || playerThirdValue === 7;
+      return false; // 7 always stands
+    }
+
+    // ===== DEAL & PLAY =====
+
+    function deal() {
+      if (!state.betSide || state.pendingBet < MIN_BET) return;
+
+      const balance = XstikCredits.getBalance();
+      if (balance < state.pendingBet) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(() => showBetting());
+          return;
+        }
+        return;
+      }
+
+      state.betAmount = state.pendingBet;
+      state.lastBet = state.betAmount;
+      state.lastSide = state.betSide;
+      XstikCredits.placeBet(state.betAmount, 'baccarat');
+
+      if (state.deckIdx > state.deck.length - 10) shuffleDeck();
+
+      // Deal initial 2 cards each (alternating: player, banker, player, banker)
+      state.playerHand = [drawCard(), drawCard()];
+      state.bankerHand = [drawCard(), drawCard()];
+      state.handsPlayed++;
+      state.phase = 'playing';
+
+      document.getElementById('bet-phase').style.display = 'none';
+      renderAll();
+
+      // Check for naturals (8 or 9)
+      const pTotal = handTotal(state.playerHand);
+      const bTotal = handTotal(state.bankerHand);
+
+      if (pTotal >= 8 || bTotal >= 8) {
+        // Natural — no more cards
+        setTimeout(() => resolve(), 600);
+        return;
+      }
+
+      // Third-card rules
+      let playerThirdVal = null;
+
+      setTimeout(() => {
+        // Player's third card
+        if (playerDrawsThird(pTotal)) {
+          const third = drawCard();
+          state.playerHand.push(third);
+          playerThirdVal = bacVal(third);
+          renderAll();
+        }
+
+        setTimeout(() => {
+          // Banker's third card
+          const bNow = handTotal(state.bankerHand);
+          if (bankerDrawsThird(bNow, playerThirdVal)) {
+            state.bankerHand.push(drawCard());
+            renderAll();
+          }
+
+          setTimeout(() => resolve(), 500);
+        }, 500);
+      }, 600);
+    }
+
+    function resolve() {
+      const pTotal = handTotal(state.playerHand);
+      const bTotal = handTotal(state.bankerHand);
+
+      let winner; // 'player' | 'banker' | 'tie'
+      if (pTotal > bTotal) winner = 'player';
+      else if (bTotal > pTotal) winner = 'banker';
+      else winner = 'tie';
+
+      // Determine payout
+      let creditsBack = 0;
+      let resultType, message;
+
+      if (winner === state.betSide) {
+        // Win
+        creditsBack = Math.floor(state.betAmount * PAYOUTS[state.betSide]);
+        XstikCredits.awardWinnings(creditsBack, 'baccarat');
+        if (state.betSide === 'tie') {
+          state.wins++;
+          resultType = 'win';
+          message = 'TIE WINS! ×8';
+        } else {
+          state.wins++;
+          resultType = 'win';
+          message = (state.betSide === 'player' ? 'PLAYER' : 'BANKER') + ' WINS!';
+        }
+      } else if (winner === 'tie' && state.betSide !== 'tie') {
+        // Tie when you didn't bet tie — push (return bet)
+        XstikCredits.awardWinnings(state.betAmount, 'baccarat');
+        state.ties++;
+        resultType = 'tie';
+        message = 'TIE — BET RETURNED';
+        creditsBack = state.betAmount;
+      } else {
+        // Loss
+        state.losses++;
+        resultType = 'lose';
+        message = (winner === 'player' ? 'PLAYER' : winner === 'banker' ? 'BANKER' : 'TIE') + ' WINS';
+      }
+
+      showResult(resultType, message, winner, creditsBack);
+    }
+
+    function showResult(resultType, message, winner, creditsBack) {
+      state.phase = 'result';
+      document.getElementById('bet-phase').style.display = 'none';
+      document.getElementById('btn-new-hand').style.display = 'block';
+
+      const resultEl = document.getElementById('result-text');
+      resultEl.textContent = message;
+      resultEl.className = 'result-text show ' + resultType;
+
+      const payoutEl = document.getElementById('payout-text');
+      if (resultType === 'win') {
+        payoutEl.textContent = '+' + creditsBack + ' credits';
+        payoutEl.className = 'payout-text win-pay';
+      } else if (resultType === 'lose') {
+        payoutEl.textContent = '-' + state.betAmount + ' credits';
+        payoutEl.className = 'payout-text lose-pay';
+      } else {
+        payoutEl.textContent = 'Bet returned';
+        payoutEl.className = 'payout-text tie-pay';
+      }
+
+      // Glow effects
+      setTimeout(() => {
+        const playerCards = document.querySelectorAll('#player-cards .card');
+        const bankerCards = document.querySelectorAll('#banker-cards .card');
+        if (winner === 'player') {
+          playerCards.forEach(c => c.classList.add('winning-glow'));
+          bankerCards.forEach(c => c.classList.add('losing-glow'));
+        } else if (winner === 'banker') {
+          bankerCards.forEach(c => c.classList.add('winning-glow'));
+          playerCards.forEach(c => c.classList.add('losing-glow'));
+        } else {
+          playerCards.forEach(c => c.classList.add('winning-glow'));
+          bankerCards.forEach(c => c.classList.add('winning-glow'));
+        }
+      }, 100);
+
+      // Leaderboard
+      const playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, 'baccarat', {
+        handsPlayed: state.handsPlayed,
+        wins: state.wins,
+        losses: state.losses,
+        creditsWon: resultType === 'win' ? creditsBack : 0
+      });
+      XstikLeaderboard.rebuildUnified();
+      updateStats();
+    }
+
+    // ===== EVENT WIRING =====
+
+    function wireEvents() {
+      // Side selection
+      document.querySelectorAll('.bet-choice').forEach(el => {
+        el.addEventListener('click', () => {
+          if (state.phase !== 'betting') return;
+          state.betSide = el.dataset.side;
+          updateSideSelection();
+          updateBetDisplay();
+        });
+      });
+
+      // Chips
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          if (state.phase !== 'betting') return;
+          const val = parseInt(chip.dataset.value);
+          const balance = XstikCredits.getBalance();
+          state.pendingBet = Math.min(state.pendingBet + val, balance);
+          updateBetDisplay();
+        });
+      });
+
+      // Clear
+      document.getElementById('btn-clear-bet').addEventListener('click', () => {
+        if (state.phase !== 'betting') return;
+        state.pendingBet = 0;
+        state.betSide = null;
+        updateSideSelection();
+        updateBetDisplay();
+      });
+
+      // Deal
+      document.getElementById('btn-deal').addEventListener('click', () => {
+        if (state.phase !== 'betting') return;
+        deal();
+      });
+
+      // New hand
+      document.getElementById('btn-new-hand').addEventListener('click', showBetting);
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'baccarat');
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() {
+        document.getElementById('lb-overlay').classList.remove('open');
+      }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+    }
+
+    // ===== BOOT =====
+
+    function showPlayerName() {
+      const name = XstikPlayer.getUsername();
+      if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    XstikGameInit.showDisclaimer();
+
+    XstikGameInit.boot('baccarat', {
+      preloadCards: true,
+      onReady: function () {
+        shuffleDeck();
+        wireEvents();
+        showPlayerName();
+        showBetting();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
