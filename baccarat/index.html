@@ -550,7 +550,8 @@
       ties: 0,
       phase: 'betting',
       lastBet: 0,
-      lastSide: null
+      lastSide: null,
+      sessionStartBalance: null
     };
 
     // ===== DECK =====
@@ -696,6 +697,10 @@
       state.betAmount = state.pendingBet;
       state.lastBet = state.betAmount;
       state.lastSide = state.betSide;
+      // Track balance at start of session (first hand only)
+      if (state.sessionStartBalance === null) {
+        state.sessionStartBalance = XstikCredits.getBalance() + state.betAmount;
+      }
       XstikCredits.placeBet(state.betAmount, 'baccarat');
 
       if (state.deckIdx > state.deck.length - 10) shuffleDeck();
@@ -833,6 +838,7 @@
         creditsWon: resultType === 'win' ? creditsBack : 0
       });
       XstikLeaderboard.rebuildUnified();
+      submitGameScore();
       updateStats();
     }
 
@@ -896,6 +902,43 @@
     function showPlayerName() {
       const name = XstikPlayer.getUsername();
       if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    // ===== LEADERBOARD SCORE SUBMISSION =====
+    // Formula: netCreditsWon × 0.8
+    // Key: xstik-baccarat-leaderboard
+    // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
+    function submitGameScore() {
+      try {
+        var currentBalance = XstikCredits.getBalance();
+        var startBalance = state.sessionStartBalance !== null ? state.sessionStartBalance : currentBalance;
+        var netCreditsWon = currentBalance - startBalance;
+        var score = Math.round(netCreditsWon * 0.8);
+        if (score <= 0) return;
+
+        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-baccarat-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = entries.findIndex(function(e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) {
+            entries[existingIdx] = newEntry;
+          }
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function(a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // Silent fail — never break game logic
+      }
     }
 
     XstikGameInit.showDisclaimer();
