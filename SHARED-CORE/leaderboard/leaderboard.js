@@ -18,6 +18,9 @@
  *         and weighted normalized unified leaderboard.
  * v1.2 — Added Hall of Fame toggle (Active Season / previous month),
  *         unified board previousMonth archiving, month display helper.
+ * v1.3 — Mirror write: submitScore() now also writes { name, score, date }
+ *         to "xstik-{gameName}-leaderboard" for landing page compatibility.
+ *         No per-game changes required — all 9 games covered automatically.
  */
 
 const XstikLeaderboard = (function () {
@@ -287,6 +290,48 @@ const XstikLeaderboard = (function () {
     board.scores.sort((a, b) => b.score - a.score);
     board.scores = board.scores.slice(0, MAX_ENTRIES);
     _saveBoard(key, board);
+
+    // ---- Landing Page Mirror Write ----------------------------------------
+    // The internal board uses key "xstik_leaderboard_{gameName}" with a rich
+    // object format. The landing page reads a simpler { name, score, date }
+    // array from "xstik-{gameName}-leaderboard". This block keeps both in sync
+    // whenever a new best score is recorded, so the Game Hub leaderboard
+    // reflects real game data without any per-game changes required.
+    if (isNewBest && score > 0) {
+      try {
+        var mirrorKey = 'xstik-' + gameName + '-leaderboard';
+        var mirrorEntries = [];
+        try {
+          mirrorEntries = JSON.parse(localStorage.getItem(mirrorKey) || '[]');
+          if (!Array.isArray(mirrorEntries)) mirrorEntries = [];
+        } catch (e) { mirrorEntries = []; }
+
+        var newMirrorEntry = {
+          name: playerName,
+          score: score,
+          date: new Date().toISOString()
+        };
+
+        var existingMirrorIdx = mirrorEntries.findIndex(function (e) {
+          return e.name === playerName;
+        });
+
+        if (existingMirrorIdx >= 0) {
+          if (score > mirrorEntries[existingMirrorIdx].score) {
+            mirrorEntries[existingMirrorIdx] = newMirrorEntry;
+          }
+        } else {
+          mirrorEntries.push(newMirrorEntry);
+        }
+
+        mirrorEntries.sort(function (a, b) { return b.score - a.score; });
+        mirrorEntries = mirrorEntries.slice(0, 100);
+        localStorage.setItem(mirrorKey, JSON.stringify(mirrorEntries));
+      } catch (mirrorErr) {
+        // Silent fail — never interrupt game logic
+      }
+    }
+    // ---- End Mirror Write ---------------------------------------------------
 
     // Find rank (1-indexed)
     const rank = board.scores.findIndex(s => s.playerName === playerName) + 1;
