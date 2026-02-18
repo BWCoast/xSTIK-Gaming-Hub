@@ -8,25 +8,58 @@
 [build]
   publish = "."
 
-# ------ Routing ------
-# Static file paths are served directly by Netlify (no redirect needed).
-# The SPA catch-all ONLY fires when no file matches the request path.
-# Order matters: most specific first, catch-all last.
+# ------ Game Routing ------
+# Each game is a standalone HTML file, NOT a React route.
+# These MUST come BEFORE the SPA catch-all.
+# Order: most specific first, catch-all last.
 
-# Solitaire is a standalone HTML file, not a React route
 [[redirects]]
   from = "/solitaire"
   to = "/solitaire/index.html"
   status = 200
 
-# Future games: add rules here as they're built
-# [[redirects]]
-#   from = "/blackjack"
-#   to = "/blackjack/index.html"
-#   status = 200
+[[redirects]]
+  from = "/blackjack"
+  to = "/blackjack/index.html"
+  status = 200
 
-# SPA catch-all: React Router handles /blackjack, /poker, /hearts etc.
-# This MUST be last — it only fires when no real file matches
+[[redirects]]
+  from = "/texas-holdem"
+  to = "/texas-holdem/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/baccarat"
+  to = "/baccarat/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/video-poker"
+  to = "/video-poker/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/three-card-brag"
+  to = "/three-card-brag/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/spades"
+  to = "/spades/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/casino-war"
+  to = "/casino-war/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/pyramid"
+  to = "/pyramid/index.html"
+  status = 200
+
+# Landing page catch-all (no React SPA — just serves index.html for root)
+# This MUST be LAST
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -41,11 +74,11 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 # ------ Caching ------
-# Hashed assets (React bundle) — immutable cache
+# Game HTML files — short cache (may update)
 [[headers]]
-  for = "/assets/*"
+  for = "/*/index.html"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=3600"
 
 # Images — long cache with revalidation
 [[headers]]
