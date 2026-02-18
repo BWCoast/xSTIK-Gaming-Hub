@@ -467,6 +467,7 @@
     let gamesPlayed = 0;
     let gamesWon = 0;
     let undoStack = [];
+    let gameStartTime = null; // tracks elapsed time for leaderboard score formula
 
     // ===== DECK =====
     function shuffleDeck() { deck = XstikImageLoader.getShuffledDeck(); deckIdx = 0; }
@@ -849,6 +850,7 @@
         creditsWon: creditsWon
       });
       XstikLeaderboard.rebuildUnified();
+      submitGameScore(won);
     }
 
     // ===== NEW GAME =====
@@ -871,6 +873,7 @@
       selectedCard = null;
       pairsCleared = 0;
       undoStack = [];
+      gameStartTime = Date.now();
 
       // Build pyramid: 7 rows (1,2,3,4,5,6,7 cards)
       for (var r = 0; r < PYRAMID_ROWS; r++) {
@@ -911,6 +914,47 @@
     function showPlayerName() {
       var name = XstikPlayer.getUsername();
       if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    // ===== LEADERBOARD SCORE SUBMISSION =====
+    // Formula: 400 + max(0, 240 - completionTimeSecs) - (pairsCleared × 3)
+    // Only triggers on a winning game (full pyramid cleared)
+    // Key: xstik-pyramid-leaderboard
+    // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
+    function submitGameScore(won) {
+      if (!won) return; // Only submit on a successful pyramid clear
+      try {
+        var completionTimeSecs = gameStartTime
+          ? Math.round((Date.now() - gameStartTime) / 1000)
+          : 999;
+        var timeBonus = Math.max(0, 240 - completionTimeSecs);
+        var movesPenalty = pairsCleared * 3;
+        var score = Math.max(0, 400 + timeBonus - movesPenalty);
+        if (score <= 0) return;
+
+        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-pyramid-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = entries.findIndex(function (e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) {
+            entries[existingIdx] = newEntry;
+          }
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function (a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // Silent fail — never break game logic
+      }
     }
 
     XstikGameInit.showDisclaimer();
