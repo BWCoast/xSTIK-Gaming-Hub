@@ -1,28 +1,1584 @@
-<!doctype html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
-    <title>xSTIK Game Hub — Play Classic Card Games on XRPL</title>
-    <meta name="description" content="Play Blackjack, Poker, and more in the xSTIK universe. Compete, earn, and climb the leaderboards on the XRP Ledger." />
-    <meta name="author" content="xSTIK" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>xSTIK Game Hub — Play Classic Card Games on XRPL</title>
+  <meta name="description" content="9 card games powered by 2,233 NFT playing cards on XRPL. Play Blackjack, Solitaire, Texas Hold'Em, Spades, and more in the xSTIK Game Hub.">
+  <meta name="author" content="xSTIK">
+  <link rel="icon" type="image/jpeg" href="/logo.jpg">
 
-    <meta property="og:title" content="xSTIK Game Hub" />
-    <meta property="og:description" content="Play classic card games in the xSTIK ecosystem on XRPL." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://games.xstik.art" />
-    <meta property="og:image" content="https://games.xstik.art/og-preview.png" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="xSTIK Game Hub">
+  <meta property="og:description" content="9 card games powered by 2,233 NFT playing cards on XRPL.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://games.xstik.art">
+  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xstik_nft">
+  <meta name="twitter:image" content="https://games.xstik.art/og-preview.png">
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@xSTIK" />
-    <meta name="twitter:image" content="https://games.xstik.art/og-preview.png" />
+  <!-- REQUIRED: xSTIK Brand Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <script type="module" crossorigin src="/assets/index-dxo8mz40.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-cxvsusj4.css">
-  </head>
+  <style>
+    /* ================================================================
+       xSTIK BRAND VARIABLES — from BRAND-RULES.md (IMMUTABLE)
+       ================================================================ */
+    :root {
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+    }
 
-  <body>
-    <div id="root"></div>
-  </body>
+    /* ================================================================
+       RESET & BASE
+       ================================================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ================================================================
+       UTILITIES
+       ================================================================ */
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+      padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glass {
+      background: rgba(31, 31, 31, 0.6);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(245, 197, 24, 0.15);
+      border-radius: 0.5rem;
+    }
+
+    /* ================================================================
+       ANIMATIONS
+       ================================================================ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px var(--primary-glow), 0 0 60px rgba(245, 197, 24, 0.08); }
+      50% { box-shadow: 0 0 30px var(--primary-glow), 0 0 80px rgba(245, 197, 24, 0.15); }
+    }
+    @keyframes gridScroll {
+      from { background-position: 0 0; }
+      to { background-position: 50px 50px; }
+    }
+    .anim-fade { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+    .anim-d1 { animation-delay: 0.1s; }
+    .anim-d2 { animation-delay: 0.2s; }
+    .anim-d3 { animation-delay: 0.3s; }
+    .anim-d4 { animation-delay: 0.4s; }
+    .anim-d5 { animation-delay: 0.5s; }
+    .anim-d6 { animation-delay: 0.6s; }
+
+    /* ================================================================
+       NAVIGATION
+       ================================================================ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.12);
+      height: 3.5rem;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 3.5rem;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    .nav-logo {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      border: 1px solid rgba(245, 197, 24, 0.4);
+      box-shadow: 0 0 10px var(--primary-glow);
+      object-fit: cover;
+    }
+    .nav-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: var(--primary);
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px var(--primary-glow);
+    }
+    .nav-sub {
+      font-size: 0.6rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: -2px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-lg);
+    }
+    .nav-link {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--muted-text);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-link:hover { color: var(--primary); }
+    .nav-cta {
+      display: inline-block;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      padding: 0.45rem 1.2rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+    .nav-cta:hover {
+      background: var(--accent);
+      box-shadow: 0 0 25px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    /* Mobile nav */
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      color: var(--primary);
+      font-size: 1.5rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .nav-mobile {
+      display: none;
+      position: fixed;
+      top: 3.5rem; left: 0; right: 0;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.12);
+      padding: var(--spacing-lg);
+      flex-direction: column;
+      gap: var(--spacing-md);
+      z-index: 99;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile .nav-link { font-size: 1rem; padding: var(--spacing-sm) 0; }
+    .nav-mobile .nav-cta { text-align: center; margin-top: var(--spacing-sm); }
+
+    /* ================================================================
+       HERO
+       ================================================================ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(3.5rem + var(--spacing-2xl)) var(--spacing-md) var(--spacing-2xl);
+      overflow: hidden;
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(245, 197, 24, 0.025) 49px, rgba(245, 197, 24, 0.025) 50px),
+        repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(245, 197, 24, 0.025) 49px, rgba(245, 197, 24, 0.025) 50px);
+      animation: gridScroll 25s linear infinite;
+      pointer-events: none;
+    }
+    .hero-glow {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(245, 197, 24, 0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 800px;
+    }
+    .hero-logo {
+      width: 8rem;
+      height: 8rem;
+      border-radius: 50%;
+      border: 3px solid rgba(245, 197, 24, 0.5);
+      margin: 0 auto var(--spacing-lg);
+      animation: pulseGlow 3s ease-in-out infinite;
+      object-fit: cover;
+    }
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      border: 1px solid rgba(245, 197, 24, 0.25);
+      background: rgba(245, 197, 24, 0.08);
+      padding: 0.4rem 1.2rem;
+      border-radius: 2rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-lg);
+    }
+    .hero-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 6px var(--primary-glow);
+    }
+    .hero-h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      letter-spacing: 3px;
+      line-height: 1.1;
+      margin-bottom: var(--spacing-md);
+    }
+    .hero-sub {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--muted-text);
+      max-width: 540px;
+      margin: 0 auto var(--spacing-xl);
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-2xl);
+    }
+    .btn-primary {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      padding: 0.85rem 2rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      background: transparent;
+      padding: 0.85rem 2rem;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-outline:hover {
+      background: rgba(245, 197, 24, 0.08);
+      border-color: var(--primary);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--spacing-xl);
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+    }
+    .stat-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: var(--muted-text);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Floating suit icons */
+    .float-icon {
+      position: absolute;
+      font-size: 3rem;
+      opacity: 0.08;
+      color: var(--primary);
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .fi-1 { top: 15%; left: 8%; animation-delay: 0s; font-size: 4rem; }
+    .fi-2 { top: 25%; right: 10%; animation-delay: 1.5s; }
+    .fi-3 { bottom: 25%; left: 12%; animation-delay: 0.8s; font-size: 3.5rem; }
+    .fi-4 { bottom: 15%; right: 8%; animation-delay: 2.2s; }
+
+    /* ================================================================
+       SECTION HEADINGS
+       ================================================================ */
+    .section {
+      padding: var(--spacing-2xl) 0;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      margin-bottom: var(--spacing-sm);
+    }
+    .section-sub {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--muted-text);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ================================================================
+       GAMES GRID
+       ================================================================ */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-lg);
+    }
+    .game-card {
+      position: relative;
+      padding: var(--spacing-xl);
+      background: rgba(31, 31, 31, 0.6);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(245, 197, 24, 0.1);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      overflow: hidden;
+    }
+    .game-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(245, 197, 24, 0.04) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .game-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(245, 197, 24, 0.35);
+      box-shadow: 0 0 30px rgba(245, 197, 24, 0.1), 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    .game-card:hover::before { opacity: 1; }
+    .game-card:active { transform: translateY(-2px); }
+
+    .game-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-md);
+    }
+    .game-icon {
+      width: 3.5rem;
+      height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(245, 197, 24, 0.08);
+      border-radius: 0.5rem;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .game-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(245, 197, 24, 0.12);
+      padding: 0.25rem 0.7rem;
+      border-radius: 2rem;
+    }
+    .game-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--foreground);
+      margin-bottom: var(--spacing-xs);
+      letter-spacing: 0.5px;
+    }
+    .game-category {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-sm);
+    }
+    .game-desc {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 0.95rem;
+      color: var(--muted-text);
+      line-height: 1.5;
+    }
+
+    /* ================================================================
+       LEADERBOARD SECTION
+       ================================================================ */
+    .lb-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-lg);
+    }
+    .lb-card {
+      padding: var(--spacing-xl);
+      text-align: center;
+    }
+    .lb-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--spacing-md);
+      display: block;
+    }
+    .lb-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--foreground);
+      margin-bottom: var(--spacing-sm);
+    }
+    .lb-desc {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: var(--muted-text);
+      line-height: 1.5;
+    }
+
+    /* ================================================================
+       HOW IT WORKS (Architecture strip)
+       ================================================================ */
+    .arch-strip {
+      display: flex;
+      gap: var(--spacing-md);
+      overflow-x: auto;
+      padding-bottom: var(--spacing-sm);
+      scrollbar-width: none;
+      justify-content: center;
+    }
+    .arch-strip::-webkit-scrollbar { display: none; }
+    .arch-item {
+      flex: 0 0 auto;
+      min-width: 200px;
+      padding: var(--spacing-lg);
+      text-align: center;
+    }
+    .arch-num {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 2rem;
+      color: var(--primary);
+      opacity: 0.3;
+      margin-bottom: var(--spacing-xs);
+    }
+    .arch-label {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 400;
+      font-size: 0.75rem;
+      color: var(--foreground);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: var(--spacing-xs);
+    }
+    .arch-detail {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+
+    /* ================================================================
+       FOOTER — xSTIK Standard
+       ================================================================ */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: var(--spacing-2xl) 0 var(--spacing-xl);
+    }
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+    }
+    .footer-brand-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: var(--primary);
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px var(--primary-glow);
+    }
+    .footer-brand-sub {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 0.8rem;
+      color: var(--muted-text);
+      margin-top: 0.15rem;
+    }
+    .footer-links {
+      display: flex;
+      gap: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+    .footer-link {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--muted-text);
+      transition: color 0.3s;
+    }
+    .footer-link:hover { color: var(--primary); }
+    .footer-bottom {
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid rgba(28, 27, 25, 0.6);
+      text-align: center;
+    }
+    .footer-legal {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 400;
+      font-size: 0.8rem;
+      color: var(--muted-text);
+      letter-spacing: 0.5px;
+    }
+
+    /* ================================================================
+       RESPONSIVE: 1024px (tablet landscape)
+       ================================================================ */
+    @media (max-width: 1023px) {
+      .games-grid { grid-template-columns: repeat(2, 1fr); }
+      .fi-1, .fi-2, .fi-3, .fi-4 { display: none; }
+    }
+
+    /* ================================================================
+       RESPONSIVE: 768px (tablet portrait)
+       ================================================================ */
+    @media (max-width: 767px) {
+      .nav-links { display: none; }
+      .nav-toggle { display: block; }
+      .games-grid { grid-template-columns: 1fr; gap: var(--spacing-md); }
+      .lb-grid { grid-template-columns: 1fr; gap: var(--spacing-md); }
+      .hero-logo { width: 6rem; height: 6rem; }
+      .hero-buttons { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-outline { width: 100%; max-width: 300px; text-align: center; }
+      .stats-row { gap: var(--spacing-lg); }
+      .footer-top {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .footer-links { justify-content: center; }
+      .game-card { padding: var(--spacing-lg); }
+      .arch-item { min-width: 160px; padding: var(--spacing-md); }
+    }
+
+    /* ================================================================
+       RESPONSIVE: 375px (mobile)
+       ================================================================ */
+    @media (max-width: 400px) {
+      .hero { padding-top: calc(3.5rem + var(--spacing-xl)); }
+      .hero-chip { font-size: 0.75rem; padding: 0.35rem 1rem; }
+      .game-icon { width: 3rem; height: 3rem; font-size: 1.3rem; }
+      .stat-num { font-size: 1.6rem; }
+      .section { padding: var(--spacing-xl) 0; }
+    }
+
+    /* ================================================================
+       SCROLL REVEAL (JS-driven)
+       ================================================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ================================================================
+       MODAL OVERLAY
+       ================================================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+      animation: fadeUp 0.35s ease;
+    }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 1rem;
+      padding: var(--spacing-2xl);
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      text-align: center;
+    }
+    .modal-box--sm { max-width: 420px; }
+    .modal-logo { font-size: 3rem; margin-bottom: var(--spacing-md); }
+    .modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--spacing-lg);
+    }
+    .modal-body { text-align: left; margin-bottom: var(--spacing-lg); }
+    .modal-body p {
+      font-size: 0.92rem;
+      color: var(--muted-text);
+      margin-bottom: var(--spacing-md);
+      line-height: 1.6;
+    }
+    .modal-body p strong { color: var(--foreground); }
+    .modal-copyright { font-size: 0.78rem !important; opacity: 0.5; margin-top: var(--spacing-lg); text-align: center; }
+    .modal-btn { width: 100%; margin-top: var(--spacing-sm); }
+    .modal-hint {
+      font-size: 0.9rem;
+      color: var(--muted-text);
+      margin-bottom: var(--spacing-lg);
+    }
+    .username-input {
+      width: 100%;
+      background: var(--muted);
+      border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 0.5rem;
+      padding: 0.85rem 1rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--foreground);
+      text-align: center;
+      outline: none;
+      margin-bottom: var(--spacing-sm);
+      transition: border-color 0.2s;
+    }
+    .username-input:focus { border-color: var(--primary); box-shadow: 0 0 12px var(--primary-glow); }
+    .username-error { color: #ff6b6b; font-size: 0.85rem; min-height: 1.2em; margin-bottom: var(--spacing-sm); }
+
+    /* ================================================================
+       LEADERBOARD
+       ================================================================ */
+    .lb-tabs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-xl);
+      flex-wrap: wrap;
+    }
+    .lb-tab {
+      background: var(--muted);
+      border: 1px solid rgba(245,197,24,0.15);
+      color: var(--muted-text);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: 0.5px;
+    }
+    .lb-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .lb-tab.active { background: rgba(245,197,24,0.12); border-color: var(--primary); color: var(--primary); }
+    .lb-month-label {
+      text-align: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: var(--muted-text);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-xl);
+    }
+    .podium-row {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-2xl);
+      min-height: 160px;
+    }
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    .podium-crown { font-size: 1.8rem; }
+    .podium-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--foreground);
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .podium-score { font-size: 0.8rem; color: var(--muted-text); }
+    .podium-block {
+      width: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.4rem;
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+    .podium-1 .podium-block { height: 100px; background: linear-gradient(180deg,#F5C518,#E8A902); color: #141414; }
+    .podium-2 .podium-block { height: 75px; background: linear-gradient(180deg,#aaa,#888); color: #141414; }
+    .podium-3 .podium-block { height: 55px; background: linear-gradient(180deg,#cd7f32,#a0522d); color: #141414; }
+    .lb-table-wrap { overflow-x: auto; }
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+    }
+    .lb-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted-text);
+      border-bottom: 1px solid rgba(245,197,24,0.15);
+    }
+    .lb-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--foreground);
+    }
+    .lb-table tr:hover td { background: rgba(245,197,24,0.04); }
+    .lb-rank-gold { color: var(--primary); font-weight: 700; }
+    .lb-rank-silver { color: #aaa; font-weight: 700; }
+    .lb-rank-bronze { color: #cd7f32; font-weight: 700; }
+    .lb-you { color: var(--primary); font-style: italic; }
+    .lb-empty { text-align: center; color: var(--muted-text); padding: var(--spacing-2xl) 0; font-size: 0.95rem; }
+    .lb-game-select-wrap { margin-bottom: var(--spacing-xl); text-align: center; }
+    .lb-game-select {
+      background: var(--muted);
+      border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 0.5rem;
+      color: var(--foreground);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .lb-hof-intro { color: var(--muted-text); font-size: 0.9rem; margin-bottom: var(--spacing-xl); text-align: center; }
+    .hof-month {
+      background: var(--card-bg);
+      border: 1px solid rgba(245,197,24,0.15);
+      border-radius: 0.75rem;
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+    .hof-month-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-md);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="nav-brand">
+      <img src="/logo.jpg" alt="xSTIK" class="nav-logo"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2268%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
+      <div>
+        <div class="nav-title">xSTIK</div>
+        <div class="nav-sub">Game Hub</div>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a href="#games" class="nav-link">Games</a>
+      <a href="#leaderboard" class="nav-link">Leaderboard</a>
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="nav-cta">xSTIK.art</a>
+    </div>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">☰</button>
+  </div>
+</nav>
+
+<div class="nav-mobile" id="nav-mobile">
+  <a href="#games" class="nav-link">Games</a>
+  <a href="#leaderboard" class="nav-link">Leaderboard</a>
+  <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="nav-cta">xSTIK.art</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <!-- Floating suit icons -->
+  <div class="float-icon fi-1">♠</div>
+  <div class="float-icon fi-2">♦</div>
+  <div class="float-icon fi-3">♣</div>
+  <div class="float-icon fi-4">♥</div>
+
+  <div class="hero-content">
+    <img src="/logo.jpg" alt="xSTIK" class="hero-logo anim-fade"
+         onerror="this.style.display='none'">
+
+    <div class="hero-chip anim-fade anim-d1">
+      <span class="hero-chip-dot"></span>
+      xSTIK Game Hub
+    </div>
+
+    <h1 class="hero-h1 anim-fade anim-d2">
+      <span class="text-gradient">Game Hub</span>
+    </h1>
+
+    <p class="hero-sub anim-fade anim-d3">
+      9 card games powered by 2,233 NFT playing cards on the XRP Ledger.
+      Play, compete, and climb the leaderboards.
+    </p>
+
+    <div class="hero-buttons anim-fade anim-d4">
+      <a href="#games" class="btn-primary">Browse Games</a>
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="btn-outline">Visit xSTIK.art</a>
+    </div>
+
+    <div class="stats-row anim-fade anim-d5">
+      <div class="stat-item">
+        <div class="stat-num text-gradient">9</div>
+        <div class="stat-label">Games</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num text-gradient">2,233</div>
+        <div class="stat-label">NFT Cards</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num text-gradient">11,304</div>
+        <div class="stat-label">Lines of Code</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num text-gradient">7</div>
+        <div class="stat-label">Shared Modules</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     GAMES GRID
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="games" class="section">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title text-gradient">Choose Your Game</h2>
+      <p class="section-sub">9 card games spanning puzzle, skill, strategy, and pure luck</p>
+    </div>
+
+    <div class="games-grid" id="games-grid">
+      <!-- JS-populated -->
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     LEADERBOARD
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="leaderboard" class="section">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title text-gradient">Leaderboards</h2>
+      <p class="section-sub">Live scores from your device — compete across 9 games with skill-weighted ranking</p>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="lb-tabs reveal">
+      <button class="lb-tab active" data-tab="unified">🏆 Grandmaster Index</button>
+      <button class="lb-tab" data-tab="bygame">🎮 Per-Game</button>
+      <button class="lb-tab" data-tab="hof">👑 Hall of Fame</button>
+    </div>
+
+    <!-- Unified / Grandmaster tab -->
+    <div id="lb-tab-unified" class="lb-panel active reveal">
+      <div class="lb-month-label" id="lb-current-month"></div>
+      <div class="podium-row" id="lb-podium">
+        <!-- filled by JS -->
+      </div>
+      <div class="lb-table-wrap">
+        <table class="lb-table">
+          <thead><tr><th>#</th><th>Player</th><th>GMI Score</th><th>Games Played</th></tr></thead>
+          <tbody id="lb-unified-body"></tbody>
+        </table>
+        <p class="lb-empty" id="lb-unified-empty" style="display:none">No scores yet — play a game to appear here!</p>
+      </div>
+    </div>
+
+    <!-- Per-Game tab -->
+    <div id="lb-tab-bygame" class="lb-panel reveal" style="display:none">
+      <div class="lb-game-select-wrap">
+        <select class="lb-game-select" id="lb-game-select">
+          <option value="xstik-blackjack-leaderboard">Blackjack</option>
+          <option value="xstik-solitaire-leaderboard">Klondike Solitaire</option>
+          <option value="xstik-pyramid-leaderboard">Pyramid Solitaire</option>
+          <option value="xstik-videopoker-leaderboard">Video Poker</option>
+          <option value="xstik-texasholdem-leaderboard">Texas Hold'Em</option>
+          <option value="xstik-spades-leaderboard">Spades</option>
+          <option value="xstik-baccarat-leaderboard">Baccarat</option>
+          <option value="xstik-casinowar-leaderboard">Casino War</option>
+          <option value="xstik-threecards-leaderboard">Three Card Brag</option>
+        </select>
+      </div>
+      <div class="lb-table-wrap">
+        <table class="lb-table">
+          <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Date</th></tr></thead>
+          <tbody id="lb-game-body"></tbody>
+        </table>
+        <p class="lb-empty" id="lb-game-empty" style="display:none">No scores for this game yet — be the first!</p>
+      </div>
+    </div>
+
+    <!-- Hall of Fame tab -->
+    <div id="lb-tab-hof" class="lb-panel reveal" style="display:none">
+      <p class="lb-hof-intro">Monthly champions are archived here at the end of each month.</p>
+      <div id="lb-hof-list"></div>
+      <p class="lb-empty" id="lb-hof-empty" style="display:none">No archived months yet — check back after the end of this month!</p>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HOW IT WORKS
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title text-gradient">How It Works</h2>
+      <p class="section-sub">Zero downloads, zero accounts, zero build steps</p>
+    </div>
+
+    <div class="arch-strip reveal">
+      <div class="glass arch-item">
+        <div class="arch-num">01</div>
+        <div class="arch-label">Visit</div>
+        <div class="arch-detail">Open games.xstik.art in any browser</div>
+      </div>
+      <div class="glass arch-item">
+        <div class="arch-num">02</div>
+        <div class="arch-label">Pick a Game</div>
+        <div class="arch-detail">Choose from 9 card games</div>
+      </div>
+      <div class="glass arch-item">
+        <div class="arch-num">03</div>
+        <div class="arch-label">Play Instantly</div>
+        <div class="arch-detail">No downloads, no sign-up required</div>
+      </div>
+      <div class="glass arch-item">
+        <div class="arch-num">04</div>
+        <div class="arch-label">Earn Credits</div>
+        <div class="arch-detail">Win virtual credits across all games</div>
+      </div>
+      <div class="glass arch-item">
+        <div class="arch-num">05</div>
+        <div class="arch-label">Climb Rankings</div>
+        <div class="arch-detail">Compete for Hall of Fame glory</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FOOTER — xSTIK Standard
+     ═══════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name">xSTIK</div>
+        <div class="footer-brand-sub">Game Hub — Part of the xSTIK ecosystem on XRPL</div>
+      </div>
+      <div class="footer-links">
+        <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="footer-link">Home</a>
+        <a href="#games" class="footer-link">Games</a>
+        <a href="#leaderboard" class="footer-link">Leaderboard</a>
+        <a href="https://twitter.com/xstik_nft" target="_blank" rel="noopener noreferrer" class="footer-link">Twitter</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-legal">&copy; 2026 xSTIK. All rights reserved. Built on the XRP Ledger.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DISCLAIMER MODAL
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="disclaimer-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title" style="display:none">
+  <div class="modal-box">
+    <div class="modal-logo">⚠️</div>
+    <h2 class="modal-title" id="disclaimer-title">Important Notice</h2>
+    <div class="modal-body">
+      <p><strong>Entertainment Only.</strong> xSTIK Game Hub is a virtual card game platform for entertainment purposes. All credits and scores are virtual with no real-world monetary value.</p>
+      <p><strong>Not Financial Advice.</strong> Nothing on this platform constitutes financial, investment, or trading advice. Interact with XRPL tokens and NFTs at your own risk.</p>
+      <p><strong>No Guarantees.</strong> Virtual credits cannot be exchanged for real currency. Past performance in games does not indicate future results.</p>
+      <p><strong>Data Storage.</strong> Your username, scores, and settings are stored locally on your device only (localStorage). No data is sent to external servers.</p>
+      <p><strong>18+.</strong> This platform is intended for users aged 18 and over.</p>
+      <p class="modal-copyright">© 2026 xSTIK. All rights reserved. Built on the XRP Ledger.</p>
+    </div>
+    <button class="btn-primary modal-btn" id="disclaimer-accept">I Understand — Let Me Play</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     USERNAME MODAL
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="username-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="username-title" style="display:none">
+  <div class="modal-box modal-box--sm">
+    <div class="modal-logo">🎮</div>
+    <h2 class="modal-title" id="username-title">Choose Your Player Name</h2>
+    <p class="modal-hint">This appears on all leaderboards across every game. You can change it in any game later.</p>
+    <input class="username-input" id="username-input" type="text" maxlength="18" placeholder="Enter your name..." autocomplete="off" spellcheck="false" />
+    <p class="username-error" id="username-error"></p>
+    <button class="btn-primary modal-btn" id="username-confirm">Enter the Hub</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ─── CONSTANTS ───
+  var DISCLAIMER_KEY  = 'xstik_disclaimer_v1';
+  var USERNAME_KEY    = 'xstik_player_name';
+  var HOF_KEY         = 'xstik_hof_archive';
+
+  // Grandmaster weight per game key
+  var GAME_WEIGHTS = {
+    'xstik-blackjack-leaderboard':    1.0,
+    'xstik-solitaire-leaderboard':    0.9,
+    'xstik-pyramid-leaderboard':      0.9,
+    'xstik-videopoker-leaderboard':   1.1,
+    'xstik-texasholdem-leaderboard':  1.4,
+    'xstik-spades-leaderboard':       1.5,
+    'xstik-baccarat-leaderboard':     0.6,
+    'xstik-casinowar-leaderboard':    0.5,
+    'xstik-threecards-leaderboard':   1.2
+  };
+
+  var GAME_KEYS = Object.keys(GAME_WEIGHTS);
+
+  // ─── GAME DATA ───
+  const GAMES = [
+    { name: 'Klondike Solitaire', category: 'Puzzle', icon: '♣', desc: 'Classic seven-column solitaire. Stack, sort, and clear the board with your NFT deck.', url: '/solitaire', weight: '0.9x' },
+    { name: 'Blackjack', category: 'Luck / Skill', icon: '♠', desc: 'Classic 21. Beat the dealer with strategy and luck in this timeless card game.', url: '/blackjack', weight: '1.0x' },
+    { name: "Texas Hold'Em", category: 'Skill / PvP', icon: '♦', desc: 'No-limit poker against AI opponents. Bluff, bet, and dominate the table.', url: '/texas-holdem', weight: '1.4x' },
+    { name: 'Spades', category: 'Strategy', icon: '♠', desc: 'Trick-taking partnership game. Bid smart, play sharp, avoid sandbags.', url: '/spades', weight: '1.5x' },
+    { name: 'Video Poker', category: 'Skill / Luck', icon: '♦', desc: 'Five-card draw against the pay table. Hold the right cards, hit the jackpot.', url: '/video-poker', weight: '1.1x' },
+    { name: 'Three Card Brag', category: 'Skill / PvP', icon: '♥', desc: 'British classic. Three cards, one decision — play or fold against the dealer.', url: '/three-card-brag', weight: '1.2x' },
+    { name: 'Baccarat', category: 'Luck', icon: '🃏', desc: 'Bet on Player, Banker, or Tie. Closest to 9 wins in this elegant classic.', url: '/baccarat', weight: '0.6x' },
+    { name: 'Casino War', category: 'Luck', icon: '⚔', desc: 'Simplest game in the hub. Higher card wins. Pure luck, pure fun.', url: '/casino-war', weight: '0.5x' },
+    { name: 'Pyramid Solitaire', category: 'Puzzle', icon: '▲', desc: 'Remove pairs that sum to 13 from the pyramid. Strategic and satisfying.', url: '/pyramid', weight: '0.9x' }
+  ];
+
+  // ─── RENDER GAME CARDS ───
+  var grid = document.getElementById('games-grid');
+  GAMES.forEach(function(game, i) {
+    var card = document.createElement('a');
+    card.href = game.url;
+    card.className = 'game-card reveal';
+    card.style.transitionDelay = (i * 0.06) + 's';
+    card.innerHTML =
+      '<div class="game-top">' +
+        '<div class="game-icon">' + game.icon + '</div>' +
+        '<span class="game-badge">Play Now</span>' +
+      '</div>' +
+      '<h3 class="game-name">' + game.name + '</h3>' +
+      '<div class="game-category">' + game.category + ' &middot; ' + game.weight + '</div>' +
+      '<p class="game-desc">' + game.desc + '</p>';
+    grid.appendChild(card);
+  });
+
+  // ─── MOBILE NAV TOGGLE ───
+  var toggle = document.getElementById('nav-toggle');
+  var mobileMenu = document.getElementById('nav-mobile');
+  toggle.addEventListener('click', function() {
+    var isOpen = mobileMenu.classList.toggle('open');
+    toggle.textContent = isOpen ? '✕' : '☰';
+  });
+  var mobileLinks = mobileMenu.querySelectorAll('a');
+  for (var k = 0; k < mobileLinks.length; k++) {
+    mobileLinks[k].addEventListener('click', function() {
+      mobileMenu.classList.remove('open');
+      toggle.textContent = '☰';
+    });
+  }
+
+  // ─── SCROLL REVEAL ───
+  function revealOnScroll() {
+    var reveals = document.querySelectorAll('.reveal');
+    for (var j = 0; j < reveals.length; j++) {
+      var el = reveals[j];
+      var top = el.getBoundingClientRect().top;
+      if (top < window.innerHeight - 60) el.classList.add('visible');
+    }
+  }
+  window.addEventListener('scroll', revealOnScroll, { passive: true });
+  revealOnScroll();
+
+  // ════════════════════════════════════════════════════════════════
+  // MODAL FLOW: Disclaimer → Username (only on first visit)
+  // ════════════════════════════════════════════════════════════════
+  var disclaimerModal = document.getElementById('disclaimer-modal');
+  var usernameModal   = document.getElementById('username-modal');
+  var disclaimerBtn   = document.getElementById('disclaimer-accept');
+  var usernameBtn     = document.getElementById('username-confirm');
+  var usernameInput   = document.getElementById('username-input');
+  var usernameError   = document.getElementById('username-error');
+
+  function showDisclaimer() {
+    disclaimerModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function hideDisclaimer() {
+    disclaimerModal.style.display = 'none';
+  }
+  function showUsernameModal() {
+    usernameModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ usernameInput.focus(); }, 100);
+  }
+  function hideUsernameModal() {
+    usernameModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  disclaimerBtn.addEventListener('click', function() {
+    localStorage.setItem(DISCLAIMER_KEY, '1');
+    hideDisclaimer();
+    // Check if username already set
+    var existing = localStorage.getItem(USERNAME_KEY);
+    if (!existing || existing.trim() === '') {
+      showUsernameModal();
+    } else {
+      document.body.style.overflow = '';
+    }
+  });
+
+  function validateAndSaveName() {
+    var val = usernameInput.value.trim();
+    if (val.length < 2) {
+      usernameError.textContent = 'Name must be at least 2 characters.';
+      return;
+    }
+    if (val.length > 18) {
+      usernameError.textContent = 'Name must be 18 characters or fewer.';
+      return;
+    }
+    if (!/^[a-zA-Z0-9_\- ]+$/.test(val)) {
+      usernameError.textContent = 'Only letters, numbers, spaces, _ and - allowed.';
+      return;
+    }
+    localStorage.setItem(USERNAME_KEY, val);
+    hideUsernameModal();
+    renderLeaderboards();
+  }
+
+  usernameBtn.addEventListener('click', validateAndSaveName);
+  usernameInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') validateAndSaveName();
+  });
+  usernameInput.addEventListener('input', function() {
+    usernameError.textContent = '';
+  });
+
+  // ─── TRIGGER MODAL FLOW ON FIRST VISIT ───
+  (function() {
+    var disclaimerSeen = localStorage.getItem(DISCLAIMER_KEY);
+    var usernameSaved  = localStorage.getItem(USERNAME_KEY);
+    if (!disclaimerSeen) {
+      showDisclaimer();
+    } else if (!usernameSaved || usernameSaved.trim() === '') {
+      showUsernameModal();
+    }
+  })();
+
+  // ════════════════════════════════════════════════════════════════
+  // LEADERBOARD ENGINE
+  // ════════════════════════════════════════════════════════════════
+
+  // ─── Read all scores from localStorage ───
+  // Each game is expected to store an array under its key.
+  // Each entry should have: { name: string, score: number, date: string }
+  // We also support the Blackjack format: { player: string, score: number, timestamp: string }
+  function readGameScores(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.map(function(e) {
+        return {
+          name:  e.name || e.player || e.playerName || 'Unknown',
+          score: Number(e.score) || Number(e.credits) || Number(e.chips) || 0,
+          date:  e.date || e.timestamp || e.time || ''
+        };
+      }).filter(function(e){ return e.score > 0 || true; });
+    } catch(err) { return []; }
+  }
+
+  // ─── Calculate Grandmaster Index ───
+  // Think of it like a school GPA: each game gives you a grade,
+  // weighted by how skill-based it is, then averaged.
+  function buildGrandmasterRankings() {
+    var playerMap = {}; // { name: { totalWeightedScore, totalWeight, gamesCount } }
+    GAME_KEYS.forEach(function(key) {
+      var weight  = GAME_WEIGHTS[key];
+      var entries = readGameScores(key);
+      // Get best score per player for this game
+      var bestPerPlayer = {};
+      entries.forEach(function(e) {
+        var n = e.name;
+        if (!bestPerPlayer[n] || e.score > bestPerPlayer[n]) bestPerPlayer[n] = e.score;
+      });
+      Object.keys(bestPerPlayer).forEach(function(name) {
+        if (!playerMap[name]) playerMap[name] = { total: 0, weightSum: 0, count: 0 };
+        playerMap[name].total     += bestPerPlayer[name] * weight;
+        playerMap[name].weightSum += weight;
+        playerMap[name].count     += 1;
+      });
+    });
+    var list = Object.keys(playerMap).map(function(name) {
+      var p = playerMap[name];
+      var gmi = p.weightSum > 0 ? Math.round(p.total / p.weightSum) : 0;
+      return { name: name, gmi: gmi, games: p.count };
+    });
+    list.sort(function(a,b){ return b.gmi - a.gmi; });
+    return list;
+  }
+
+  // ─── Render unified leaderboard tab ───
+  function renderUnified() {
+    var now = new Date();
+    var monthLabel = now.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+    document.getElementById('lb-current-month').textContent = '— ' + monthLabel + ' —';
+
+    var rankings = buildGrandmasterRankings();
+    var currentUser = (localStorage.getItem(USERNAME_KEY) || '').trim();
+
+    // Podium (top 3)
+    var podiumEl = document.getElementById('lb-podium');
+    podiumEl.innerHTML = '';
+    if (rankings.length === 0) {
+      podiumEl.style.display = 'none';
+      document.getElementById('lb-unified-empty').style.display = 'block';
+      document.getElementById('lb-unified-body').innerHTML = '';
+      return;
+    }
+    document.getElementById('lb-unified-empty').style.display = 'none';
+    podiumEl.style.display = 'flex';
+
+    // Podium order: 2nd, 1st, 3rd
+    var podiumOrder = [1, 0, 2]; // indices into rankings
+    var crowns = ['🥈','🥇','🥉'];
+    var posLabels = ['2nd','1st','3rd'];
+    podiumOrder.forEach(function(rankIdx, podiumPos) {
+      if (rankings[rankIdx]) {
+        var entry = rankings[rankIdx];
+        var slot = document.createElement('div');
+        slot.className = 'podium-slot podium-' + posLabels[podiumPos].replace(/[^123]/g,'');
+        var posNum = rankIdx + 1;
+        slot.className = 'podium-slot podium-' + posNum;
+        slot.innerHTML =
+          '<div class="podium-crown">' + (posNum === 1 ? '🥇' : posNum === 2 ? '🥈' : '🥉') + '</div>' +
+          '<div class="podium-name' + (entry.name === currentUser ? ' lb-you' : '') + '">' + escHtml(entry.name) + '</div>' +
+          '<div class="podium-score">' + entry.gmi.toLocaleString() + ' GMI</div>' +
+          '<div class="podium-block">' + posNum + '</div>';
+        podiumEl.appendChild(slot);
+      }
+    });
+
+    // Full table
+    var tbody = document.getElementById('lb-unified-body');
+    tbody.innerHTML = '';
+    rankings.forEach(function(entry, i) {
+      var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="' + rankClass + '">' + (i+1) + '</td>' +
+        '<td class="' + (entry.name === currentUser ? 'lb-you' : '') + '">' + escHtml(entry.name) + (entry.name === currentUser ? ' ★' : '') + '</td>' +
+        '<td>' + entry.gmi.toLocaleString() + '</td>' +
+        '<td>' + entry.games + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ─── Render per-game tab ───
+  function renderPerGame(key) {
+    var entries = readGameScores(key);
+    var currentUser = (localStorage.getItem(USERNAME_KEY) || '').trim();
+    entries.sort(function(a,b){ return b.score - a.score; });
+    var top20 = entries.slice(0, 20);
+
+    var tbody = document.getElementById('lb-game-body');
+    var emptyEl = document.getElementById('lb-game-empty');
+    tbody.innerHTML = '';
+
+    if (top20.length === 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    top20.forEach(function(entry, i) {
+      var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
+      var dateStr = entry.date ? new Date(entry.date).toLocaleDateString() : '—';
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="' + rankClass + '">' + (i+1) + '</td>' +
+        '<td class="' + (entry.name === currentUser ? 'lb-you' : '') + '">' + escHtml(entry.name) + (entry.name === currentUser ? ' ★' : '') + '</td>' +
+        '<td>' + entry.score.toLocaleString() + '</td>' +
+        '<td>' + dateStr + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ─── Render Hall of Fame tab ───
+  function renderHoF() {
+    var hofList = document.getElementById('lb-hof-list');
+    var hofEmpty = document.getElementById('lb-hof-empty');
+    hofList.innerHTML = '';
+    try {
+      var archived = JSON.parse(localStorage.getItem(HOF_KEY) || '[]');
+      if (!Array.isArray(archived) || archived.length === 0) {
+        hofEmpty.style.display = 'block';
+        return;
+      }
+      hofEmpty.style.display = 'none';
+      // Sort newest first
+      archived.sort(function(a,b){ return b.month > a.month ? 1 : -1; });
+      archived.forEach(function(monthObj) {
+        var block = document.createElement('div');
+        block.className = 'hof-month';
+        var title = document.createElement('div');
+        title.className = 'hof-month-title';
+        title.textContent = monthObj.month || 'Unknown Month';
+        block.appendChild(title);
+        var table = document.createElement('table');
+        table.className = 'lb-table';
+        table.innerHTML = '<thead><tr><th>#</th><th>Player</th><th>GMI Score</th></tr></thead>';
+        var tbody = document.createElement('tbody');
+        (monthObj.rankings || []).forEach(function(entry, i) {
+          var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td class="' + rankClass + '">' + (i+1) + '</td><td>' + escHtml(entry.name) + '</td><td>' + entry.gmi.toLocaleString() + '</td>';
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        block.appendChild(table);
+        hofList.appendChild(block);
+      });
+    } catch(e) {
+      hofEmpty.style.display = 'block';
+    }
+  }
+
+  // ─── Leaderboard tab switching ───
+  var lbTabs   = document.querySelectorAll('.lb-tab');
+  var lbPanels = document.querySelectorAll('.lb-panel');
+  lbTabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      lbTabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var target = tab.getAttribute('data-tab');
+      lbPanels.forEach(function(p){ p.style.display = 'none'; });
+      document.getElementById('lb-tab-' + target).style.display = 'block';
+      if (target === 'unified') renderUnified();
+      if (target === 'bygame') renderPerGame(document.getElementById('lb-game-select').value);
+      if (target === 'hof') renderHoF();
+    });
+  });
+
+  // Per-game dropdown change
+  document.getElementById('lb-game-select').addEventListener('change', function() {
+    renderPerGame(this.value);
+  });
+
+  // ─── Monthly archiver: auto-archive previous month on page load ───
+  (function archivePreviousMonth() {
+    var now = new Date();
+    var key = 'xstik_last_archive_check';
+    var lastCheck = localStorage.getItem(key) || '';
+    var thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
+    if (lastCheck === thisMonth) return; // Already checked this month
+    // Check if we have a previous month key stored
+    var prevMonthKey = 'xstik_archive_pending';
+    var pending = localStorage.getItem(prevMonthKey);
+    if (pending) {
+      try {
+        var pendingMonth = JSON.parse(pending);
+        if (pendingMonth.month !== thisMonth) {
+          // Archive it
+          var existing = JSON.parse(localStorage.getItem(HOF_KEY) || '[]');
+          existing.push(pendingMonth);
+          if (existing.length > 12) existing = existing.slice(-12); // keep 12 months
+          localStorage.setItem(HOF_KEY, JSON.stringify(existing));
+        }
+      } catch(e) {}
+    }
+    // Store current month snapshot as pending
+    var rankings = buildGrandmasterRankings().slice(0, 20);
+    var monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+    localStorage.setItem(prevMonthKey, JSON.stringify({ month: monthName, rankings: rankings }));
+    localStorage.setItem(key, thisMonth);
+  })();
+
+  // ─── Initial render ───
+  function renderLeaderboards() {
+    renderUnified();
+  }
+  renderLeaderboards();
+
+  // ─── Utility ───
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+})();
+</script>
+
+</body>
 </html>
