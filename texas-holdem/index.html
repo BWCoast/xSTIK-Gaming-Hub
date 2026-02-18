@@ -598,7 +598,10 @@
         handsPlayed: 0,
         wins: 0,
         losses: 0,
-        roundActed: new Set()
+        roundActed: new Set(),
+        biggestPot: 0,        // largest pot won in a single hand (for leaderboard)
+        consecutiveWins: 0,   // current win streak (for leaderboard)
+        peakConsecutiveWins: 0 // highest streak reached this session
       };
     }
 
@@ -964,8 +967,12 @@
       if (humanWon) {
         XstikCredits.awardWinnings(share, 'texas-holdem');
         G.wins++;
+        G.consecutiveWins++;
+        if (G.consecutiveWins > G.peakConsecutiveWins) G.peakConsecutiveWins = G.consecutiveWins;
+        if (share > G.biggestPot) G.biggestPot = share;
       } else {
         G.losses++;
+        G.consecutiveWins = 0;
       }
 
       finishDisplay(winners, humanWon, share);
@@ -979,8 +986,12 @@
       if (humanWon) {
         XstikCredits.awardWinnings(G.pot, 'texas-holdem');
         G.wins++;
+        G.consecutiveWins++;
+        if (G.consecutiveWins > G.peakConsecutiveWins) G.peakConsecutiveWins = G.consecutiveWins;
+        if (G.pot > G.biggestPot) G.biggestPot = G.pot;
       } else {
         G.losses++;
+        G.consecutiveWins = 0;
       }
 
       G.phase = 'showdown';
@@ -1017,6 +1028,7 @@
         creditsWon: humanWon ? share : 0
       });
       XstikLeaderboard.rebuildUnified();
+      submitGameScore();
     }
 
     // ===== PLAYER ACTIONS =====
@@ -1189,6 +1201,44 @@
     function showPlayerName() {
       const name = XstikPlayer.getUsername();
       if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    // ===== LEADERBOARD SCORE SUBMISSION =====
+    // Formula: (handsWon × 150) + (biggestPot × 0.3) + (peakConsecutiveWins × 75)
+    // Key: xstik-texasholdem-leaderboard
+    // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
+    function submitGameScore() {
+      try {
+        var score = Math.round(
+          (G.wins * 150) +
+          (G.biggestPot * 0.3) +
+          (G.peakConsecutiveWins * 75)
+        );
+        if (score <= 0) return;
+
+        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-texasholdem-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = entries.findIndex(function (e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) {
+            entries[existingIdx] = newEntry;
+          }
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function (a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // Silent fail — never break game logic
+      }
     }
 
     XstikGameInit.showDisclaimer();
