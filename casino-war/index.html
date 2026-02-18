@@ -522,7 +522,8 @@
       wins: 0,
       losses: 0,
       wars: 0,
-      phase: 'betting'
+      phase: 'betting',
+      sessionStartBalance: null
     };
 
     // ===== DECK =====
@@ -639,6 +640,10 @@
 
       state.betAmount = state.pendingBet;
       state.lastBet = state.betAmount;
+      // Track balance at start of session (first hand only)
+      if (state.sessionStartBalance === null) {
+        state.sessionStartBalance = XstikCredits.getBalance() + state.betAmount;
+      }
       XstikCredits.placeBet(state.betAmount, 'casino-war');
 
       if (deckIdx > deck.length - 15) shuffleDeck();
@@ -785,6 +790,7 @@
         creditsWon: net > 0 ? net : 0
       });
       XstikLeaderboard.rebuildUnified();
+      submitGameScore();
       updateStats();
     }
 
@@ -840,6 +846,43 @@
     }
 
     XstikGameInit.showDisclaimer();
+
+    // ===== LEADERBOARD SCORE SUBMISSION =====
+    // Formula: netCreditsWon × 0.6
+    // Key: xstik-casinowar-leaderboard
+    // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
+    function submitGameScore() {
+      try {
+        var currentBalance = XstikCredits.getBalance();
+        var startBalance = state.sessionStartBalance !== null ? state.sessionStartBalance : currentBalance;
+        var netCreditsWon = currentBalance - startBalance;
+        var score = Math.round(netCreditsWon * 0.6);
+        if (score <= 0) return;
+
+        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-casinowar-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = entries.findIndex(function (e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) {
+            entries[existingIdx] = newEntry;
+          }
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function (a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // Silent fail — never break game logic
+      }
+    }
 
     XstikGameInit.boot('casino-war', {
       preloadCards: true,
