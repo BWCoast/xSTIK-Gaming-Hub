@@ -507,7 +507,10 @@
       spadesBroken: false,
       phase: 'start',
       gamesWon: 0,
-      gamesLost: 0
+      gamesLost: 0,
+      totalTricksUs: 0,   // cumulative tricks taken by our team (for leaderboard)
+      totalBidUs: 0,      // cumulative tricks bid by our team (for bid accuracy)
+      totalBagsUs: 0      // cumulative bags accumulated (penalised in score)
     };
 
     let deck = [];
@@ -911,6 +914,12 @@
 
       G.scores.us += usPoints;
       G.scores.them += themPoints;
+
+      // Accumulate cumulative stats for leaderboard score formula
+      G.totalTricksUs += usTricks;
+      G.totalBidUs += usBid;
+      G.totalBagsUs += (usNonNilTricks > usNonNilBid ? usNonNilTricks - usNonNilBid : 0);
+
       renderScores();
 
       // Check game end
@@ -965,6 +974,7 @@
         creditsWon: won ? Math.floor(ENTRY_FEE * 2.5) : 0
       });
       XstikLeaderboard.rebuildUnified();
+      submitGameScore();
     }
 
     // ===== EVENTS =====
@@ -987,6 +997,47 @@
     function showPlayerName() {
       const name = XstikPlayer.getUsername();
       if (name) document.getElementById('player-name-display').textContent = name;
+    }
+
+    // ===== LEADERBOARD SCORE SUBMISSION =====
+    // Formula: (tricksWon × 80) + (bidAccuracy × 200) - (bags × 25)
+    //   tricksWon   = total tricks our team took across all rounds
+    //   bidAccuracy = tricksWon / max(totalBid, 1)  — capped at 1.0
+    //   bags        = total over-tricks accumulated (penalised)
+    // Key: xstik-spades-leaderboard
+    // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
+    function submitGameScore() {
+      try {
+        var tricksWon = G.totalTricksUs || 0;
+        var totalBid = G.totalBidUs || 1;
+        var bags = G.totalBagsUs || 0;
+        var bidAccuracy = Math.min(1.0, tricksWon / totalBid);
+        var score = Math.round((tricksWon * 80) + (bidAccuracy * 200) - (bags * 25));
+        if (score <= 0) return;
+
+        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-spades-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = entries.findIndex(function (e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) {
+            entries[existingIdx] = newEntry;
+          }
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function (a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // Silent fail — never break game logic
+      }
     }
 
     XstikGameInit.showDisclaimer();
