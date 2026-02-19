@@ -1042,15 +1042,15 @@
     <div id="lb-tab-bygame" class="lb-panel reveal" style="display:none">
       <div class="lb-game-select-wrap">
         <select class="lb-game-select" id="lb-game-select">
-          <option value="xstik-blackjack-leaderboard">Blackjack</option>
-          <option value="xstik-solitaire-leaderboard">Klondike Solitaire</option>
-          <option value="xstik-pyramid-leaderboard">Pyramid Solitaire</option>
-          <option value="xstik-videopoker-leaderboard">Video Poker</option>
-          <option value="xstik-texasholdem-leaderboard">Texas Hold'Em</option>
-          <option value="xstik-spades-leaderboard">Spades</option>
-          <option value="xstik-baccarat-leaderboard">Baccarat</option>
-          <option value="xstik-casinowar-leaderboard">Casino War</option>
-          <option value="xstik-threecards-leaderboard">Three Card Brag</option>
+          <option value="blackjack">Blackjack</option>
+          <option value="solitaire">Klondike Solitaire</option>
+          <option value="pyramid">Pyramid Solitaire</option>
+          <option value="videopoker">Video Poker</option>
+          <option value="texasholdem">Texas Hold'Em</option>
+          <option value="spades">Spades</option>
+          <option value="baccarat">Baccarat</option>
+          <option value="casinowar">Casino War</option>
+          <option value="threecards">Three Card Brag</option>
         </select>
       </div>
       <div class="lb-table-wrap">
@@ -1148,7 +1148,7 @@
       <p><strong>Entertainment Only.</strong> xSTIK Game Hub is a virtual card game platform for entertainment purposes. All credits and scores are virtual with no real-world monetary value.</p>
       <p><strong>Not Financial Advice.</strong> Nothing on this platform constitutes financial, investment, or trading advice. Interact with XRPL tokens and NFTs at your own risk.</p>
       <p><strong>No Guarantees.</strong> Virtual credits cannot be exchanged for real currency. Past performance in games does not indicate future results.</p>
-      <p><strong>Data Storage.</strong> Your username, scores, and settings are stored locally on your device only (localStorage). No data is sent to external servers.</p>
+      <p><strong>Data Storage.</strong> Your username, scores, and settings are stored locally on your device (localStorage) and synced to a secure cloud leaderboard (Supabase) to enable global rankings. No personal or financial data is collected.</p>
       <p><strong>18+.</strong> This platform is intended for users aged 18 and over.</p>
       <p class="modal-copyright">© 2026 xSTIK. All rights reserved. Built on the XRP Ledger.</p>
     </div>
@@ -1173,6 +1173,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      JAVASCRIPT
      ═══════════════════════════════════════════════════════════════ -->
+<script src="./SHARED-CORE/leaderboard/supabase-sync.js"></script>
 <script>
 (function() {
   'use strict';
@@ -1184,15 +1185,15 @@
 
   // Grandmaster weight per game key
   var GAME_WEIGHTS = {
-    'xstik-blackjack-leaderboard':    1.0,
-    'xstik-solitaire-leaderboard':    0.9,
-    'xstik-pyramid-leaderboard':      0.9,
-    'xstik-videopoker-leaderboard':   1.1,
-    'xstik-texasholdem-leaderboard':  1.4,
-    'xstik-spades-leaderboard':       1.5,
-    'xstik-baccarat-leaderboard':     0.6,
-    'xstik-casinowar-leaderboard':    0.5,
-    'xstik-threecards-leaderboard':   1.2
+    'blackjack':    1.0,
+    'solitaire':    0.9,
+    'pyramid':      0.9,
+    'videopoker':   1.1,
+    'texasholdem':  1.4,
+    'spades':       1.5,
+    'baccarat':     0.6,
+    'casinowar':    0.5,
+    'threecards':   1.2
   };
 
   var GAME_KEYS = Object.keys(GAME_WEIGHTS);
