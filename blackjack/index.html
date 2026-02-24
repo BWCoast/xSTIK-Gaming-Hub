@@ -90,27 +90,28 @@
       border-bottom: 1px solid rgba(245, 197, 24, 0.2);
       position: relative;
       z-index: 100;
-      height: 3.5rem;
+      height: 5rem;
     }
 
     .logo-wrap {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-md);
+      text-decoration: none;
     }
 
     .logo-coin {
-      width: 2.25rem;
-      height: 2.25rem;
+      width: 3.25rem;
+      height: 3.25rem;
       border-radius: 50%;
       object-fit: cover;
-      border: 1px solid rgba(245, 197, 24, 0.4);
-      box-shadow: 0 0 10px var(--primary-glow);
+      border: 2px solid rgba(245, 197, 24, 0.5);
+      box-shadow: 0 0 14px var(--primary-glow);
     }
 
     .logo-text {
       font-family: 'Orbitron', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1.5rem;
       font-weight: 900;
       color: var(--primary);
       letter-spacing: 2px;
@@ -118,12 +119,56 @@
     }
 
     .logo-sub {
-      font-size: 0.6rem;
+      font-size: 0.75rem;
       color: var(--accent);
       letter-spacing: 2px;
       text-transform: uppercase;
       margin-top: -2px;
     }
+
+    /* Back to Hub + explainer button group */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .btn-back {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-text);
+      background: none;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-back:hover { color: var(--primary); border-color: var(--primary); }
+
+    .btn-rules {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      border: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .btn-rules:hover { background: var(--accent); }
 
     .header-stats {
       display: flex;
@@ -148,7 +193,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.85rem;
+      font-size: 1rem;
     }
 
     .footer-links {
@@ -158,6 +203,9 @@
     }
 
     .footer-links a {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 1rem;
       color: var(--primary);
       text-decoration: none;
       transition: color 0.3s;
@@ -167,7 +215,8 @@
 
     .footer-legal {
       color: var(--muted-text);
-      font-size: 0.75rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
     }
 
     /* ========== UTILITY CLASSES ========== */
@@ -209,8 +258,8 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: var(--spacing-sm) max(var(--spacing-sm), env(safe-area-inset-left));
-      height: calc(100vh - 3.5rem - 2.75rem);
-      height: calc(100dvh - 3.5rem - 2.75rem);
+      height: calc(100vh - 5rem - 2.75rem);
+      height: calc(100dvh - 5rem - 2.75rem);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -564,6 +613,106 @@
       cursor: not-allowed;
     }
 
+    /* ---- Explainer / Rules Modal ---- */
+    .rules-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+    .rules-overlay.open { display: flex; }
+    .rules-box {
+      background: var(--card-bg);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: 1rem;
+      padding: var(--spacing-xl);
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 40px rgba(245,197,24,0.15);
+    }
+    .rules-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--primary);
+      text-shadow: 0 0 10px var(--primary-glow);
+      margin-bottom: var(--spacing-lg);
+      text-align: center;
+    }
+    .rules-section {
+      margin-bottom: var(--spacing-md);
+    }
+    .rules-section h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-sm);
+    }
+    .rules-section p, .rules-section li {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      color: var(--muted-text);
+      line-height: 1.6;
+    }
+    .rules-section ul { padding-left: 1.2rem; }
+    .rules-close {
+      width: 100%;
+      margin-top: var(--spacing-lg);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow: 0 0 15px var(--primary-glow);
+      transition: all 0.2s;
+    }
+    .rules-close:hover { background: var(--accent); }
+
+    /* ---- Split hand layout ---- */
+    .split-hands {
+      display: flex;
+      gap: var(--spacing-sm);
+      justify-content: center;
+      width: 100%;
+    }
+    .split-hand {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+    .split-hand-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted-text);
+    }
+    .split-hand.active-hand .split-hand-label { color: var(--primary); }
+    .split-hand-cards { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center; }
+    .split-hand-score {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--foreground);
+    }
+
     /* ---- Leaderboard Slide-Up Panel ---- */
     #lb-overlay {
       display: none;
@@ -684,8 +833,9 @@
       .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
       .footer-links { gap: var(--spacing-md); }
       .footer-legal { display: none; }
-      .logo-text { font-size: 0.95rem; }
-      .logo-coin { width: 2rem; height: 2rem; }
+      .logo-text { font-size: 1.1rem; }
+      .logo-coin { width: 2.5rem; height: 2.5rem; }
+      .btn-back { display: none; }
       .hand-score { font-size: 1.1rem; }
       .chip { width: 2.8rem; height: 2.8rem; font-size: 0.6rem; min-height: 44px; min-width: 44px; }
       .btn-action { font-size: 0.85rem; padding: 0.5rem 1.2rem; }
@@ -715,15 +865,17 @@
 
   <!-- ===== HEADER (BRAND STANDARD — DO NOT MODIFY) ===== -->
   <header class="top-bar">
-    <div class="logo-wrap">
+    <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
       <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
       <div>
         <div class="logo-text">xSTIK</div>
         <div class="logo-sub">BLACKJACK</div>
       </div>
-    </div>
-    <div class="header-stats">
+    </a>
+    <div class="header-right">
+      <a href="https://games.xstik.art" class="btn-back">← Game Hub</a>
+      <button class="btn-rules" id="btn-rules">HOW TO PLAY</button>
       <div id="credit-display"></div>
     </div>
   </header>
@@ -784,6 +936,7 @@
           <button class="btn-action btn-hit" id="btn-hit">HIT</button>
           <button class="btn-action btn-stand" id="btn-stand">STAND</button>
           <button class="btn-action btn-double" id="btn-double">DOUBLE</button>
+          <button class="btn-action btn-split" id="btn-split" style="display:none;">SPLIT</button>
         </div>
 
         <!-- New Hand Button (shown after result) -->
@@ -799,6 +952,61 @@
 
     </div>
   </main>
+
+  <!-- ===== RULES / EXPLAINER MODAL ===== -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">🃏 HOW TO PLAY BLACKJACK</div>
+
+      <div class="rules-section">
+        <h3>Objective</h3>
+        <p>Beat the dealer by getting a hand value closer to 21 without going over (busting).</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Card Values</h3>
+        <ul>
+          <li>Number cards (2–10) = face value</li>
+          <li>Jack, Queen, King = 10</li>
+          <li>Ace = 1 or 11 (whichever helps most)</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>How a Hand Works</h3>
+        <ul>
+          <li>Place your bet, then press DEAL</li>
+          <li>You get 2 cards face up. Dealer gets 1 face up, 1 face down (hole card)</li>
+          <li><strong>HIT</strong> — draw another card</li>
+          <li><strong>STAND</strong> — keep your hand, dealer reveals and plays</li>
+          <li><strong>DOUBLE</strong> — double your bet, draw exactly one more card, then stand</li>
+          <li><strong>SPLIT</strong> — if your first two cards are equal value, split into two separate hands</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Dealer Rules</h3>
+        <p>Dealer must hit on 16 or less, and stand on 17 or more.</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Payouts</h3>
+        <ul>
+          <li>Win = 1:1 (bet returned + equal winnings)</li>
+          <li>Blackjack (Ace + 10-value on first 2 cards) = 3:2</li>
+          <li>Push (tie) = bet returned</li>
+          <li>Bust or dealer wins = bet lost</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Blackjack</h3>
+        <p>An Ace + any 10-value card on your initial 2 cards = Blackjack. Pays 3:2 unless dealer also has Blackjack (push).</p>
+      </div>
+
+      <button class="rules-close" id="btn-rules-close">GOT IT — LET'S PLAY</button>
+    </div>
+  </div>
 
   <!-- Leaderboard Slide-Up Panel -->
   <div id="lb-overlay">
@@ -857,7 +1065,12 @@
       losses: 0,
       pushes: 0,
       phase: 'betting',  // betting | playing | dealerTurn | result
-      lastBet: 0
+      lastBet: 0,
+      // Split state
+      isSplit: false,          // true when player has split into two hands
+      splitHands: [[], []],    // the two hands after a split
+      splitBets: [0, 0],       // bet for each split hand
+      activeSplitHand: 0       // 0 = playing first hand, 1 = playing second hand
     };
 
     // ===== HELPERS =====
@@ -879,6 +1092,14 @@
     function isBust(hand) { return handValue(hand) > 21; }
     function isBlackjack(hand) { return hand.length === 2 && handValue(hand) === 21; }
 
+    // Returns the point value of a single card (used for split eligibility check)
+    function cardValue(card) {
+      const rank = card.name.split(' ')[0]; // e.g. "Ace", "King", "7"
+      if (['Jack', 'Queen', 'King'].includes(rank)) return 10;
+      if (rank === 'Ace') return 11;
+      return parseInt(rank) || 10;
+    }
+
     function drawCard() {
       if (state.deckIdx >= state.deck.length) {
         state.deck = XstikImageLoader.getShuffledDeck();
@@ -892,6 +1113,9 @@
     function createCardEl(card, faceUp) {
       const el = document.createElement('div');
       el.className = 'card deal-in';
+
+      // Remove deal-in after animation finishes so it never replays on reflow
+      el.addEventListener('animationend', () => el.classList.remove('deal-in'), { once: true });
 
       const img = document.createElement('img');
       if (faceUp) {
@@ -907,15 +1131,15 @@
       return el;
     }
 
-    function renderHand(containerId, hand, hideFirst) {
+    function renderHand(containerId, hand, hideLast) {
       const el = document.getElementById(containerId);
       const existing = el.querySelectorAll('.card');
 
-      // If we're revealing the dealer hole card — flip it in place
-      if (containerId === 'dealer-cards' && !hideFirst && existing.length >= 1) {
-        const holeCard = existing[0];
+      // If we're revealing the dealer hole card — flip index 1 in place
+      if (containerId === 'dealer-cards' && !hideLast && existing.length >= 2) {
+        const holeCard = existing[1];
         const holeImg = holeCard.querySelector('img');
-        const cardData = hand[0];
+        const cardData = hand[1];
         if (holeImg && holeImg.alt === 'Card back') {
           holeCard.classList.add('flip-in');
           setTimeout(() => {
@@ -934,7 +1158,8 @@
       // Full redraw only when container is empty (new hand)
       if (existing.length === 0) {
         hand.forEach((card, i) => {
-          const faceUp = !(hideFirst && i === 0);
+          // hideLast = hide the last card dealt (index 1 = dealer hole card)
+          const faceUp = !(hideLast && i === hand.length - 1);
           el.appendChild(createCardEl(card, faceUp));
         });
         return;
@@ -942,7 +1167,7 @@
 
       // Append only new cards
       for (let i = existing.length; i < hand.length; i++) {
-        const faceUp = !(hideFirst && i === 0);
+        const faceUp = !(hideLast && i === hand.length - 1);
         el.appendChild(createCardEl(hand[i], faceUp));
       }
     }
@@ -950,8 +1175,8 @@
     function renderDealerScore(hide) {
       const el = document.getElementById('dealer-score');
       if (hide && state.dealerHand.length >= 2) {
-        // Show only the visible card's value
-        const visible = state.dealerHand.slice(1);
+        // Show only the first (visible) card's value; second card is the hidden hole card
+        const visible = state.dealerHand.slice(0, 1);
         el.textContent = handValue(visible) + ' + ?';
         el.className = 'hand-score';
       } else if (state.dealerHand.length === 0) {
@@ -1001,11 +1226,16 @@
     function showBetting() {
       state.phase = 'betting';
       state.pendingBet = state.lastBet || 0;
+      state.isSplit = false;
+      state.splitHands = [[], []];
+      state.splitBets = [0, 0];
+      state.activeSplitHand = 0;
       document.getElementById('bet-controls').style.display = 'flex';
       document.getElementById('action-buttons').classList.remove('show');
       document.getElementById('btn-new-hand').style.display = 'none';
       document.getElementById('result-text').classList.remove('show');
       document.getElementById('bet-display').textContent = '';
+      document.getElementById('btn-split').style.display = 'none';
       updateBetDisplay();
 
       // Clear table
@@ -1015,6 +1245,10 @@
       document.getElementById('dealer-score').className = 'hand-score';
       document.getElementById('player-score').textContent = '—';
       document.getElementById('player-score').className = 'hand-score';
+
+      // Remove any split hand containers
+      const existing = document.getElementById('player-area').querySelector('.split-hands');
+      if (existing) existing.remove();
 
       // Remove glow classes
       document.querySelectorAll('.card').forEach(c => {
@@ -1029,9 +1263,18 @@
       document.getElementById('btn-new-hand').style.display = 'none';
       document.getElementById('bet-display').innerHTML = 'Bet: <strong>' + state.currentBet + '</strong> credits';
 
-      // Can double? Need enough credits and only 2 cards
-      const canDouble = state.playerHand.length === 2 && XstikCredits.getBalance() >= state.currentBet;
+      // Can double? Only on first two cards with enough credits, and not mid-split
+      const canDouble = state.playerHand.length === 2 && XstikCredits.getBalance() >= state.currentBet && !state.isSplit;
       document.getElementById('btn-double').disabled = !canDouble;
+
+      // Can split? First two cards must share the same value, enough credits, not already split
+      const canSplit = state.playerHand.length === 2
+        && !state.isSplit
+        && cardValue(state.playerHand[0]) === cardValue(state.playerHand[1])
+        && XstikCredits.getBalance() >= state.currentBet;
+      const splitBtn = document.getElementById('btn-split');
+      splitBtn.style.display = canSplit ? 'inline-flex' : 'none';
+      splitBtn.disabled = !canSplit;
     }
 
     function showResult(resultType, message, creditsChange) {
@@ -1148,6 +1391,29 @@
 
     function hit() {
       if (state.phase !== 'playing') return;
+
+      if (state.isSplit) {
+        // Draw into the active split hand
+        const h = state.activeSplitHand;
+        const card = drawCard();
+        state.splitHands[h].push(card);
+        appendSplitCard(h, card);
+
+        if (isBust(state.splitHands[h])) {
+          // This split hand busted — move to next or end
+          if (h === 0) {
+            // Move to second hand
+            state.activeSplitHand = 1;
+            updateSplitActiveHighlight();
+          } else {
+            // Both hands done (second busted) — check if first also busted
+            endSplitHands();
+          }
+        }
+        return;
+      }
+
+      // Normal (non-split) hit
       state.playerHand.push(drawCard());
       renderAll();
 
@@ -1161,6 +1427,19 @@
 
     function stand() {
       if (state.phase !== 'playing') return;
+
+      if (state.isSplit) {
+        if (state.activeSplitHand === 0) {
+          // Stand on first hand — move to second
+          state.activeSplitHand = 1;
+          updateSplitActiveHighlight();
+        } else {
+          // Stand on second hand — dealer plays
+          endSplitHands();
+        }
+        return;
+      }
+
       dealerPlay();
     }
 
@@ -1185,6 +1464,187 @@
       } else {
         dealerPlay();
       }
+    }
+
+    // ===== SPLIT =====
+
+    function split() {
+      if (state.phase !== 'playing') return;
+      if (state.playerHand.length !== 2) return;
+      if (state.isSplit) return;
+      if (XstikCredits.getBalance() < state.currentBet) return;
+
+      // Charge the second bet
+      XstikCredits.placeBet(state.currentBet, 'blackjack');
+
+      // Split the two cards into separate hands, each gets one new card
+      state.isSplit = true;
+      state.splitHands[0] = [state.playerHand[0], drawCard()];
+      state.splitHands[1] = [state.playerHand[1], drawCard()];
+      state.splitBets[0] = state.currentBet;
+      state.splitBets[1] = state.currentBet;
+      state.activeSplitHand = 0;
+
+      // Update bet display to show total at stake
+      document.getElementById('bet-display').innerHTML =
+        'Bet: <strong>' + (state.currentBet * 2) + '</strong> credits (split)';
+
+      // Hide the single player-cards container, show split layout
+      renderSplitHands();
+
+      // Hide split and double buttons — not available during split hands
+      document.getElementById('btn-split').style.display = 'none';
+      document.getElementById('btn-double').disabled = true;
+
+      // Highlight active hand
+      updateSplitActiveHighlight();
+    }
+
+    function renderSplitHands() {
+      const playerArea = document.getElementById('player-area');
+
+      // Hide normal player-cards container
+      document.getElementById('player-cards').style.display = 'none';
+      document.getElementById('player-score').style.display = 'none';
+
+      // Build split layout if not already there
+      let splitContainer = playerArea.querySelector('.split-hands');
+      if (!splitContainer) {
+        splitContainer = document.createElement('div');
+        splitContainer.className = 'split-hands';
+
+        for (let h = 0; h < 2; h++) {
+          const handDiv = document.createElement('div');
+          handDiv.className = 'split-hand';
+          handDiv.id = 'split-hand-' + h;
+          handDiv.innerHTML = `
+            <div class="split-hand-label">HAND ${h + 1}</div>
+            <div class="split-hand-cards" id="split-cards-${h}"></div>
+            <div class="split-hand-score" id="split-score-${h}">—</div>
+          `;
+          splitContainer.appendChild(handDiv);
+        }
+        playerArea.appendChild(splitContainer);
+      }
+
+      // Render cards and scores for both hands
+      for (let h = 0; h < 2; h++) {
+        const container = document.getElementById('split-cards-' + h);
+        container.innerHTML = '';
+        state.splitHands[h].forEach(card => {
+          container.appendChild(createCardEl(card, true));
+        });
+        const val = handValue(state.splitHands[h]);
+        const scoreEl = document.getElementById('split-score-' + h);
+        scoreEl.textContent = val;
+        scoreEl.className = 'split-hand-score';
+        if (val > 21) scoreEl.classList.add('bust');
+      }
+    }
+
+    function updateSplitActiveHighlight() {
+      for (let h = 0; h < 2; h++) {
+        const handEl = document.getElementById('split-hand-' + h);
+        if (!handEl) continue;
+        if (h === state.activeSplitHand) {
+          handEl.classList.add('active-hand');
+        } else {
+          handEl.classList.remove('active-hand');
+        }
+      }
+    }
+
+    function appendSplitCard(handIdx, card) {
+      const container = document.getElementById('split-cards-' + handIdx);
+      if (container) container.appendChild(createCardEl(card, true));
+      const val = handValue(state.splitHands[handIdx]);
+      const scoreEl = document.getElementById('split-score-' + handIdx);
+      if (scoreEl) {
+        scoreEl.textContent = val;
+        scoreEl.className = 'split-hand-score';
+        if (val > 21) scoreEl.classList.add('bust');
+      }
+    }
+
+    // Resolve both split hands after dealer has played
+    function endSplitHands() {
+      state.phase = 'dealerTurn';
+      document.getElementById('action-buttons').classList.remove('show');
+
+      // Reveal dealer hole card
+      renderHand('dealer-cards', state.dealerHand, false);
+      renderDealerScore(false);
+
+      // Dealer draws to 17+
+      function dealerStep() {
+        if (handValue(state.dealerHand) < DEALER_STAND) {
+          state.dealerHand.push(drawCard());
+          renderHand('dealer-cards', state.dealerHand, false);
+          renderDealerScore(false);
+          setTimeout(dealerStep, 500);
+        } else {
+          resolveSplit();
+        }
+      }
+      setTimeout(dealerStep, 600);
+    }
+
+    function resolveSplit() {
+      const dealerVal = handValue(state.dealerHand);
+      const dealerBust = isBust(state.dealerHand);
+      let totalChange = 0;
+      let messages = [];
+
+      for (let h = 0; h < 2; h++) {
+        const handVal = handValue(state.splitHands[h]);
+        const bet = state.splitBets[h];
+        const bust = isBust(state.splitHands[h]);
+        const scoreEl = document.getElementById('split-score-' + h);
+
+        if (bust) {
+          // Bet was already deducted at deal time — nothing to return
+          totalChange -= bet;
+          messages.push('Hand ' + (h + 1) + ': BUST');
+          if (scoreEl) scoreEl.classList.add('bust');
+        } else if (dealerBust || handVal > dealerVal) {
+          XstikCredits.awardWinnings(bet * 2, 'blackjack'); // original bet back + equal winnings
+          totalChange += bet;
+          messages.push('Hand ' + (h + 1) + ': WIN');
+          state.wins++;
+        } else if (handVal === dealerVal) {
+          XstikCredits.awardWinnings(bet, 'blackjack'); // push — return original bet
+          messages.push('Hand ' + (h + 1) + ': PUSH');
+          state.pushes++;
+        } else {
+          totalChange -= bet;
+          messages.push('Hand ' + (h + 1) + ': LOSE');
+          state.losses++;
+        }
+      }
+
+      state.handsPlayed++;
+      state.phase = 'result';
+
+      const resultEl = document.getElementById('result-text');
+      const allWon = messages.every(m => m.includes('WIN'));
+      const allLost = messages.every(m => m.includes('BUST') || m.includes('LOSE'));
+      resultEl.textContent = messages.join('  ·  ');
+      resultEl.className = 'result-text show ' + (allWon ? 'win' : allLost ? 'lose' : 'push');
+
+      const betDisplay = document.getElementById('bet-display');
+      if (totalChange > 0) {
+        betDisplay.innerHTML = '+<strong>' + totalChange + '</strong> credits';
+        betDisplay.style.color = 'var(--success)';
+      } else if (totalChange < 0) {
+        betDisplay.innerHTML = '<strong>' + Math.abs(totalChange) + '</strong> credits lost';
+        betDisplay.style.color = 'var(--error)';
+      } else {
+        betDisplay.innerHTML = 'All bets returned';
+        betDisplay.style.color = 'var(--warning)';
+      }
+
+      document.getElementById('btn-new-hand').style.display = 'block';
+      updateStats();
     }
 
     // ===== DEALER PLAY =====
@@ -1287,6 +1747,22 @@
 
       // Double
       document.getElementById('btn-double').addEventListener('click', doubleDown);
+
+      // Split
+      document.getElementById('btn-split').addEventListener('click', split);
+
+      // Rules modal open/close
+      document.getElementById('btn-rules').addEventListener('click', () => {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', () => {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('rules-overlay')) {
+          document.getElementById('rules-overlay').classList.remove('open');
+        }
+      });
 
       // New hand
       document.getElementById('btn-new-hand').addEventListener('click', showBetting);
