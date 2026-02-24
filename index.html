@@ -536,19 +536,21 @@
        HOW IT WORKS (Architecture strip)
        ================================================================ */
     .arch-strip {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: var(--spacing-md);
-      overflow-x: auto;
-      padding-bottom: var(--spacing-sm);
-      scrollbar-width: none;
-      justify-content: center;
     }
-    .arch-strip::-webkit-scrollbar { display: none; }
     .arch-item {
-      flex: 0 0 auto;
-      min-width: 200px;
       padding: var(--spacing-lg);
       text-align: center;
+    }
+    @media (max-width: 767px) {
+      .arch-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .arch-item:last-child {
+        grid-column: 1 / -1;
+      }
     }
     .arch-num {
       font-family: 'Orbitron', sans-serif;
@@ -656,7 +658,7 @@
       }
       .footer-links { justify-content: center; }
       .game-card { padding: var(--spacing-lg); }
-      .arch-item { min-width: 160px; padding: var(--spacing-md); }
+
     }
 
     /* ================================================================
