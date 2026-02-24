@@ -239,7 +239,7 @@
   <!-- ===== HEADER (BRAND STANDARD) ===== -->
   <header class="top-bar">
     <a href="https://xstik.art" class="logo-wrap">
-      <img src="../SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
       <div>
         <div class="logo-text">xSTIK</div>
         <div class="logo-sub">SOLITAIRE</div>
@@ -248,6 +248,7 @@
     <div class="header-stats">
       <a href="https://games.xstik.art" class="btn-back">← Game Hub</a>
       <button class="btn-rules" id="btn-rules">HOW TO PLAY</button>
+      <button class="btn-rules" id="btn-leaderboard">🏆 LEADERBOARD</button>
       <div id="credit-display"></div>
     </div>
   </header>
@@ -306,12 +307,14 @@
     <div class="footer-links">
       <a href="https://xstik.art">Home</a>
       <a href="https://games.xstik.art">Game Hub</a>
-      <a href="#leaderboard-area">Leaderboard</a>
       <a href="https://xstik.art/#ecosystem">Ecosystem</a>
     </div>
+    <div class="footer-social">
+      <a href="https://twitter.com/xstik_nft" target="_blank">Twitter</a>
+      <a href="https://discord.gg/xstik" target="_blank">Discord</a>
+    </div>
     <div class="footer-legal">
-      <p>All games use virtual credits for entertainment only.</p>
-      <p>© 2026 xSTIK. All rights reserved.</p>
+      Virtual credits only — entertainment purposes. © 2026 xSTIK
     </div>
   </footer>
   <!-- ===== SHARED-CORE SCRIPTS (load order matters) ===== -->
@@ -916,6 +919,7 @@
     // ===== AUTO-COMPLETE =====
     function canAutoComplete() {
       if (!state.gameActive) return false;
+      if (state.stock.length > 0 || state.waste.length > 0) return false;
       return state.tableau.every(function(col) { return col.every(function(e) { return e.faceUp; }); });
     }
 
@@ -1028,9 +1032,27 @@
       document.getElementById('btn-rules-close').addEventListener('click', function() {
         document.getElementById('rules-overlay').classList.remove('open');
       });
+      document.getElementById('btn-rules-play').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
       document.getElementById('rules-overlay').addEventListener('click', function(e) {
         if (e.target === document.getElementById('rules-overlay'))
           document.getElementById('rules-overlay').classList.remove('open');
+      });
+      // Leaderboard modal
+      document.getElementById('btn-leaderboard').addEventListener('click', function() {
+        renderLeaderboardModal();
+        document.getElementById('leaderboard-overlay').classList.add('open');
+      });
+      document.getElementById('btn-lb-close').addEventListener('click', function() {
+        document.getElementById('leaderboard-overlay').classList.remove('open');
+      });
+      document.getElementById('btn-lb-done').addEventListener('click', function() {
+        document.getElementById('leaderboard-overlay').classList.remove('open');
+      });
+      document.getElementById('leaderboard-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('leaderboard-overlay'))
+          document.getElementById('leaderboard-overlay').classList.remove('open');
       });
     }
     // ===== LOCAL LEADERBOARD BACKUP =====
@@ -1068,6 +1090,38 @@
       }
     }
 
+    // ===== LEADERBOARD MODAL RENDER =====
+    function renderLeaderboardModal() {
+      var key = 'xstik-solitaire-leaderboard';
+      var entries = [];
+      try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { entries = []; }
+      if (!Array.isArray(entries)) entries = [];
+      entries.sort(function(a, b) { return b.score - a.score; });
+
+      var html = '';
+      if (entries.length === 0) {
+        html = '<p style="color:var(--muted-text);text-align:center;padding:1rem 0;">No scores yet — win a game to appear here!</p>';
+      } else {
+        html = '<table style="width:100%;border-collapse:collapse;font-family:Rajdhani,sans-serif;">';
+        html += '<thead><tr style="color:var(--primary);font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(245,197,24,0.2);">';
+        html += '<th style="padding:0.4rem 0.25rem;text-align:left;">#</th>';
+        html += '<th style="padding:0.4rem 0.25rem;text-align:left;">Player</th>';
+        html += '<th style="padding:0.4rem 0.25rem;text-align:right;">Score</th>';
+        html += '</tr></thead><tbody>';
+        entries.slice(0, 15).forEach(function(e, i) {
+          var medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+          var rowStyle = i % 2 === 0 ? 'background:rgba(255,255,255,0.02);' : '';
+          html += '<tr style="' + rowStyle + 'border-bottom:1px solid rgba(255,255,255,0.04);">';
+          html += '<td style="padding:0.5rem 0.25rem;color:var(--muted-text);font-size:0.85rem;">' + (i + 1) + '</td>';
+          html += '<td style="padding:0.5rem 0.25rem;color:var(--foreground);font-weight:600;">' + medal + (e.name || 'Anonymous') + '</td>';
+          html += '<td style="padding:0.5rem 0.25rem;color:var(--primary);font-weight:700;text-align:right;">' + (e.score || 0) + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+      document.getElementById('lb-content').innerHTML = html;
+    }
+
     // ===== BOOT =====
     XstikGameInit.showDisclaimer();
     XstikGameInit.boot('solitaire', {
@@ -1103,7 +1157,20 @@
         <li>Face-down cards flip automatically when the card above is moved.</li>
       </ul>
       <h3>Auto-Complete</h3>
-      <p>Once all cards are face-up, the game finishes itself automatically.</p>
+      <p>Once stock and waste are empty and all tableau cards are face-up, the game finishes itself automatically.</p>
+      <button class="btn-primary" style="margin-top:1.5rem;width:100%;" id="btn-rules-play">GOT IT — LET'S PLAY</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div class="rules-overlay" id="leaderboard-overlay">
+    <div class="rules-modal" style="max-width:560px;">
+      <button class="rules-close" id="btn-lb-close">✕</button>
+      <h2>🏆 SOLITAIRE LEADERBOARD</h2>
+      <div id="lb-content" style="margin-top:1rem;">
+        <p style="color:var(--muted-text);text-align:center;">Loading scores…</p>
+      </div>
+      <button class="btn-primary" style="margin-top:1.5rem;width:100%;" id="btn-lb-done">CLOSE</button>
     </div>
   </div>
 
