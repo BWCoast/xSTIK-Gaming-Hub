@@ -89,19 +89,19 @@
       border-bottom: 1px solid rgba(245, 197, 24, 0.2);
       position: relative;
       z-index: 100;
-      height: 3.5rem;
+      height: 5rem;
     }
 
-    .logo-wrap { display: flex; align-items: center; gap: var(--spacing-sm); }
+    .logo-wrap { display: flex; align-items: center; gap: var(--spacing-sm); text-decoration: none; }
 
     .logo-coin {
-      width: 2.25rem; height: 2.25rem; border-radius: 50%;
+      width: 3.25rem; height: 3.25rem; border-radius: 50%;
       object-fit: cover; border: 1px solid rgba(245, 197, 24, 0.4);
       box-shadow: 0 0 10px var(--primary-glow);
     }
 
     .logo-text {
-      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
+      font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 900;
       color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow);
     }
 
@@ -111,6 +111,74 @@
     }
 
     .header-stats { display: flex; align-items: center; gap: var(--spacing-md); }
+
+    .btn-back {
+      font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 600;
+      color: var(--muted-text); background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px; padding: 0.35rem 0.75rem; cursor: pointer; text-decoration: none;
+      transition: color 0.2s, border-color 0.2s; white-space: nowrap;
+    }
+    .btn-back:hover { color: var(--primary); border-color: var(--primary); }
+
+    .btn-rules {
+      font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 700;
+      color: var(--primary); background: transparent; border: 1px solid var(--primary);
+      border-radius: 4px; padding: 0.35rem 0.75rem; cursor: pointer;
+      transition: background 0.2s, color 0.2s; white-space: nowrap; letter-spacing: 1px;
+    }
+    .btn-rules:hover { background: var(--primary); color: #0D0D0D; }
+
+    @media (max-width: 480px) { .btn-back { display: none; } }
+
+    /* ---- Blind / Dealer Badges ---- */
+    .blind-badge {
+      display: inline-block; font-family: 'Orbitron', sans-serif; font-size: 0.5rem;
+      font-weight: 700; letter-spacing: 1px; padding: 0.1rem 0.3rem; border-radius: 3px;
+      line-height: 1.4; vertical-align: middle; margin-left: 0.2rem;
+    }
+    .blind-badge.sb { background: #1a6b3a; color: #4ade80; border: 1px solid #4ade80; }
+    .blind-badge.bb { background: #1a3a6b; color: #60a5fa; border: 1px solid #60a5fa; }
+    .blind-badge.dealer { background: #4a2a00; color: var(--primary); border: 1px solid var(--primary); }
+
+    /* ---- Opponent chips display ---- */
+    .opponent-chips {
+      font-family: 'Rajdhani', sans-serif; font-size: 0.65rem; font-weight: 600;
+      color: var(--primary); letter-spacing: 0.5px;
+    }
+
+    /* ---- Rules Modal ---- */
+    .rules-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+      justify-content: center; align-items: center; padding: 1rem;
+    }
+    .rules-overlay.open { display: flex; }
+    .rules-modal {
+      background: #1a1a1a; border: 1px solid rgba(245,197,24,0.3); border-radius: 8px;
+      max-width: 520px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 2rem;
+      position: relative;
+    }
+    .rules-modal h2 {
+      font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 1.2rem;
+      letter-spacing: 2px; margin: 0 0 1.25rem; text-align: center;
+    }
+    .rules-modal h3 {
+      font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 0.75rem;
+      letter-spacing: 1px; margin: 1rem 0 0.4rem; text-transform: uppercase;
+    }
+    .rules-modal p, .rules-modal li {
+      font-family: 'Rajdhani', sans-serif; color: #ccc; font-size: 0.95rem;
+      line-height: 1.5; margin: 0.25rem 0;
+    }
+    .rules-modal ul { padding-left: 1.25rem; margin: 0.25rem 0; }
+    .rules-modal .hand-ranks { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 1rem; margin: 0.5rem 0; }
+    .rules-modal .hand-ranks li { font-size: 0.85rem; }
+    .rules-close {
+      position: absolute; top: 1rem; right: 1rem; background: transparent;
+      border: 1px solid rgba(245,197,24,0.3); color: var(--muted-text); border-radius: 4px;
+      padding: 0.25rem 0.6rem; cursor: pointer; font-size: 1rem; line-height: 1;
+    }
+    .rules-close:hover { border-color: var(--primary); color: var(--primary); }
 
     /* ========== STANDARD FOOTER (DO NOT MODIFY) ========== */
     .game-footer {
@@ -122,13 +190,13 @@
                max(0.75rem, env(safe-area-inset-bottom))
                max(var(--spacing-md), env(safe-area-inset-right));
       z-index: 90; display: flex; justify-content: space-between;
-      align-items: center; font-size: 0.85rem;
+      align-items: center; font-size: 1rem;
     }
 
     .footer-links { display: flex; gap: var(--spacing-lg); align-items: center; }
-    .footer-links a { color: var(--primary); text-decoration: none; transition: color 0.3s; }
+    .footer-links a { color: var(--primary); text-decoration: none; transition: color 0.3s; font-size: 1rem; }
     .footer-links a:hover { color: var(--accent); }
-    .footer-legal { color: var(--muted-text); font-size: 0.75rem; }
+    .footer-legal { color: var(--muted-text); font-size: 0.9rem; }
 
     /* ========== UTILITY CLASSES ========== */
     .btn-primary {
@@ -160,8 +228,8 @@
     #game-container {
       max-width: 1400px; margin: 0 auto;
       padding: var(--spacing-xs) max(var(--spacing-sm), env(safe-area-inset-left));
-      height: calc(100vh - 3.5rem - 2.75rem);
-      height: calc(100dvh - 3.5rem - 2.75rem);
+      height: calc(100vh - 5rem - 2.75rem);
+      height: calc(100dvh - 5rem - 2.75rem);
       display: flex; flex-direction: column; overflow: hidden;
     }
 
@@ -187,14 +255,17 @@
 
     /* ---- Opponent Row ---- */
     .opponents-row {
-      display: flex; justify-content: center; gap: var(--spacing-sm);
+      display: flex; justify-content: center; gap: var(--spacing-md);
       flex-shrink: 0;
     }
 
     .opponent {
       display: flex; flex-direction: column; align-items: center;
-      gap: 0.15rem; min-width: 0;
+      gap: 0.2rem; min-width: 0; padding: 0.4rem 0.5rem;
+      border: 1px solid transparent; border-radius: 6px;
+      transition: border-color 0.2s;
     }
+    .opponent.active-seat { border-color: rgba(245,197,24,0.25); }
 
     .opponent-name {
       font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.7rem;
@@ -433,15 +504,17 @@
 
   <!-- ===== HEADER (BRAND STANDARD — DO NOT MODIFY) ===== -->
   <header class="top-bar">
-    <div class="logo-wrap">
+    <a href="https://xstik.art" class="logo-wrap">
       <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
       <div>
         <div class="logo-text">xSTIK</div>
         <div class="logo-sub">TEXAS HOLD'EM</div>
       </div>
-    </div>
+    </a>
     <div class="header-stats">
+      <a href="https://games.xstik.art" class="btn-back">← Game Hub</a>
+      <button class="btn-rules" id="btn-rules">HOW TO PLAY</button>
       <div id="credit-display"></div>
     </div>
   </header>
@@ -464,17 +537,20 @@
       <!-- Opponents -->
       <div class="opponents-row">
         <div class="opponent" id="opp-0">
-          <div class="opponent-name" id="opp-name-0">BOT 1</div>
+          <div class="opponent-name" id="opp-name-0">VIPER</div>
+          <div class="opponent-chips" id="opp-chips-0">500</div>
           <div class="opponent-cards" id="opp-cards-0"></div>
           <div class="opponent-status" id="opp-status-0"></div>
         </div>
         <div class="opponent" id="opp-1">
-          <div class="opponent-name" id="opp-name-1">BOT 2</div>
+          <div class="opponent-name" id="opp-name-1">GHOST</div>
+          <div class="opponent-chips" id="opp-chips-1">500</div>
           <div class="opponent-cards" id="opp-cards-1"></div>
           <div class="opponent-status" id="opp-status-1"></div>
         </div>
         <div class="opponent" id="opp-2">
-          <div class="opponent-name" id="opp-name-2">BOT 3</div>
+          <div class="opponent-name" id="opp-name-2">BLAZE</div>
+          <div class="opponent-chips" id="opp-chips-2">500</div>
           <div class="opponent-cards" id="opp-cards-2"></div>
           <div class="opponent-status" id="opp-status-2"></div>
         </div>
@@ -544,6 +620,47 @@
   </div>
 
   <!-- ===== FOOTER (BRAND STANDARD — DO NOT MODIFY) ===== -->
+  <!-- ===== HOW TO PLAY MODAL ===== -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-modal">
+      <button class="rules-close" id="btn-rules-close">✕</button>
+      <h2>HOW TO PLAY</h2>
+      <h3>Objective</h3>
+      <p>Make the best 5-card poker hand using any combination of your 2 hole cards and the 5 community cards. Win the pot!</p>
+      <h3>The Blinds</h3>
+      <p>Each hand, two players post forced bets: the <strong style="color:#4ade80">Small Blind (SB)</strong> and the <strong style="color:#60a5fa">Big Blind (BB)</strong>. The dealer button rotates each hand.</p>
+      <h3>Betting Rounds</h3>
+      <ul>
+        <li><strong>Pre-Flop</strong> — After hole cards are dealt. Action starts left of the Big Blind.</li>
+        <li><strong>Flop</strong> — 3 community cards revealed. Bet, check, call, raise, or fold.</li>
+        <li><strong>Turn</strong> — 4th community card. Another betting round.</li>
+        <li><strong>River</strong> — 5th and final community card. Last betting round.</li>
+        <li><strong>Showdown</strong> — Remaining players reveal hands. Best hand wins the pot.</li>
+      </ul>
+      <h3>Your Actions</h3>
+      <ul>
+        <li><strong>Check</strong> — Pass the action (only if no bet to call).</li>
+        <li><strong>Call</strong> — Match the current bet.</li>
+        <li><strong>Raise</strong> — Increase the bet. Use the slider to set your amount.</li>
+        <li><strong>All In</strong> — Bet all your remaining chips.</li>
+        <li><strong>Fold</strong> — Surrender your hand and forfeit the pot.</li>
+      </ul>
+      <h3>Hand Rankings (Best → Worst)</h3>
+      <ul class="hand-ranks">
+        <li>👑 Royal Flush</li>
+        <li>🔥 Straight Flush</li>
+        <li>🎯 Four of a Kind</li>
+        <li>🏠 Full House</li>
+        <li>💧 Flush</li>
+        <li>📈 Straight</li>
+        <li>3️⃣ Three of a Kind</li>
+        <li>2️⃣ Two Pair</li>
+        <li>1️⃣ One Pair</li>
+        <li>🃏 High Card</li>
+      </ul>
+    </div>
+  </div>
+
   <footer class="game-footer">
     <div class="footer-links">
       <a href="https://xstik.art">Home</a>
@@ -589,9 +706,9 @@
         currentBet: 0,
         players: [
           { name: '', hand: [], chips: 0, bet: 0, folded: false, isHuman: true, allIn: false },
-          { name: AI_NAMES[0], hand: [], chips: 500, bet: 0, folded: false, isHuman: false, allIn: false },
-          { name: AI_NAMES[1], hand: [], chips: 500, bet: 0, folded: false, isHuman: false, allIn: false },
-          { name: AI_NAMES[2], hand: [], chips: 500, bet: 0, folded: false, isHuman: false, allIn: false }
+          { name: AI_NAMES[0], hand: [], chips: 500, bet: 0, folded: false, isHuman: false, allIn: false, eliminated: false },
+          { name: AI_NAMES[1], hand: [], chips: 500, bet: 0, folded: false, isHuman: false, allIn: false, eliminated: false },
+          { name: AI_NAMES[2], hand: [], chips: 500, bet: 0, folded: false, isHuman: false, allIn: false, eliminated: false }
         ],
         dealerIdx: 0,
         activeIdx: 0,
@@ -601,6 +718,7 @@
         roundActed: new Set(),
         biggestPot: 0,        // largest pot won in a single hand (for leaderboard)
         consecutiveWins: 0,   // current win streak (for leaderboard)
+        tableWipes: 0,        // number of times all 3 AIs were eliminated
         peakConsecutiveWins: 0 // highest streak reached this session
       };
     }
@@ -622,6 +740,7 @@
     function createCardEl(card, faceUp, small) {
       const el = document.createElement('div');
       el.className = (small ? 'card-sm' : 'card') + ' deal-in';
+      el.addEventListener('animationend', () => el.classList.remove('deal-in'), { once: true });
       const img = document.createElement('img');
       if (faceUp) {
         img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
@@ -766,7 +885,13 @@
     function startHand() {
       const balance = XstikCredits.getBalance();
       if (balance < ENTRY_FEE) {
-        if (XstikCredits.isBankrupt()) { XstikCredits.triggerBankruptcy(() => {}); return; }
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(() => {
+            // After bankruptcy + xButtMcAssFace spawns, refill table with fresh AI
+            refillTable();
+            renderAll();
+          });
+        }
         return;
       }
       XstikCredits.placeBet(ENTRY_FEE, 'texas-holdem');
@@ -782,8 +907,13 @@
       G.players[0].name = XstikPlayer.getUsername() || 'YOU';
       G.players.forEach(p => { p.hand = []; p.bet = 0; p.folded = false; p.allIn = false; });
 
-      // AI chips reset each hand (simplified tournament style)
-      for (let i = 1; i < 4; i++) G.players[i].chips = 500;
+      // Eliminated AIs sit out (pre-folded, no cards dealt to them)
+      for (let i = 1; i < 4; i++) {
+        if (G.players[i].eliminated) G.players[i].folded = true;
+      }
+
+      // If all AIs are eliminated, refill with fresh opponents
+      if (G.players.slice(1).every(p => p.eliminated)) refillTable();
 
       // Post blinds
       const sb = (G.dealerIdx + 1) % 4;
@@ -999,6 +1129,49 @@
       finishDisplay([winner], humanWon, humanWon ? G.pot : 0);
     }
 
+    // ===== TABLE MANAGEMENT =====
+
+    // Generate a unique AI name not already in use
+    const ALL_AI_NAMES = ['VIPER', 'GHOST', 'BLAZE', 'RAVEN', 'COBRA', 'WRAITH', 'CIPHER', 'NOVA', 'TITAN', 'NEXUS'];
+    function freshAIName() {
+      const used = G.players.slice(1).map(p => p.name);
+      const available = ALL_AI_NAMES.filter(n => !used.includes(n));
+      return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 'BOT';
+    }
+
+    // Refill the table — called when all AIs are eliminated or after bankruptcy
+    function refillTable() {
+      const names = shuffleArray([...ALL_AI_NAMES]).slice(0, 3);
+      for (let i = 1; i < 4; i++) {
+        G.players[i].chips = 500;
+        G.players[i].name = names[i - 1];
+        G.players[i].eliminated = false;
+        G.players[i].folded = false;
+      }
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Check for newly eliminated AIs after a hand ends
+    function checkAIEliminations() {
+      let eliminated = [];
+      for (let i = 1; i < 4; i++) {
+        const p = G.players[i];
+        if (!p.eliminated && p.chips <= 0) {
+          p.eliminated = true;
+          p.chips = 0;
+          eliminated.push(p.name);
+        }
+      }
+      return eliminated;
+    }
+
     function finishDisplay(winners, humanWon, share) {
       const resultEl = document.getElementById('result-text');
       const handRankEl = document.getElementById('hand-rank-text');
@@ -1015,6 +1188,21 @@
         handRankEl.textContent = winners[0]._eval.name;
       }
 
+      // Check AI eliminations
+      const eliminated = checkAIEliminations();
+      if (eliminated.length > 0) {
+        setTimeout(() => {
+          const msg = eliminated.map(n => n + ' is out of chips and leaves the table.').join(' ');
+          showTableMessage(msg);
+        }, 800);
+      }
+
+      // Check if all AIs eliminated — announce new table and award bonus
+      if (G.players.slice(1).every(p => p.eliminated)) {
+        G.tableWipes++;
+        setTimeout(() => showTableMessage('TABLE WIPE! +75 bonus points. New opponents incoming...'), 1500);
+      }
+
       hidePlayerActions();
       document.getElementById('btn-new-hand').style.display = 'block';
       G.dealerIdx = (G.dealerIdx + 1) % 4;
@@ -1029,6 +1217,12 @@
       });
       XstikLeaderboard.rebuildUnified();
       submitGameScore();
+    }
+
+    function showTableMessage(msg) {
+      const el = document.getElementById('round-text');
+      el.textContent = msg;
+      setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3500);
     }
 
     // ===== PLAYER ACTIONS =====
@@ -1135,16 +1329,48 @@
     }
 
     function renderOpponents() {
+      const sb = (G.dealerIdx + 1) % 4;
+      const bb = (G.dealerIdx + 2) % 4;
       for (let i = 0; i < 3; i++) {
         const p = G.players[i + 1];
         const cardsEl = document.getElementById('opp-cards-' + i);
         const nameEl = document.getElementById('opp-name-' + i);
+        const chipsEl = document.getElementById('opp-chips-' + i);
+        const seatEl = document.getElementById('opp-' + i);
         cardsEl.innerHTML = '';
 
-        nameEl.textContent = p.name;
+        // Eliminated state
+        if (p.eliminated) {
+          nameEl.innerHTML = p.name + ' <span class="blind-badge" style="background:#2a0a0a;color:#666;border-color:#444">OUT</span>';
+          nameEl.className = 'opponent-name folded';
+          if (chipsEl) chipsEl.textContent = 'eliminated';
+          if (chipsEl) chipsEl.style.color = '#444';
+          if (seatEl) seatEl.className = 'opponent';
+          continue;
+        }
+
+        // Name + blind badges
+        const playerIdx = i + 1;
+        let nameHTML = p.name;
+        if (G.dealerIdx === playerIdx) nameHTML += ' <span class="blind-badge dealer">D</span>';
+        else if (sb === playerIdx) nameHTML += ' <span class="blind-badge sb">SB</span>';
+        else if (bb === playerIdx) nameHTML += ' <span class="blind-badge bb">BB</span>';
+        nameEl.innerHTML = nameHTML;
         nameEl.className = 'opponent-name';
         if (p.folded) nameEl.classList.add('folded');
-        if (G.activeIdx === i + 1 && G.phase !== 'showdown' && G.phase !== 'idle') nameEl.classList.add('active');
+        if (G.activeIdx === playerIdx && G.phase !== 'showdown' && G.phase !== 'idle') nameEl.classList.add('active');
+
+        // Chips
+        if (chipsEl) {
+          chipsEl.textContent = p.chips + ' chips';
+          chipsEl.style.color = '';
+        }
+
+        // Active seat highlight
+        if (seatEl) {
+          seatEl.className = 'opponent';
+          if (G.activeIdx === playerIdx && G.phase !== 'showdown' && G.phase !== 'idle') seatEl.classList.add('active-seat');
+        }
 
         p.hand.forEach(card => {
           const showFace = G.phase === 'showdown' && !p.folded;
@@ -1172,6 +1398,18 @@
       document.getElementById('btn-check').addEventListener('click', () => playerAct('check'));
       document.getElementById('btn-call').addEventListener('click', () => playerAct('call'));
       document.getElementById('btn-allin').addEventListener('click', () => playerAct('allin'));
+
+      // Rules modal
+      document.getElementById('btn-rules').addEventListener('click', () => {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', () => {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
 
       document.getElementById('btn-raise').addEventListener('click', () => {
         document.getElementById('raise-controls').classList.toggle('show');
@@ -1204,7 +1442,7 @@
     }
 
     // ===== LEADERBOARD SCORE SUBMISSION =====
-    // Formula: (handsWon × 150) + (biggestPot × 0.3) + (peakConsecutiveWins × 75)
+    // Formula: (handsWon × 150) + (biggestPot × 0.3) + (peakConsecutiveWins × 75) + (tableWipes × 75)
     // Key: xstik-texasholdem-leaderboard
     // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
     function submitGameScore() {
@@ -1212,7 +1450,8 @@
         var score = Math.round(
           (G.wins * 150) +
           (G.biggestPot * 0.3) +
-          (G.peakConsecutiveWins * 75)
+          (G.peakConsecutiveWins * 75) +
+          (G.tableWipes * 75)
         );
         if (score <= 0) return;
 
