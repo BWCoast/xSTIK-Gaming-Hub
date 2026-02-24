@@ -8,12 +8,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../SHARED-CORE/branding/xstik-brand.css">
   <style>
+    /* ===== GLOBAL STANDARDS ===== */
+    .top-bar { height: 5rem; }
+    .logo-coin { width: 3.25rem; height: 3.25rem; }
+    .logo-text { font-size: 1.5rem; }
+    .logo-sub { font-size: 0.75rem; }
+    .game-footer { font-size: 1rem; }
+    .footer-links a { font-size: 1rem; }
+    .footer-legal { font-size: 0.9rem; }
+    @media (max-width: 480px) { .btn-back { display: none; } }
+
+    /* ---- Rules Modal ---- */
+    .rules-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+      justify-content: center; align-items: center; padding: 1rem;
+    }
+    .rules-overlay.open { display: flex; }
+    .rules-modal {
+      background: #1a1a1a; border: 1px solid rgba(245,197,24,0.3); border-radius: 8px;
+      max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 2rem;
+      position: relative;
+    }
+    .rules-modal h2 {
+      font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 1.2rem;
+      letter-spacing: 2px; margin: 0 0 1.25rem; text-align: center;
+    }
+    .rules-modal h3 {
+      font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 0.75rem;
+      letter-spacing: 1px; margin: 1rem 0 0.4rem; text-transform: uppercase;
+    }
+    .rules-modal p, .rules-modal li {
+      font-family: 'Rajdhani', sans-serif; color: #ccc; font-size: 0.95rem;
+      line-height: 1.5; margin: 0.25rem 0;
+    }
+    .rules-modal ul { padding-left: 1.25rem; margin: 0.25rem 0; }
+    .rules-close {
+      position: absolute; top: 1rem; right: 1rem; background: transparent;
+      border: 1px solid rgba(245,197,24,0.3); color: var(--muted-text); border-radius: 4px;
+      padding: 0.25rem 0.6rem; cursor: pointer; font-size: 1rem; line-height: 1;
+    }
+    .rules-close:hover { border-color: var(--primary); color: var(--primary); }
+
     /* ===== SOLITAIRE-SPECIFIC STYLES ===== */
     #game-container {
       max-width: 1400px;
       margin: 0 auto;
       padding: 0.5rem max(0.5rem, env(safe-area-inset-left));
-      min-height: calc(100vh - 3.5rem - 4rem);
+      min-height: calc(100vh - 5rem - 4rem);
       display: flex;
       flex-direction: column;
     }
@@ -199,14 +241,16 @@
 <body>
   <!-- ===== HEADER (BRAND STANDARD) ===== -->
   <header class="top-bar">
-    <div class="logo-wrap">
+    <a href="https://xstik.art" class="logo-wrap">
       <img src="../SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
       <div>
         <div class="logo-text">xSTIK</div>
         <div class="logo-sub">SOLITAIRE</div>
       </div>
-    </div>
+    </a>
     <div class="header-stats">
+      <a href="https://games.xstik.art" class="btn-back">← Game Hub</a>
+      <button class="btn-rules" id="btn-rules">HOW TO PLAY</button>
       <div id="credit-display"></div>
     </div>
   </header>
@@ -946,6 +990,17 @@
       document.addEventListener('mouseup', function(e) { if (drag) dragEnd(e); });
       document.addEventListener('touchmove', function(e) { if (drag) { e.preventDefault(); dragPosition(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
       document.addEventListener('touchend', function(e) { if (drag) dragEnd(e); });
+      // Rules modal
+      document.getElementById('btn-rules').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
     }
     // ===== LOCAL LEADERBOARD BACKUP =====
     function submitGameScore() {
@@ -994,5 +1049,32 @@
     });
   })();
   </script>
+  <!-- ===== HOW TO PLAY MODAL ===== -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-modal">
+      <button class="rules-close" id="btn-rules-close">✕</button>
+      <h2>HOW TO PLAY</h2>
+      <h3>Objective</h3>
+      <p>Move all 52 cards to the four foundation piles, sorted by suit from Ace to King.</p>
+      <h3>The Layout</h3>
+      <ul>
+        <li><strong>Stock</strong> — Draw cards one at a time by clicking.</li>
+        <li><strong>Waste</strong> — The top card here is always available to play.</li>
+        <li><strong>Foundations</strong> — Build each suit up from Ace to King.</li>
+        <li><strong>Tableau</strong> — Seven columns where you build down in alternating colours.</li>
+      </ul>
+      <h3>Moving Cards</h3>
+      <ul>
+        <li>Click a card to select it, then click a valid destination.</li>
+        <li>Drag cards directly to their destination.</li>
+        <li>Double-click any face-up card to send it to a foundation automatically.</li>
+        <li>Only Kings may be placed on empty tableau columns.</li>
+        <li>Face-down cards flip automatically when the card above is moved.</li>
+      </ul>
+      <h3>Auto-Complete</h3>
+      <p>Once all cards are face-up, the game finishes itself automatically.</p>
+    </div>
+  </div>
+
 </body>
 </html>
