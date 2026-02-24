@@ -844,10 +844,17 @@
             cardEl.classList.add('selected');
           }
 
-          // Drag from face-up tableau cards
+          // Drag and double-click on face-up tableau cards
           if (entry.faceUp) {
             cardEl.addEventListener('mousedown',  function (e) { e.stopPropagation(); startDrag(e, colIdx, cardIdx); });
             cardEl.addEventListener('touchstart', function (e) { e.stopPropagation(); startDrag(e, colIdx, cardIdx); }, { passive: false });
+            // dblclick must be on the card itself — mousedown stopPropagation blocks column-level dblclick
+            if (cardIdx === col.length - 1) {
+              cardEl.addEventListener('dblclick', function (e) {
+                e.stopPropagation();
+                autoFoundation(entry.card, 'tableau', colIdx, cardIdx);
+              });
+            }
           }
 
           el.appendChild(cardEl);
@@ -1373,15 +1380,7 @@
           if (!cardEl) { handleEmptyTableauClick(c); return; }
           handleTableauClick(c, parseInt(cardEl.dataset.idx));
         });
-        colEl.addEventListener('dblclick', (e) => {
-          const cardEl = e.target.closest('.card');
-          if (!cardEl) return;
-          const idx = parseInt(cardEl.dataset.idx);
-          const col = state.tableau[c];
-          if (idx === col.length - 1 && col[idx] && col[idx].faceUp) {
-            autoFoundation(col[idx].card, 'tableau', c, idx);
-          }
-        });
+        // dblclick is handled directly on each top face-up card in renderTableau
       }
 
       // Global drag move / end
