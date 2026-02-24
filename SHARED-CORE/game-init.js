@@ -90,7 +90,7 @@ const XstikGameInit = (function () {
     if (!bar) {
       bar = document.createElement('div');
       bar.id = 'xstik-load-bar';
-      bar.style.cssText = 'position:fixed;top:3.5rem;left:0;height:3px;background:var(--primary,#F5C518);z-index:999;transition:width 0.15s;';
+      bar.style.cssText = 'position:fixed;top:5rem;left:0;height:3px;background:var(--primary,#F5C518);z-index:999;transition:width 0.15s;';
       document.body.appendChild(bar);
     }
     const pct = Math.round((loaded / total) * 100);
