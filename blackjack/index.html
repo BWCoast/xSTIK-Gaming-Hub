@@ -678,7 +678,7 @@
     /* ---- Responsive ---- */
     @media (max-width: 767px) {
       :root {
-        --card-w: clamp(3.2rem, 16vw, 5rem);
+        --card-w: clamp(3.84rem, 19.2vw, 6rem);
       }
       .game-info { font-size: 0.75rem; gap: var(--spacing-sm); }
       .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
@@ -909,12 +909,42 @@
 
     function renderHand(containerId, hand, hideFirst) {
       const el = document.getElementById(containerId);
-      el.innerHTML = '';
-      hand.forEach((card, i) => {
+      const existing = el.querySelectorAll('.card');
+
+      // If we're revealing the dealer hole card — flip it in place
+      if (containerId === 'dealer-cards' && !hideFirst && existing.length >= 1) {
+        const holeCard = existing[0];
+        const holeImg = holeCard.querySelector('img');
+        const cardData = hand[0];
+        if (holeImg && holeImg.alt === 'Card back') {
+          holeCard.classList.add('flip-in');
+          setTimeout(() => {
+            holeImg.src = XstikImageLoader.getCardImage(cardData.name) || cardData.fallbackPath;
+            holeImg.alt = cardData.name;
+            holeImg.onerror = function () { XstikImageLoader.handleError(this, cardData); };
+          }, 200);
+        }
+        // Append any new dealer cards drawn during dealer turn
+        for (let i = existing.length; i < hand.length; i++) {
+          el.appendChild(createCardEl(hand[i], true));
+        }
+        return;
+      }
+
+      // Full redraw only when container is empty (new hand)
+      if (existing.length === 0) {
+        hand.forEach((card, i) => {
+          const faceUp = !(hideFirst && i === 0);
+          el.appendChild(createCardEl(card, faceUp));
+        });
+        return;
+      }
+
+      // Append only new cards
+      for (let i = existing.length; i < hand.length; i++) {
         const faceUp = !(hideFirst && i === 0);
-        const cardEl = createCardEl(card, faceUp);
-        el.appendChild(cardEl);
-      });
+        el.appendChild(createCardEl(hand[i], faceUp));
+      }
     }
 
     function renderDealerScore(hide) {
