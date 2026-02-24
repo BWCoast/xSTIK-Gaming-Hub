@@ -1306,42 +1306,42 @@
   })();
 
   // ════════════════════════════════════════════════════════════════
-  // LEADERBOARD ENGINE
+  // LEADERBOARD ENGINE — reads from Netlify Function → Supabase
   // ════════════════════════════════════════════════════════════════
 
-  // ─── Read all scores from localStorage ───
-  // Each game is expected to store an array under its key.
-  // Each entry should have: { name: string, score: number, date: string }
-  // We also support the Blackjack format: { player: string, score: number, timestamp: string }
-  function readGameScores(key) {
-    try {
-      var raw = localStorage.getItem(key);
-      if (!raw) return [];
-      var arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return [];
-      return arr.map(function(e) {
-        return {
-          name:  e.name || e.player || e.playerName || 'Unknown',
-          score: Number(e.score) || Number(e.credits) || Number(e.chips) || 0,
-          date:  e.date || e.timestamp || e.time || ''
-        };
-      }).filter(function(e){ return e.score > 0 || true; });
-    } catch(err) { return []; }
+  var LB_API = '/.netlify/functions/leaderboard';
+
+  // ─── Fetch scores from API ───
+  // Returns a promise resolving to an array of { player_name, game, score, created_at }
+  function fetchScores(game) {
+    var url = game ? LB_API + '?game=' + encodeURIComponent(game) + '&limit=100' : LB_API + '?limit=200';
+    return fetch(url)
+      .then(function(res) { return res.ok ? res.json() : []; })
+      .catch(function() { return []; });
   }
 
-  // ─── Calculate Grandmaster Index ───
-  // Think of it like a school GPA: each game gives you a grade,
-  // weighted by how skill-based it is, then averaged.
-  function buildGrandmasterRankings() {
-    var playerMap = {}; // { name: { totalWeightedScore, totalWeight, gamesCount } }
+  // ─── Show/hide loading state ───
+  function setLoading(bodyId, emptyId, loading) {
+    var tbody = document.getElementById(bodyId);
+    var emptyEl = document.getElementById(emptyId);
+    if (loading) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted-text);padding:2rem;">Loading...</td></tr>';
+      emptyEl.style.display = 'none';
+    }
+  }
+
+  // ─── Calculate Grandmaster Index from API data ───
+  // Each player's best score per game is weighted, then averaged — like a weighted GPA.
+  function buildGrandmasterRankings(allScores) {
+    var playerMap = {};
     GAME_KEYS.forEach(function(key) {
-      var weight  = GAME_WEIGHTS[key];
-      var entries = readGameScores(key);
-      // Get best score per player for this game
+      var weight = GAME_WEIGHTS[key];
+      var entries = allScores.filter(function(r) { return r.game === key; });
       var bestPerPlayer = {};
-      entries.forEach(function(e) {
-        var n = e.name;
-        if (!bestPerPlayer[n] || e.score > bestPerPlayer[n]) bestPerPlayer[n] = e.score;
+      entries.forEach(function(r) {
+        var n = r.player_name || 'Unknown';
+        var s = Number(r.score) || 0;
+        if (!bestPerPlayer[n] || s > bestPerPlayer[n]) bestPerPlayer[n] = s;
       });
       Object.keys(bestPerPlayer).forEach(function(name) {
         if (!playerMap[name]) playerMap[name] = { total: 0, weightSum: 0, count: 0 };
@@ -1352,10 +1352,9 @@
     });
     var list = Object.keys(playerMap).map(function(name) {
       var p = playerMap[name];
-      var gmi = p.weightSum > 0 ? Math.round(p.total / p.weightSum) : 0;
-      return { name: name, gmi: gmi, games: p.count };
+      return { name: name, gmi: p.weightSum > 0 ? Math.round(p.total / p.weightSum) : 0, games: p.count };
     });
-    list.sort(function(a,b){ return b.gmi - a.gmi; });
+    list.sort(function(a,b) { return b.gmi - a.gmi; });
     return list;
   }
 
@@ -1364,32 +1363,29 @@
     var now = new Date();
     var monthLabel = now.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
     document.getElementById('lb-current-month').textContent = '— ' + monthLabel + ' —';
+    setLoading('lb-unified-body', 'lb-unified-empty', true);
 
-    var rankings = buildGrandmasterRankings();
-    var currentUser = (localStorage.getItem(USERNAME_KEY) || '').trim();
+    fetchScores(null).then(function(allScores) {
+      var rankings = buildGrandmasterRankings(allScores);
+      var currentUser = (localStorage.getItem(USERNAME_KEY) || '').trim();
+      var podiumEl = document.getElementById('lb-podium');
+      podiumEl.innerHTML = '';
 
-    // Podium (top 3)
-    var podiumEl = document.getElementById('lb-podium');
-    podiumEl.innerHTML = '';
-    if (rankings.length === 0) {
-      podiumEl.style.display = 'none';
-      document.getElementById('lb-unified-empty').style.display = 'block';
-      document.getElementById('lb-unified-body').innerHTML = '';
-      return;
-    }
-    document.getElementById('lb-unified-empty').style.display = 'none';
-    podiumEl.style.display = 'flex';
+      if (rankings.length === 0) {
+        podiumEl.style.display = 'none';
+        document.getElementById('lb-unified-empty').style.display = 'block';
+        document.getElementById('lb-unified-body').innerHTML = '';
+        return;
+      }
+      document.getElementById('lb-unified-empty').style.display = 'none';
+      podiumEl.style.display = 'flex';
 
-    // Podium order: 2nd, 1st, 3rd
-    var podiumOrder = [1, 0, 2]; // indices into rankings
-    var crowns = ['🥈','🥇','🥉'];
-    var posLabels = ['2nd','1st','3rd'];
-    podiumOrder.forEach(function(rankIdx, podiumPos) {
-      if (rankings[rankIdx]) {
+      // Podium order: 2nd, 1st, 3rd
+      [1, 0, 2].forEach(function(rankIdx) {
+        if (!rankings[rankIdx]) return;
         var entry = rankings[rankIdx];
-        var slot = document.createElement('div');
-        slot.className = 'podium-slot podium-' + posLabels[podiumPos].replace(/[^123]/g,'');
         var posNum = rankIdx + 1;
+        var slot = document.createElement('div');
         slot.className = 'podium-slot podium-' + posNum;
         slot.innerHTML =
           '<div class="podium-crown">' + (posNum === 1 ? '🥇' : posNum === 2 ? '🥈' : '🥉') + '</div>' +
@@ -1397,68 +1393,61 @@
           '<div class="podium-score">' + entry.gmi.toLocaleString() + ' GMI</div>' +
           '<div class="podium-block">' + posNum + '</div>';
         podiumEl.appendChild(slot);
-      }
-    });
+      });
 
-    // Full table
-    var tbody = document.getElementById('lb-unified-body');
-    tbody.innerHTML = '';
-    rankings.forEach(function(entry, i) {
-      var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td class="' + rankClass + '">' + (i+1) + '</td>' +
-        '<td class="' + (entry.name === currentUser ? 'lb-you' : '') + '">' + escHtml(entry.name) + (entry.name === currentUser ? ' ★' : '') + '</td>' +
-        '<td>' + entry.gmi.toLocaleString() + '</td>' +
-        '<td>' + entry.games + '</td>';
-      tbody.appendChild(tr);
+      var tbody = document.getElementById('lb-unified-body');
+      tbody.innerHTML = '';
+      rankings.forEach(function(entry, i) {
+        var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="' + rankClass + '">' + (i+1) + '</td>' +
+          '<td class="' + (entry.name === currentUser ? 'lb-you' : '') + '">' + escHtml(entry.name) + (entry.name === currentUser ? ' ★' : '') + '</td>' +
+          '<td>' + entry.gmi.toLocaleString() + '</td>' +
+          '<td>' + entry.games + '</td>';
+        tbody.appendChild(tr);
+      });
     });
   }
 
   // ─── Render per-game tab ───
-  function renderPerGame(key) {
-    var entries = readGameScores(key);
-    var currentUser = (localStorage.getItem(USERNAME_KEY) || '').trim();
-    entries.sort(function(a,b){ return b.score - a.score; });
-    var top20 = entries.slice(0, 20);
-
-    var tbody = document.getElementById('lb-game-body');
-    var emptyEl = document.getElementById('lb-game-empty');
-    tbody.innerHTML = '';
-
-    if (top20.length === 0) {
-      emptyEl.style.display = 'block';
-      return;
-    }
-    emptyEl.style.display = 'none';
-
-    top20.forEach(function(entry, i) {
-      var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
-      var dateStr = entry.date ? new Date(entry.date).toLocaleDateString() : '—';
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td class="' + rankClass + '">' + (i+1) + '</td>' +
-        '<td class="' + (entry.name === currentUser ? 'lb-you' : '') + '">' + escHtml(entry.name) + (entry.name === currentUser ? ' ★' : '') + '</td>' +
-        '<td>' + entry.score.toLocaleString() + '</td>' +
-        '<td>' + dateStr + '</td>';
-      tbody.appendChild(tr);
+  function renderPerGame(game) {
+    setLoading('lb-game-body', 'lb-game-empty', true);
+    fetchScores(game).then(function(entries) {
+      var currentUser = (localStorage.getItem(USERNAME_KEY) || '').trim();
+      entries.sort(function(a,b) { return Number(b.score) - Number(a.score); });
+      var top20 = entries.slice(0, 20);
+      var tbody = document.getElementById('lb-game-body');
+      var emptyEl = document.getElementById('lb-game-empty');
+      tbody.innerHTML = '';
+      if (top20.length === 0) { emptyEl.style.display = 'block'; return; }
+      emptyEl.style.display = 'none';
+      top20.forEach(function(entry, i) {
+        var rankClass = i === 0 ? 'lb-rank-gold' : i === 1 ? 'lb-rank-silver' : i === 2 ? 'lb-rank-bronze' : '';
+        var dateStr = entry.created_at ? new Date(entry.created_at).toLocaleDateString() : '—';
+        var name = entry.player_name || 'Unknown';
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="' + rankClass + '">' + (i+1) + '</td>' +
+          '<td class="' + (name === currentUser ? 'lb-you' : '') + '">' + escHtml(name) + (name === currentUser ? ' ★' : '') + '</td>' +
+          '<td>' + Number(entry.score).toLocaleString() + '</td>' +
+          '<td>' + dateStr + '</td>';
+        tbody.appendChild(tr);
+      });
     });
   }
 
   // ─── Render Hall of Fame tab ───
+  // HoF is still localStorage-based (monthly snapshots archived client-side)
   function renderHoF() {
     var hofList = document.getElementById('lb-hof-list');
     var hofEmpty = document.getElementById('lb-hof-empty');
     hofList.innerHTML = '';
     try {
       var archived = JSON.parse(localStorage.getItem(HOF_KEY) || '[]');
-      if (!Array.isArray(archived) || archived.length === 0) {
-        hofEmpty.style.display = 'block';
-        return;
-      }
+      if (!Array.isArray(archived) || archived.length === 0) { hofEmpty.style.display = 'block'; return; }
       hofEmpty.style.display = 'none';
-      // Sort newest first
-      archived.sort(function(a,b){ return b.month > a.month ? 1 : -1; });
+      archived.sort(function(a,b) { return b.month > a.month ? 1 : -1; });
       archived.forEach(function(monthObj) {
         var block = document.createElement('div');
         block.className = 'hof-month';
@@ -1480,9 +1469,7 @@
         block.appendChild(table);
         hofList.appendChild(block);
       });
-    } catch(e) {
-      hofEmpty.style.display = 'block';
-    }
+    } catch(e) { hofEmpty.style.display = 'block'; }
   }
 
   // ─── Leaderboard tab switching ───
@@ -1506,39 +1493,8 @@
     renderPerGame(this.value);
   });
 
-  // ─── Monthly archiver: auto-archive previous month on page load ───
-  (function archivePreviousMonth() {
-    var now = new Date();
-    var key = 'xstik_last_archive_check';
-    var lastCheck = localStorage.getItem(key) || '';
-    var thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
-    if (lastCheck === thisMonth) return; // Already checked this month
-    // Check if we have a previous month key stored
-    var prevMonthKey = 'xstik_archive_pending';
-    var pending = localStorage.getItem(prevMonthKey);
-    if (pending) {
-      try {
-        var pendingMonth = JSON.parse(pending);
-        if (pendingMonth.month !== thisMonth) {
-          // Archive it
-          var existing = JSON.parse(localStorage.getItem(HOF_KEY) || '[]');
-          existing.push(pendingMonth);
-          if (existing.length > 12) existing = existing.slice(-12); // keep 12 months
-          localStorage.setItem(HOF_KEY, JSON.stringify(existing));
-        }
-      } catch(e) {}
-    }
-    // Store current month snapshot as pending
-    var rankings = buildGrandmasterRankings().slice(0, 20);
-    var monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
-    localStorage.setItem(prevMonthKey, JSON.stringify({ month: monthName, rankings: rankings }));
-    localStorage.setItem(key, thisMonth);
-  })();
-
   // ─── Initial render ───
-  function renderLeaderboards() {
-    renderUnified();
-  }
+  function renderLeaderboards() { renderUnified(); }
   renderLeaderboards();
 
   // ─── Utility ───
