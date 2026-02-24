@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>xSTIK Solitaire</title>
-  <link rel="icon" href="../SHARED-CORE/branding/assets/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="https://xstik.art/logo.jpg" type="image/jpeg">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../SHARED-CORE/branding/xstik-brand.css">
   <style>
@@ -104,8 +104,6 @@
     :root {
       --card-w: clamp(4rem, 10vw, 7rem);
       --card-h: calc(var(--card-w) * 1.5);
-      --face-down-offset: 0.45rem;
-      --face-up-offset: 2.8rem;
     }
     /* ---- Table Layout ---- */
     .solitaire-table {
@@ -153,20 +151,21 @@
       align-items: start;
     }
     .tableau-col {
-      display: grid;
-      grid-template-columns: 1fr;
       position: relative;
+      width: 100%;
     }
     /* ---- Card Element ---- */
     .card {
+      position: absolute;
       width: 100%;
       aspect-ratio: 2/3;
       border-radius: 0.35rem;
       overflow: hidden;
       cursor: pointer;
-      transition: box-shadow 0.15s, transform 0.15s;
-      position: relative;
+      transition: box-shadow 0.15s;
       background: #000;
+      user-select: none;
+      -webkit-user-select: none;
     }
     .card img {
       width: 100%;
@@ -174,8 +173,11 @@
       object-fit: cover;
       display: block;
       pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .card.face-down { cursor: pointer; }
+    .card.face-down { cursor: default; }
     .card.face-up { cursor: grab; }
     .card.selected {
       box-shadow: 0 0 12px var(--glow-primary), 0 0 4px var(--primary);
@@ -185,10 +187,7 @@
     .card.hint {
       box-shadow: 0 0 15px rgba(34,197,94,0.6);
     }
-    /* Stack offsets in tableau columns */
-    .tableau-col .card { margin-top: 0; }
-    .tableau-col .card:not(:first-child).face-down { margin-top: calc(-1 * var(--card-h) + var(--face-down-offset)); }
-    .tableau-col .card:not(:first-child).face-up { margin-top: calc(-1 * var(--card-h) + var(--face-up-offset)); }
+    /* Stack offsets handled via JS absolute positioning */
     /* ---- Win Screen ---- */
     #win-screen {
       display: none;
@@ -226,8 +225,6 @@
     @media (max-width: 767px) {
       :root {
         --card-w: clamp(2.8rem, 12.5vw, 4.5rem);
-        --face-down-offset: 0.3rem;
-        --face-up-offset: 2.0rem;
       }
       .game-info { font-size: 0.75rem; gap: 0.5rem; }
       .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
@@ -429,31 +426,55 @@
       });
     }
     function renderTableau() {
+      var FACE_DOWN_PX = 14;
+      var FACE_UP_PX   = 40;
+
       state.tableau.forEach((col, colIdx) => {
         const el = document.getElementById('tab-' + colIdx);
         el.innerHTML = '';
+        el.style.position = 'relative';
+
         if (col.length === 0) {
-          el.innerHTML = '<div class="pile-slot" style="border-style:dashed;width:100%;"><span class="slot-label">K</span></div>';
+          var slot = document.createElement('div');
+          slot.className = 'pile-slot';
+          slot.style.cssText = 'position:relative;border-style:dashed;width:100%;';
+          slot.innerHTML = '<span class="slot-label">K</span>';
+          el.appendChild(slot);
+          el.style.height = '';
           return;
         }
+
+        var topOffset = 0;
         col.forEach((entry, cardIdx) => {
           const cardEl = createCardEl(entry.card, entry.faceUp);
           cardEl.dataset.col = colIdx;
           cardEl.dataset.idx = cardIdx;
-          // Highlight selected
+          cardEl.style.top = topOffset + 'px';
+          cardEl.style.left = '0';
+
           if (state.selected && state.selected.source === 'tableau' &&
               state.selected.colIdx === colIdx && cardIdx >= state.selected.cardIdx) {
             cardEl.classList.add('selected');
           }
+
           if (entry.faceUp) {
             (function(ci, idx) {
               cardEl.addEventListener('mousedown', function(e) { dragStart(e, 'tableau', ci, idx); });
               cardEl.addEventListener('touchstart', function(e) { dragStart(e, 'tableau', ci, idx); }, { passive: false });
             })(colIdx, cardIdx);
           }
+
           el.appendChild(cardEl);
+
+          if (cardIdx < col.length - 1) {
+            topOffset += entry.faceUp ? FACE_UP_PX : FACE_DOWN_PX;
+          }
         });
+
+        var cardHeightPx = el.offsetWidth * 1.5 || 100;
+        el.style.height = (topOffset + cardHeightPx) + 'px';
       });
+
       if (!autoCompleting && canAutoComplete()) {
         autoCompleting = true;
         setTimeout(runAutoComplete, 300);
