@@ -4,110 +4,387 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>xSTIK Solitaire</title>
-  <link rel="icon" href="https://xstik.art/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../SHARED-CORE/branding/xstik-brand.css">
   <style>
-    /* ===== GLOBAL STANDARDS (xstik-learnings: current approved Feb 2026) ===== */
-    .top-bar          { height: 5rem; }
-    .logo-coin        { width: 3.25rem; height: 3.25rem; }
-    .logo-text        { font-size: 1.5rem; }
-    .logo-sub         { font-size: 0.75rem; }
-    .game-footer      { font-size: 1rem; }
-    .footer-links a   { font-size: 1rem; }
-    .footer-legal     { font-size: 0.9rem; }
+    /* ================================================================
+       xSTIK BRAND FOUNDATION — copied verbatim from Blackjack
+       ================================================================ */
 
-    @media (max-width: 480px) { .back-btn { display: none; } }
-
-    /* ===== MODALS ===== */
-    .modal-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
-    .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: #1a1a1a;
+
+    :root {
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+    }
+
+    html, body {
+      background: var(--background);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--foreground);
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ========== HEADER — copied verbatim from Blackjack ========== */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-left))
+               var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-right));
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.2);
+      position: relative;
+      z-index: 100;
+      height: 5rem;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      text-decoration: none;
+    }
+
+    .logo-coin {
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(245, 197, 24, 0.5);
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .logo-sub {
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: -2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    /* ← Game Hub button — outlined, muted */
+    .btn-back {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-text);
+      background: none;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-back:hover { color: var(--primary); border-color: var(--primary); }
+
+    /* HOW TO PLAY button — filled golden */
+    .btn-rules {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      border: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .btn-rules:hover { background: var(--accent); }
+
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    /* ========== FOOTER — copied verbatim from Blackjack ========== */
+    .game-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(245, 197, 24, 0.2);
+      padding: 0.75rem max(var(--spacing-md), env(safe-area-inset-left))
+               max(0.75rem, env(safe-area-inset-bottom))
+               max(var(--spacing-md), env(safe-area-inset-right));
+      z-index: 90;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--spacing-lg);
+      align-items: center;
+    }
+
+    .footer-links a {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    .footer-legal {
+      color: var(--muted-text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+    }
+
+    /* ========== UTILITY ========== */
+    .btn-primary {
+      background: var(--primary);
+      color: #0D0D0D;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px var(--primary-glow);
+      min-height: 44px;
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    /* ========== LEADERBOARD SLIDE-UP PANEL — copied verbatim from Blackjack ========== */
+    #lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+    }
+    #lb-overlay.open { display: block; }
+    #lb-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    #lb-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 75vh;
+      background: var(--background);
+      border-top: 2px solid var(--primary);
+      border-radius: 1rem 1rem 0 0;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5), 0 -2px 20px var(--primary-glow);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #lb-overlay.open #lb-panel { transform: translateY(0); }
+    .lb-handle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .lb-handle-bar {
+      width: 2.5rem;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--muted-text);
+      position: absolute;
+      left: 50%;
+      top: 0.5rem;
+      transform: translateX(-50%);
+    }
+    .lb-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+    .lb-close {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-text);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-close:hover { color: var(--primary); border-color: var(--primary); }
+    #leaderboard-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
+      -webkit-overflow-scrolling: touch;
+    }
+    #leaderboard-area::-webkit-scrollbar { width: 4px; }
+    #leaderboard-area::-webkit-scrollbar-track { background: var(--muted); }
+    #leaderboard-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+    /* ========== HOW TO PLAY MODAL — copied verbatim from Blackjack ========== */
+    .rules-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+    .rules-overlay.open { display: flex; }
+    .rules-box {
+      background: var(--card-bg);
       border: 1px solid rgba(245,197,24,0.3);
-      border-radius: 8px;
-      max-width: 500px;
+      border-radius: 1rem;
+      padding: var(--spacing-xl);
+      max-width: 480px;
       width: 100%;
       max-height: 80vh;
       overflow-y: auto;
-      padding: 2rem;
-      position: relative;
+      box-shadow: 0 0 40px rgba(245,197,24,0.15);
     }
-    .modal-box h2 {
+    .rules-title {
       font-family: 'Orbitron', sans-serif;
-      color: var(--primary);
       font-size: 1.2rem;
-      letter-spacing: 2px;
-      margin: 0 0 1.25rem;
+      font-weight: 900;
+      color: var(--primary);
+      text-shadow: 0 0 10px var(--primary-glow);
+      margin-bottom: var(--spacing-lg);
       text-align: center;
     }
-    .modal-box h3 {
+    .rules-section {
+      margin-bottom: var(--spacing-md);
+    }
+    .rules-section h3 {
       font-family: 'Orbitron', sans-serif;
-      color: var(--primary);
       font-size: 0.75rem;
-      letter-spacing: 1px;
-      margin: 1rem 0 0.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      margin-bottom: var(--spacing-sm);
     }
-    .modal-box p, .modal-box li {
+    .rules-section p, .rules-section li {
       font-family: 'Rajdhani', sans-serif;
-      color: #ccc;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      margin: 0.25rem 0;
-    }
-    .modal-box ul { padding-left: 1.25rem; margin: 0.25rem 0; }
-    .modal-close {
-      position: absolute; top: 1rem; right: 1rem;
-      background: transparent;
-      border: 1px solid rgba(245,197,24,0.3);
+      font-size: 1rem;
       color: var(--muted-text);
-      border-radius: 4px;
-      padding: 0.25rem 0.6rem;
+      line-height: 1.6;
+    }
+    .rules-section ul { padding-left: 1.2rem; }
+    .rules-close {
+      width: 100%;
+      margin-top: var(--spacing-lg);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
       cursor: pointer;
-      font-size: 1rem; line-height: 1;
+      box-shadow: 0 0 15px var(--primary-glow);
+      transition: all 0.2s;
     }
-    .modal-close:hover { border-color: var(--primary); color: var(--primary); }
-    .modal-cta {
-      margin-top: 1.5rem; width: 100%;
-      background: var(--primary); color: #0D0D0D;
-      font-family: 'Rajdhani', sans-serif; font-weight: 600;
-      font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;
-      padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem;
-      cursor: pointer; transition: all 0.2s;
-      box-shadow: 0 0 20px rgba(245,197,24,0.4);
-    }
-    .modal-cta:hover { background: var(--accent); transform: translateY(-2px); }
+    .rules-close:hover { background: var(--accent); }
 
-    /* Leaderboard table */
-    .lb-table { width: 100%; border-collapse: collapse; font-family: 'Rajdhani', sans-serif; }
-    .lb-table th {
-      color: var(--primary); font-size: 0.75rem; letter-spacing: 1px;
-      text-transform: uppercase; border-bottom: 1px solid rgba(245,197,24,0.2);
-      padding: 0.4rem 0.25rem; text-align: left;
-    }
-    .lb-table td { padding: 0.5rem 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
-    .lb-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-    .lb-rank  { color: var(--muted-text); font-size: 0.85rem; }
-    .lb-name  { color: var(--foreground); font-weight: 600; }
-    .lb-score { color: var(--primary); font-weight: 700; text-align: right; }
+    /* ================================================================
+       SOLITAIRE-SPECIFIC STYLES
+       ================================================================ */
+
+    /* HOW TO PLAY modal uses Blackjack's .rules-overlay pattern (below) */
 
     /* ===== SOLITAIRE-SPECIFIC ===== */
     #game-container {
       max-width: 1400px;
       margin: 0 auto;
       padding: 0.5rem max(0.5rem, env(safe-area-inset-left));
-      min-height: calc(100vh - 5rem - 4rem);
-      min-height: calc(100dvh - 5rem - 4rem);
+      min-height: calc(100vh - 3.5rem - 3rem);
+      min-height: calc(100dvh - 3.5rem - 3rem);
       display: flex;
       flex-direction: column;
     }
@@ -132,7 +409,8 @@
     .btn-sm:hover { background: rgba(245,197,24,0.12); }
 
     :root {
-      --card-w: clamp(4rem, 10vw, 7rem);
+      /* Solitaire card: 5% smaller than Blackjack baseline */
+      --card-w: clamp(3.8rem, 9.5vw, 6.65rem);
       --card-h: calc(var(--card-w) * 1.5);
     }
 
@@ -209,39 +487,42 @@
     #leaderboard-area { margin-top: 1rem; padding: 0 0.5rem; }
 
     @media (max-width: 767px) {
-      :root { --card-w: clamp(2.8rem, 12.5vw, 4.5rem); }
+      :root { --card-w: clamp(2.66rem, 11.875vw, 4.275rem); }
       .game-info  { font-size: 0.75rem; gap: 0.5rem; }
       .btn-sm     { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
       .pile-slot .slot-label { font-size: 0.4rem; }
+      .footer-legal { display: none; }
+      .logo-text { font-size: 1.1rem; }
+      .logo-coin { width: 2.5rem; height: 2.5rem; }
+      .btn-back { display: none; }
     }
     @media (min-width: 768px) and (max-width: 1023px) {
-      :root { --card-w: clamp(4rem, 9vw, 5.5rem); }
+      :root { --card-w: clamp(3.8rem, 8.55vw, 5.225rem); }
     }
   </style>
 </head>
 <body>
 
-  <!-- ===== HEADER (GAME-MASTER-TEMPLATE standard — back-btn class) ===== -->
+  <!-- ===== HEADER — copied verbatim from Blackjack ===== -->
   <header class="top-bar">
-    <a href="https://xstik.art" class="logo-wrap">
-      <img src="../SHARED-CORE/branding/assets/logo.jpg"
-           onerror="this.src='https://xstik.art/logo.jpg'"
-           alt="xSTIK" class="logo-coin">
+    <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
       <div>
         <div class="logo-text">xSTIK</div>
         <div class="logo-sub">SOLITAIRE</div>
       </div>
     </a>
-    <div class="header-stats">
+    <div class="header-right">
+      <a href="https://games.xstik.art" class="btn-back">← Game Hub</a>
+      <button class="btn-rules" id="btn-rules">HOW TO PLAY</button>
       <div id="credit-display"></div>
-      <button class="back-btn" id="btn-rules">HOW TO PLAY</button>
-      <button class="back-btn" id="btn-leaderboard">🏆 LEADERBOARD</button>
-      <a href="https://games.xstik.art" class="back-btn">◂ GAME HUB</a>
     </div>
   </header>
 
   <!-- ===== GAME AREA ===== -->
   <main id="game-container">
+
     <div class="game-controls">
       <div class="game-info">
         <span>⏱ <strong id="timer">0:00</strong></span>
@@ -249,15 +530,18 @@
         <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
       </div>
       <div class="btn-group">
+        <button class="btn-sm" id="btn-draw-mode">DRAW 3</button>
         <button class="btn-sm" id="btn-new-game">NEW GAME</button>
         <button class="btn-sm" id="btn-undo">UNDO</button>
+        <button class="btn-sm" id="btn-leaderboard" title="Leaderboard">🏆</button>
       </div>
     </div>
 
     <div class="solitaire-table">
       <div class="top-row">
         <div class="pile-slot" id="stock"><span class="slot-label">DRAW</span></div>
-        <div class="pile-slot" id="waste"><span class="slot-label">WASTE</span></div>
+        <!-- Waste: wider slot to accommodate 3-card fan in draw-3 mode -->
+        <div class="pile-slot" id="waste" style="overflow:visible;"><span class="slot-label">WASTE</span></div>
         <div class="pile-slot" style="border:none;background:none;"></div>
         <div class="pile-slot" id="foundation-0"><span class="slot-label">♠</span></div>
         <div class="pile-slot" id="foundation-1"><span class="slot-label">♥</span></div>
@@ -291,76 +575,88 @@
     <button class="btn-primary" style="margin-top:1.5rem;" id="btn-play-again">PLAY AGAIN</button>
   </div>
 
-  <!-- ===== FOOTER (BLACKJACK-HEADER-FOOTER-UPDATES.md standard) ===== -->
+  <!-- ===== FOOTER — copied verbatim from Blackjack ===== -->
   <footer class="game-footer">
     <div class="footer-links">
       <a href="https://xstik.art">Home</a>
       <a href="https://games.xstik.art">Game Hub</a>
-      <a href="https://games.xstik.art#leaderboard">Leaderboard</a>
       <a href="https://xstik.art/#ecosystem">Ecosystem</a>
     </div>
-    <div class="footer-social">
-      <a href="https://twitter.com/xstik_nft" target="_blank">Twitter</a>
-      <a href="https://discord.gg/xstik" target="_blank">Discord</a>
+    <div class="footer-legal">
+      <p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p>
     </div>
-    <div class="footer-legal">© 2026 xSTIK</div>
   </footer>
 
   <!-- Drag ghost element -->
   <div id="drag-ghost"></div>
 
-  <!-- ===== HOW TO PLAY MODAL ===== -->
-  <div class="modal-overlay" id="rules-overlay">
-    <div class="modal-box">
-      <button class="modal-close" id="btn-rules-close">✕</button>
-      <h2>HOW TO PLAY</h2>
-      <h3>Objective</h3>
-      <p>Move all 52 cards to the four foundation piles, sorted by suit from Ace to King.</p>
-      <h3>The Layout</h3>
-      <ul>
-        <li><strong>DRAW</strong> — Click to flip one card at a time from the stock.</li>
-        <li><strong>WASTE</strong> — The top card is always available to play.</li>
-        <li><strong>Foundations (♠♥♦♣)</strong> — Build each suit up from Ace to King.</li>
-        <li><strong>Tableau</strong> — Seven columns. Build down in alternating colours.</li>
-      </ul>
-      <h3>Moving Cards</h3>
-      <ul>
-        <li>Click a card to select it, then click a valid destination.</li>
-        <li>Drag cards directly to their destination.</li>
-        <li>Double-click any face-up card to send it to a foundation automatically.</li>
-        <li>Only Kings may be placed on empty tableau columns.</li>
-        <li>Face-down cards flip automatically when the card above is moved.</li>
-      </ul>
-      <h3>Auto-Complete</h3>
-      <p>When stock is empty and all tableau cards are face-up, the game finishes itself automatically.</p>
-      <h3>Scoring</h3>
-      <ul>
-        <li>Base: 500 points · Time bonus: up to +300 · Speed bonus: +100 (under 3 min)</li>
-        <li>Move penalty: −2 per move</li>
-      </ul>
-      <button class="modal-cta" id="btn-rules-play">GOT IT — LET'S PLAY</button>
-    </div>
-  </div>
+  <!-- ===== HOW TO PLAY MODAL — Blackjack rules-overlay pattern ===== -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">🃏 HOW TO PLAY SOLITAIRE</div>
 
-  <!-- ===== LEADERBOARD MODAL ===== -->
-  <div class="modal-overlay" id="leaderboard-overlay">
-    <div class="modal-box" style="max-width:560px;">
-      <button class="modal-close" id="btn-lb-close">✕</button>
-      <h2>🏆 SOLITAIRE LEADERBOARD</h2>
-      <div id="lb-modal-content" style="margin-top:1rem;">
-        <p style="color:var(--muted-text);text-align:center;">Loading scores…</p>
+      <div class="rules-section">
+        <h3>Objective</h3>
+        <p>Move all 52 cards to the four foundation piles, sorted by suit from Ace to King.</p>
       </div>
-      <button class="modal-cta" id="btn-lb-done">CLOSE</button>
+
+      <div class="rules-section">
+        <h3>The Layout</h3>
+        <ul>
+          <li><strong>DRAW</strong> — Click to flip cards from the stock</li>
+          <li><strong>WASTE</strong> — The top card is always available to play</li>
+          <li><strong>Foundations (♠♥♦♣)</strong> — Build each suit up from Ace to King</li>
+          <li><strong>Tableau</strong> — Seven columns. Build down in alternating colours</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Moving Cards</h3>
+        <ul>
+          <li>Click a card to select it, then click a valid destination</li>
+          <li>Drag cards directly to their destination</li>
+          <li>Double-click any face-up card to send it to a foundation</li>
+          <li>Only Kings may be placed on empty tableau columns</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Draw Modes</h3>
+        <ul>
+          <li><strong>Draw 1</strong> — flip one card at a time (easier)</li>
+          <li><strong>Draw 3</strong> — flip three cards at once (classic challenge)</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Scoring</h3>
+        <p>Base 500 · Time bonus up to +300 · Speed bonus +100 (under 3 min) · Move penalty −2 each</p>
+      </div>
+
+      <button class="rules-close" id="btn-rules-close">GOT IT — LET'S PLAY</button>
     </div>
   </div>
 
-  <!-- ===== SHARED-CORE SCRIPTS (load order matters) ===== -->
-  <script src="../SHARED-CORE/nft-loader/card-deck.js"></script>
-  <script src="../SHARED-CORE/nft-loader/image-loader.js"></script>
-  <script src="../SHARED-CORE/credit-system/credit-system.js"></script>
-  <script src="../SHARED-CORE/player/player-system.js"></script>
-  <script src="../SHARED-CORE/leaderboard/leaderboard.js"></script>
-  <script src="../SHARED-CORE/game-init.js"></script>
+  <!-- ===== LEADERBOARD SLIDE-UP PANEL — Blackjack lb-overlay pattern ===== -->
+  <div id="lb-overlay">
+    <div id="lb-backdrop"></div>
+    <div id="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 SOLITAIRE LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- ===== SHARED-CORE SCRIPTS — absolute paths, matching Blackjack ===== -->
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
 
   <!-- ===== SOLITAIRE GAME LOGIC ===== -->
   <script>
@@ -373,6 +669,9 @@
     const RED_SUITS        = ['Hearts','Diamonds'];
     const FACE_DOWN_PX     = 14;  // px overlap gap for face-down cards in stack
     const FACE_UP_PX       = 40;  // px overlap gap for face-up cards in stack
+
+    // Draw mode: 1 = draw-1 (default), 3 = draw-3
+    let drawCount = 1;
 
     // ===== GAME STATE =====
     let state = {
@@ -387,7 +686,9 @@
       gameActive:    false,
       selected:      null,
       undoStack:     [],
-      paid:          false
+      paid:          false,
+      // Draw-3: tracks how many passes through stock (for scoring)
+      stockPasses:   0
     };
 
     // ===== DRAG STATE =====
@@ -450,18 +751,53 @@
     function renderWaste() {
       const el = document.getElementById('waste');
       el.innerHTML = '';
-      if (state.waste.length > 0) {
+      if (state.waste.length === 0) {
+        el.classList.remove('has-cards');
+        el.innerHTML = '<span class="slot-label">WASTE</span>';
+        return;
+      }
+      el.classList.add('has-cards');
+
+      if (drawCount === 1) {
+        // Draw-1: show only top card
         const top  = state.waste[state.waste.length - 1];
         const card = createCardEl(top, true);
         if (state.selected && state.selected.source === 'waste') card.classList.add('selected');
-        // Wire drag from waste card
         card.addEventListener('mousedown',  startWasteDrag);
         card.addEventListener('touchstart', startWasteDrag, { passive: false });
         el.appendChild(card);
-        el.classList.add('has-cards');
       } else {
-        el.classList.remove('has-cards');
-        el.innerHTML = '<span class="slot-label">WASTE</span>';
+        // Draw-3: fan the top 3 waste cards (oldest → newest, left to right)
+        // Only the top card (rightmost) is playable
+        const count   = Math.min(3, state.waste.length);
+        const fanCards = state.waste.slice(state.waste.length - count); // [oldest...newest]
+        const FAN_OFFSET = 18; // px horizontal offset between fanned cards
+
+        el.style.position = 'relative';
+        // Width of slot is 1 card wide — fan extends right (overflow:visible on parent)
+        fanCards.forEach((c, i) => {
+          const cardEl = createCardEl(c, true);
+          cardEl.style.position = 'absolute';
+          cardEl.style.left     = (i * FAN_OFFSET) + 'px';
+          cardEl.style.top      = '0';
+          cardEl.style.width    = '100%';
+          cardEl.style.zIndex   = i + 1;
+
+          const isTop = (i === fanCards.length - 1);
+          if (isTop) {
+            if (state.selected && state.selected.source === 'waste') cardEl.classList.add('selected');
+            cardEl.addEventListener('mousedown',  startWasteDrag);
+            cardEl.addEventListener('touchstart', startWasteDrag, { passive: false });
+          } else {
+            // Non-top fanned cards: visible but not interactive
+            cardEl.style.pointerEvents = 'none';
+            cardEl.style.opacity = '0.85';
+          }
+          el.appendChild(cardEl);
+        });
+
+        // Set container height to match a single card (cards are absolute)
+        el.style.height = 'auto';
       }
     }
 
@@ -604,6 +940,7 @@
       state.undoStack   = [];
       state.gameActive  = true;
       state.paid        = false;
+      state.stockPasses = 0;
       document.getElementById('timer').textContent = '0:00';
       document.getElementById('win-screen').classList.remove('show');
 
@@ -705,10 +1042,16 @@
       saveUndo();
       state.selected = null;
       if (state.stock.length > 0) {
-        state.waste.push(state.stock.pop());
+        // Draw drawCount cards (or however many remain)
+        const toDraw = Math.min(drawCount, state.stock.length);
+        for (let i = 0; i < toDraw; i++) {
+          state.waste.push(state.stock.pop());
+        }
       } else {
-        state.stock = state.waste.slice().reverse();
-        state.waste = [];
+        // Recycle waste back to stock (reversed)
+        state.stock      = state.waste.slice().reverse();
+        state.waste      = [];
+        state.stockPasses++;
       }
       state.moves++;
       renderAll(); updateInfo();
@@ -983,27 +1326,6 @@
       drag = null;
     }
 
-    // ===== LEADERBOARD MODAL RENDER =====
-    function renderLeaderboardModal() {
-      const key   = 'xstik-solitaire-leaderboard';
-      let entries = [];
-      try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
-      if (!Array.isArray(entries)) entries = [];
-      entries.sort((a, b) => b.score - a.score);
-      const el = document.getElementById('lb-modal-content');
-      if (entries.length === 0) {
-        el.innerHTML = '<p style="color:var(--muted-text);text-align:center;padding:1rem 0;">No scores yet — win a game to appear here!</p>';
-        return;
-      }
-      let html = '<table class="lb-table"><thead><tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr></thead><tbody>';
-      entries.slice(0, 15).forEach((e, i) => {
-        const medal = ['🥇 ','🥈 ','🥉 '][i] || '';
-        html += `<tr><td class="lb-rank">${i+1}</td><td class="lb-name">${medal}${e.name||'Anonymous'}</td><td class="lb-score">${e.score||0}</td></tr>`;
-      });
-      html += '</tbody></table>';
-      el.innerHTML = html;
-    }
-
     // ===== LOCAL SCORE BACKUP (from index_old.html) =====
     function submitGameScore() {
       try {
@@ -1072,31 +1394,34 @@
       document.getElementById('btn-undo').addEventListener('click',      doUndo);
       document.getElementById('btn-play-again').addEventListener('click', startNewGame);
 
-      // HOW TO PLAY modal
+      // Draw mode toggle (cycles 1 ↔ 3, starts new game on switch)
+      document.getElementById('btn-draw-mode').addEventListener('click', () => {
+        drawCount = (drawCount === 1) ? 3 : 1;
+        document.getElementById('btn-draw-mode').textContent = drawCount === 1 ? 'DRAW 3' : 'DRAW 1';
+        startNewGame();
+      });
+
+      // HOW TO PLAY modal — Blackjack pattern (rules-overlay)
       document.getElementById('btn-rules').addEventListener('click', () =>
         document.getElementById('rules-overlay').classList.add('open'));
       document.getElementById('btn-rules-close').addEventListener('click', () =>
-        document.getElementById('rules-overlay').classList.remove('open'));
-      document.getElementById('btn-rules-play').addEventListener('click', () =>
         document.getElementById('rules-overlay').classList.remove('open'));
       document.getElementById('rules-overlay').addEventListener('click', (e) => {
         if (e.target === document.getElementById('rules-overlay'))
           document.getElementById('rules-overlay').classList.remove('open');
       });
 
-      // LEADERBOARD modal
-      document.getElementById('btn-leaderboard').addEventListener('click', () => {
-        renderLeaderboardModal();
-        document.getElementById('leaderboard-overlay').classList.add('open');
-      });
-      document.getElementById('btn-lb-close').addEventListener('click', () =>
-        document.getElementById('leaderboard-overlay').classList.remove('open'));
-      document.getElementById('btn-lb-done').addEventListener('click', () =>
-        document.getElementById('leaderboard-overlay').classList.remove('open'));
-      document.getElementById('leaderboard-overlay').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('leaderboard-overlay'))
-          document.getElementById('leaderboard-overlay').classList.remove('open');
-      });
+      // Leaderboard slide-up panel — Blackjack pattern (lb-overlay)
+      function openLeaderboard() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'solitaire');
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLeaderboard() {
+        document.getElementById('lb-overlay').classList.remove('open');
+      }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLeaderboard);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLeaderboard);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLeaderboard);
     }
 
     // ===== BOOT =====
@@ -1106,7 +1431,6 @@
       onReady: function () {
         wireEvents();
         startNewGame();
-        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'solitaire');
       }
     });
 
