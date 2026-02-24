@@ -126,37 +126,37 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(245, 197, 24, 0.12);
-      height: 3.5rem;
+      height: 5rem;
     }
     .nav-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 3.5rem;
+      height: 5rem;
     }
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-md);
     }
     .nav-logo {
-      width: 2.25rem;
-      height: 2.25rem;
+      width: 3.25rem;
+      height: 3.25rem;
       border-radius: 50%;
-      border: 1px solid rgba(245, 197, 24, 0.4);
-      box-shadow: 0 0 10px var(--primary-glow);
+      border: 2px solid rgba(245, 197, 24, 0.5);
+      box-shadow: 0 0 14px var(--primary-glow);
       object-fit: cover;
     }
     .nav-title {
       font-family: 'Orbitron', sans-serif;
       font-weight: 900;
-      font-size: 1.1rem;
+      font-size: 1.5rem;
       color: var(--primary);
       letter-spacing: 2px;
       text-shadow: 0 0 10px var(--primary-glow);
     }
     .nav-sub {
-      font-size: 0.6rem;
+      font-size: 0.75rem;
       color: var(--accent);
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -170,13 +170,22 @@
     .nav-link {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 1rem;
       color: var(--muted-text);
       letter-spacing: 1px;
       text-transform: uppercase;
       transition: color 0.3s;
     }
     .nav-link:hover { color: var(--primary); }
+    .community-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      color: var(--muted-text);
+      max-width: 540px;
+      margin: var(--spacing-xl) auto 0;
+      line-height: 1.7;
+      letter-spacing: 0.3px;
+    }
     .nav-cta {
       display: inline-block;
       font-family: 'Rajdhani', sans-serif;
@@ -214,7 +223,7 @@
     .nav-mobile {
       display: none;
       position: fixed;
-      top: 3.5rem; left: 0; right: 0;
+      top: 5rem; left: 0; right: 0;
       background: rgba(0, 0, 0, 0.95);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(245, 197, 24, 0.12);
@@ -224,7 +233,7 @@
       z-index: 99;
     }
     .nav-mobile.open { display: flex; }
-    .nav-mobile .nav-link { font-size: 1rem; padding: var(--spacing-sm) 0; }
+    .nav-mobile .nav-link { font-size: 1.1rem; padding: var(--spacing-sm) 0; }
     .nav-mobile .nav-cta { text-align: center; margin-top: var(--spacing-sm); }
 
     /* ================================================================
@@ -356,28 +365,6 @@
     .btn-outline:hover {
       background: rgba(245, 197, 24, 0.08);
       border-color: var(--primary);
-    }
-
-    /* Stats row */
-    .stats-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: var(--spacing-xl);
-    }
-    .stat-item { text-align: center; }
-    .stat-num {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-      font-size: clamp(1.8rem, 4vw, 2.5rem);
-    }
-    .stat-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 500;
-      font-size: 0.8rem;
-      color: var(--muted-text);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
     }
 
     /* Floating suit icons */
@@ -604,7 +591,7 @@
     .footer-brand-name {
       font-family: 'Orbitron', sans-serif;
       font-weight: 900;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
       color: var(--primary);
       letter-spacing: 2px;
       text-shadow: 0 0 10px var(--primary-glow);
@@ -612,7 +599,7 @@
     .footer-brand-sub {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 400;
-      font-size: 0.8rem;
+      font-size: 1rem;
       color: var(--muted-text);
       margin-top: 0.15rem;
     }
@@ -624,7 +611,7 @@
     .footer-link {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 1.05rem;
       color: var(--muted-text);
       transition: color 0.3s;
     }
@@ -637,7 +624,7 @@
     .footer-legal {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 400;
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       color: var(--muted-text);
       letter-spacing: 0.5px;
     }
@@ -661,7 +648,7 @@
       .hero-logo { width: 6rem; height: 6rem; }
       .hero-buttons { flex-direction: column; align-items: center; }
       .btn-primary, .btn-outline { width: 100%; max-width: 300px; text-align: center; }
-      .stats-row { gap: var(--spacing-lg); }
+
       .footer-top {
         flex-direction: column;
         align-items: center;
@@ -679,7 +666,7 @@
       .hero { padding-top: calc(3.5rem + var(--spacing-xl)); }
       .hero-chip { font-size: 0.75rem; padding: 0.35rem 1rem; }
       .game-icon { width: 3rem; height: 3rem; font-size: 1.3rem; }
-      .stat-num { font-size: 1.6rem; }
+
       .section { padding: var(--spacing-xl) 0; }
     }
 
@@ -906,7 +893,7 @@
      ═══════════════════════════════════════════════════════════════ -->
 <nav class="nav">
   <div class="container nav-inner">
-    <a href="#" class="nav-brand">
+    <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="nav-brand">
       <img src="/logo.jpg" alt="xSTIK" class="nav-logo"
            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2268%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
       <div>
@@ -967,24 +954,9 @@
       <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="btn-outline">Visit xSTIK.art</a>
     </div>
 
-    <div class="stats-row anim-fade anim-d5">
-      <div class="stat-item">
-        <div class="stat-num text-gradient">9</div>
-        <div class="stat-label">Games</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num text-gradient">2,233</div>
-        <div class="stat-label">NFT Cards</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num text-gradient">11,304</div>
-        <div class="stat-label">Lines of Code</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num text-gradient">7</div>
-        <div class="stat-label">Shared Modules</div>
-      </div>
-    </div>
+    <p class="community-text anim-fade anim-d5">
+      Games leveraging xSTIK NFTs as playing cards — all built by the community, for the community.
+    </p>
   </div>
 </section>
 
