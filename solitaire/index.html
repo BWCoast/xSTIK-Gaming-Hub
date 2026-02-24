@@ -105,7 +105,7 @@
       --card-w: clamp(4rem, 10vw, 7rem);
       --card-h: calc(var(--card-w) * 1.5);
       --face-down-offset: 0.45rem;
-      --face-up-offset: 1.8rem;
+      --face-up-offset: 2.8rem;
     }
     /* ---- Table Layout ---- */
     .solitaire-table {
@@ -171,7 +171,7 @@
     .card img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       display: block;
       pointer-events: none;
     }
@@ -227,7 +227,7 @@
       :root {
         --card-w: clamp(2.8rem, 12.5vw, 4.5rem);
         --face-down-offset: 0.3rem;
-        --face-up-offset: 1.3rem;
+        --face-up-offset: 2.0rem;
       }
       .game-info { font-size: 0.75rem; gap: 0.5rem; }
       .btn-sm { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
@@ -783,6 +783,7 @@
     // ===== DRAG AND DROP =====
     var drag = null;
     var autoCompleting = false;
+    var dragMoved = false;
 
     function flipNewTop(colIdx) {
       var col = state.tableau[colIdx];
@@ -792,6 +793,8 @@
     function dragStart(e, source, colIdx, cardIdx) {
       if (!state.gameActive) return;
       e.preventDefault();
+      e.stopPropagation();
+      dragMoved = false;
       var clientX = e.touches ? e.touches[0].clientX : e.clientX;
       var clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -822,6 +825,7 @@
 
     function dragPosition(x, y) {
       if (!drag) return;
+      dragMoved = true;
       var w = drag.ghost.offsetWidth || 80;
       drag.ghost.style.left = (x - w / 2) + 'px';
       drag.ghost.style.top = (y - 20) + 'px';
@@ -831,10 +835,11 @@
       if (!drag) return;
       var clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
       var clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      drag.ghost.style.display = 'none';
+      var target = document.elementFromPoint(clientX, clientY);
       drag.ghost.remove();
 
-      var target = document.elementFromPoint(clientX, clientY);
-      if (target) {
+      if (dragMoved && target) {
         var foundEl = target.closest('[id^="foundation-"]');
         var tabEl = target.closest('[id^="tab-"]');
         if (foundEl) {
@@ -844,6 +849,7 @@
         }
       }
       drag = null;
+      dragMoved = false;
       renderAll();
     }
 
@@ -941,7 +947,10 @@
       // Stock click
       document.getElementById('stock').addEventListener('click', handleStockClick);
       // Waste click
-      document.getElementById('waste').addEventListener('click', handleWasteClick);
+      document.getElementById('waste').addEventListener('click', function() {
+        if (dragMoved) return;
+        handleWasteClick();
+      });
       document.getElementById('waste').addEventListener('dblclick', () => {
         if (state.waste.length > 0) {
           autoFoundation(state.waste[state.waste.length - 1], 'waste');
@@ -955,6 +964,7 @@
       for (let c = 0; c < 7; c++) {
         const colEl = document.getElementById('tab-' + c);
         colEl.addEventListener('click', (e) => {
+          if (dragMoved) return;
           const cardEl = e.target.closest('.card');
           if (!cardEl) {
             // Clicked empty space in column
