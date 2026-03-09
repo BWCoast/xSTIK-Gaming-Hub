@@ -356,7 +356,7 @@
   </style>
 </head>
 <body>
-  <div class="game-shell">
+  <div class="game-shell large-cards">
     <header class="game-header">
       <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
         <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
@@ -496,6 +496,7 @@
   <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
   <script src="/SHARED-CORE/player/player-system.js"></script>
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/leaderboard/supabase-bridge.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
   <script>
   (function () {
@@ -762,7 +763,6 @@
       for (var i = 0; i < G.aiHole.length; i++) {
         var faceUp = G.phase === 'showdown';
         var cardEl = createCardEl(G.aiHole[i], faceUp);
-        if (faceUp) cardEl.classList.add('deal-in');
         el.appendChild(cardEl);
       }
     }
@@ -773,7 +773,7 @@
       for (var i = 0; i < 5; i++) {
         if (i < G.community.length) {
           var cardEl = createCardEl(G.community[i], true);
-          cardEl.classList.add('deal-in');
+
           el.appendChild(cardEl);
         } else {
           var slot = document.createElement('div');
@@ -788,7 +788,7 @@
       el.innerHTML = '';
       for (var i = 0; i < G.playerHole.length; i++) {
         var cardEl = createCardEl(G.playerHole[i], true);
-        cardEl.classList.add('deal-in');
+
         el.appendChild(cardEl);
       }
 
@@ -1462,26 +1462,6 @@
         creditsWon: stats.creditsWon
       });
       XstikLeaderboard.rebuildUnified();
-
-      // Also local leaderboard
-      try {
-        var score = Math.round((stats.wins * 100) + (stats.creditsWon * 0.5));
-        if (score <= 0) return;
-        var key = 'xstik-texas-holdem-leaderboard';
-        var entries = [];
-        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { entries = []; }
-        if (!Array.isArray(entries)) entries = [];
-        var existingIdx = entries.findIndex(function(e) { return e.name === playerName; });
-        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
-        if (existingIdx >= 0) {
-          if (score > entries[existingIdx].score) entries[existingIdx] = newEntry;
-        } else {
-          entries.push(newEntry);
-        }
-        entries.sort(function(a,b) { return b.score - a.score; });
-        entries = entries.slice(0, 100);
-        localStorage.setItem(key, JSON.stringify(entries));
-      } catch(err) { /* silent */ }
     }
 
     // ================================================================

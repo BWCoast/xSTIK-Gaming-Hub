@@ -757,3 +757,30 @@ html, body { overflow: hidden; height: 100%; height: 100dvh; }
   .btn-back-link { display: none; }
   .card .card-badge { font-size: 0.45rem; }
 }
+
+/* ================================================================
+   LARGE CARDS — for non-solitaire games (add .large-cards to .game-shell)
+   ================================================================ */
+.large-cards {
+  --card-w: clamp(5.5rem, 12vw, 8.5rem);
+  --card-h: calc(var(--card-w) * 1.5);
+  --card-gap: 0.5rem;
+}
+.large-cards .card-badge {
+  font-size: 0.65rem;
+  padding: 2px 4px;
+}
+
+@media (max-width: 767px) {
+  .large-cards {
+    --card-w: clamp(3.5rem, 18vw, 5.5rem);
+    --card-gap: 0.3rem;
+  }
+  .large-cards .card-badge { font-size: 0.55rem; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .large-cards {
+    --card-w: clamp(5rem, 10vw, 7rem);
+    --card-gap: 0.4rem;
+  }
+}
