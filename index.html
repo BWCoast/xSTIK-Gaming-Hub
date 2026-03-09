@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>xSTIK Game Hub — Play Classic Card Games on XRPL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xSTIK Gaming Hub</title>
+  <link rel="stylesheet" href="SHARED-CORE/branding/xstik-brand.css">
   <meta name="description" content="9 card games powered by 2,233 NFT playing cards on XRPL. Play Blackjack, Solitaire, Texas Hold'Em, Spades, and more in the xSTIK Game Hub.">
   <meta name="author" content="xSTIK">
   <link rel="icon" type="image/jpeg" href="/logo.jpg">
@@ -1144,13 +1145,24 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     JAVASCRIPT
-     ═══════════════════════════════════════════════════════════════ -->
-<script src="./SHARED-CORE/leaderboard/supabase-sync.js"></script>
+<!-- Unified Core Loader -->
+<script src="./SHARED-CORE/player/player-system.js"></script>
+<script src="./SHARED-CORE/credits/credit-system.js"></script>
+<script src="./SHARED-CORE/leaderboard/leaderboard.js"></script>
+<script src="./SHARED-CORE/game-init.js"></script>
 <script>
 (function() {
   'use strict';
+  XstikGameInit.boot({
+    disclaimerKey: 'xstik_disclaimer_seen',
+    onReady: () => {
+      // Hub grandmaster board hydrate here
+      XstikLeaderboard.hydrateFromBackend();
+    }
+  });
+})();
+</script>
+
 
   // ─── CONSTANTS ───
   var DISCLAIMER_KEY  = 'xstik_disclaimer_v1';
