@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Baccarat — Play on XRPL</title>
+  <title>xSTIK Baccarat</title>
 
   <!-- OG Meta -->
   <meta property="og:title" content="xSTIK Baccarat">
@@ -17,8 +17,964 @@
   <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
+
   <style>
     /* ================================================================
+       BACCARAT-SPECIFIC STYLES
+       ================================================================ */
+
+    /* Betting zones row */
+    .bet-zones {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: stretch;
+      flex-shrink: 0;
+      padding: 0.2rem 0;
+    }
+
+    .bet-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(245, 197, 24, 0.2);
+      border-radius: 0.5rem;
+      padding: 0.4rem 1rem;
+      min-width: 5.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(31, 31, 31, 0.4);
+      position: relative;
+    }
+
+    .bet-zone:hover {
+      border-color: rgba(245, 197, 24, 0.5);
+      background: rgba(245, 197, 24, 0.06);
+    }
+
+    .bet-zone.active {
+      border-color: var(--primary);
+      background: rgba(245, 197, 24, 0.12);
+      box-shadow: 0 0 15px rgba(245, 197, 24, 0.2);
+    }
+
+    .bet-zone.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .bet-zone-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted-text, #B3B3B3);
+    }
+
+    .bet-zone.active .bet-zone-label {
+      color: var(--primary);
+    }
+
+    .bet-zone-payout {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.65rem;
+      color: rgba(179, 179, 179, 0.5);
+      margin-top: 0.1rem;
+    }
+
+    .bet-zone-amount {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--primary);
+      margin-top: 0.15rem;
+      min-height: 1.1rem;
+    }
+
+    .bet-zone.tie-zone {
+      min-width: 4.5rem;
+    }
+
+    /* Hand sections */
+    .hands-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 0;
+    }
+
+    .hand-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+    }
+
+    .hand-section .hand-area {
+      min-height: auto;
+    }
+
+    .hand-value-display {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .vs-divider {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: rgba(245, 197, 24, 0.3);
+      letter-spacing: 2px;
+    }
+
+    /* Chip selector row */
+    .chip-row {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 0.15rem 0;
+    }
+
+    .chip-btn {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 50%;
+      width: 2.4rem;
+      height: 2.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(245, 197, 24, 0.3);
+      background: rgba(31, 31, 31, 0.6);
+      color: var(--muted-text, #B3B3B3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .chip-btn.selected {
+      border-color: var(--primary);
+      background: rgba(245, 197, 24, 0.2);
+      color: var(--primary);
+      box-shadow: 0 0 10px rgba(245, 197, 24, 0.3);
+    }
+
+    .chip-btn.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    /* Action buttons row */
+    .baccarat-actions {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0.15rem 0;
+    }
+
+    /* Winner highlight glow on hand section */
+    .hand-section.winner .hand-label {
+      color: #22c55e;
+      text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+    .hand-section.winner .hand-value {
+      color: #22c55e;
+    }
+
+    /* Natural badge */
+    .natural-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.5rem;
+      font-weight: 700;
+      color: #22c55e;
+      letter-spacing: 1px;
+      animation: winPulse 0.8s ease-in-out 2;
+    }
+
+    /* Result overlay content */
+    .result-details {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted-text, #B3B3B3);
+      margin-top: 0.25rem;
+    }
+
+    .result-payout {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      color: var(--muted-text, #B3B3B3);
+      flex-shrink: 0;
+      padding: 0.1rem 0;
+    }
+    .stats-row strong {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 767px) {
+      .bet-zone {
+        padding: 0.3rem 0.6rem;
+        min-width: 4.5rem;
+      }
+      .bet-zone-label { font-size: 0.5rem; }
+      .bet-zone-payout { font-size: 0.55rem; }
+      .bet-zone-amount { font-size: 0.75rem; }
+      .chip-btn {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.65rem;
+      }
+      .vs-divider { font-size: 0.45rem; }
+      .stats-row { font-size: 0.65rem; gap: 0.6rem; }
+      .bet-zone.tie-zone { min-width: 3.5rem; }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">BACCARAT</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">← Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </header>
 
+    <main class="game-area">
+      <div class="table-felt">
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <span>Hands: <strong id="stat-hands">0</strong></span>
+          <span>Wins: <strong id="stat-wins">0</strong></span>
+          <span>Won: <strong id="stat-credits">0</strong></span>
+        </div>
+
+        <!-- Betting zones -->
+        <div class="bet-zones" id="bet-zones">
+          <div class="bet-zone" data-bet="player" id="zone-player">
+            <span class="bet-zone-label">PLAYER</span>
+            <span class="bet-zone-payout">1:1</span>
+            <span class="bet-zone-amount" id="bet-player-amt"></span>
+          </div>
+          <div class="bet-zone tie-zone" data-bet="tie" id="zone-tie">
+            <span class="bet-zone-label">TIE</span>
+            <span class="bet-zone-payout">8:1</span>
+            <span class="bet-zone-amount" id="bet-tie-amt"></span>
+          </div>
+          <div class="bet-zone" data-bet="banker" id="zone-banker">
+            <span class="bet-zone-label">BANKER</span>
+            <span class="bet-zone-payout">0.95:1</span>
+            <span class="bet-zone-amount" id="bet-banker-amt"></span>
+          </div>
+        </div>
+
+        <!-- Hands area -->
+        <div class="hands-area">
+          <!-- Banker hand -->
+          <div class="hand-section" id="banker-section">
+            <div class="hand-value-display">
+              <span class="hand-label">BANKER</span>
+              <span class="hand-value" id="banker-value"></span>
+            </div>
+            <div class="hand-area" id="banker-hand"></div>
+          </div>
+
+          <div class="vs-divider" id="vs-divider"></div>
+
+          <!-- Player hand -->
+          <div class="hand-section" id="player-section">
+            <div class="hand-area" id="player-hand"></div>
+            <div class="hand-value-display">
+              <span class="hand-label">PLAYER</span>
+              <span class="hand-value" id="player-value"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chip selector -->
+        <div class="chip-row" id="chip-row">
+          <button class="chip-btn selected" data-chip="10">10</button>
+          <button class="chip-btn" data-chip="25">25</button>
+          <button class="chip-btn" data-chip="50">50</button>
+          <button class="chip-btn" data-chip="100">100</button>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="baccarat-actions" id="action-area">
+          <button class="btn-game" id="btn-deal" disabled>DEAL</button>
+          <button class="btn-sm" id="btn-clear" style="display:none;">CLEAR</button>
+        </div>
+
+        <!-- Center overlay for results -->
+        <div class="center-overlay" id="result-overlay">
+          <div class="result-text" id="result-title"></div>
+          <div class="result-details" id="result-details"></div>
+          <div class="result-payout" id="result-payout"></div>
+          <button class="btn-game" id="btn-next">NEXT HAND</button>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- Rules overlay -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY BACCARAT</div>
+      <div class="rules-section">
+        <h3>Objective</h3>
+        <p>Bet on which hand — Player or Banker — will have a total closest to 9, or bet on a Tie.</p>
+      </div>
+      <div class="rules-section">
+        <h3>Card Values</h3>
+        <ul>
+          <li>Ace = 1</li>
+          <li>2–9 = Face value</li>
+          <li>10, J, Q, K = 0</li>
+        </ul>
+        <p>Hand value = sum of cards mod 10 (only the last digit counts).</p>
+      </div>
+      <div class="rules-section">
+        <h3>Natural</h3>
+        <p>If either hand totals 8 or 9 on the first two cards, it's a "natural" — no more cards are drawn.</p>
+      </div>
+      <div class="rules-section">
+        <h3>Drawing Rules</h3>
+        <p><strong>Player:</strong> Stands on 6–7, draws on 0–5.</p>
+        <p><strong>Banker:</strong> Complex rules based on own total and Player's third card.</p>
+      </div>
+      <div class="rules-section">
+        <h3>Payouts</h3>
+        <ul>
+          <li>Player wins: 1:1</li>
+          <li>Banker wins: 0.95:1 (5% commission)</li>
+          <li>Tie: 8:1</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h3>Betting</h3>
+        <p>Select a chip value, then click Player, Banker, or Tie to place your bet. Click DEAL when ready.</p>
+      </div>
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard panel -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- Win screen -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var GAME_SLUG = 'baccarat';
+    var CARD_BACK_PATH = '/SHARED-CORE/assets/cardback.jpg';
+
+    /* ================================================================
+       STATE
+       ================================================================ */
+    var deck = [];
+    var deckIndex = 0;
+    var selectedChip = 10;
+    var bets = { player: 0, banker: 0, tie: 0 };
+    var totalBet = 0;
+    var bankerCards = [];
+    var playerCards = [];
+    var phase = 'betting'; // 'betting' | 'dealing' | 'result'
+
+    // Session stats
+    var stats = { handsPlayed: 0, wins: 0, creditsWon: 0 };
+
+    /* ================================================================
+       DOM REFS
+       ================================================================ */
+    var $bankerHand = document.getElementById('banker-hand');
+    var $playerHand = document.getElementById('player-hand');
+    var $bankerValue = document.getElementById('banker-value');
+    var $playerValue = document.getElementById('player-value');
+    var $betPlayerAmt = document.getElementById('bet-player-amt');
+    var $betTieAmt = document.getElementById('bet-tie-amt');
+    var $betBankerAmt = document.getElementById('bet-banker-amt');
+    var $btnDeal = document.getElementById('btn-deal');
+    var $btnClear = document.getElementById('btn-clear');
+    var $resultOverlay = document.getElementById('result-overlay');
+    var $resultTitle = document.getElementById('result-title');
+    var $resultDetails = document.getElementById('result-details');
+    var $resultPayout = document.getElementById('result-payout');
+    var $btnNext = document.getElementById('btn-next');
+    var $vsDivider = document.getElementById('vs-divider');
+    var $statHands = document.getElementById('stat-hands');
+    var $statWins = document.getElementById('stat-wins');
+    var $statCredits = document.getElementById('stat-credits');
+    var $bankerSection = document.getElementById('banker-section');
+    var $playerSection = document.getElementById('player-section');
+
+    /* ================================================================
+       CARD HELPERS
+       ================================================================ */
+    function shuffleDeck() {
+      deck = XstikImageLoader.getShuffledDeck();
+      deckIndex = 0;
+    }
+
+    function drawCard() {
+      if (deckIndex >= deck.length) {
+        shuffleDeck();
+      }
+      return deck[deckIndex++];
+    }
+
+    function baccaratValue(card) {
+      if (card.rank === 'A') return 1;
+      if (['10', 'J', 'Q', 'K'].indexOf(card.rank) !== -1) return 0;
+      return parseInt(card.rank, 10);
+    }
+
+    function handTotal(cards) {
+      var sum = 0;
+      for (var i = 0; i < cards.length; i++) {
+        sum += baccaratValue(cards[i]);
+      }
+      return sum % 10;
+    }
+
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].indexOf(card.suit) !== -1 ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    function flipCardEl(el, card) {
+      el.classList.add('card-flip');
+      setTimeout(function () {
+        el.className = 'card face-up';
+        var img = el.querySelector('img');
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].indexOf(card.suit) !== -1 ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+        el.appendChild(badge);
+      }, 150);
+    }
+
+    /* ================================================================
+       UI UPDATES
+       ================================================================ */
+    function updateBetDisplay() {
+      $betPlayerAmt.textContent = bets.player ? bets.player : '';
+      $betTieAmt.textContent = bets.tie ? bets.tie : '';
+      $betBankerAmt.textContent = bets.banker ? bets.banker : '';
+
+      // Highlight active zone
+      document.getElementById('zone-player').classList.toggle('active', bets.player > 0);
+      document.getElementById('zone-tie').classList.toggle('active', bets.tie > 0);
+      document.getElementById('zone-banker').classList.toggle('active', bets.banker > 0);
+
+      totalBet = bets.player + bets.banker + bets.tie;
+      $btnDeal.disabled = totalBet === 0;
+      $btnClear.style.display = totalBet > 0 ? '' : 'none';
+    }
+
+    function updateStats() {
+      $statHands.textContent = stats.handsPlayed;
+      $statWins.textContent = stats.wins;
+      $statCredits.textContent = stats.creditsWon;
+    }
+
+    function updateChipStates() {
+      var balance = XstikCredits.getBalance();
+      var chipBtns = document.querySelectorAll('.chip-btn');
+      for (var i = 0; i < chipBtns.length; i++) {
+        var val = parseInt(chipBtns[i].dataset.chip, 10);
+        chipBtns[i].classList.toggle('disabled', val > balance);
+      }
+    }
+
+    function setPhase(p) {
+      phase = p;
+      var zones = document.querySelectorAll('.bet-zone');
+      var chipBtns = document.querySelectorAll('.chip-btn');
+      if (p === 'betting') {
+        for (var i = 0; i < zones.length; i++) zones[i].classList.remove('disabled');
+        for (var j = 0; j < chipBtns.length; j++) chipBtns[j].classList.remove('disabled');
+        $btnDeal.style.display = '';
+        $btnClear.style.display = totalBet > 0 ? '' : 'none';
+        updateChipStates();
+      } else {
+        for (var k = 0; k < zones.length; k++) zones[k].classList.add('disabled');
+        for (var l = 0; l < chipBtns.length; l++) chipBtns[l].classList.add('disabled');
+        $btnDeal.style.display = 'none';
+        $btnClear.style.display = 'none';
+      }
+    }
+
+    /* ================================================================
+       BETTING
+       ================================================================ */
+    function placeBetOn(side) {
+      if (phase !== 'betting') return;
+      var balance = XstikCredits.getBalance();
+      if (selectedChip > balance) return;
+
+      if (!XstikCredits.placeBet(selectedChip, GAME_SLUG)) return;
+      bets[side] += selectedChip;
+      updateBetDisplay();
+      updateChipStates();
+    }
+
+    function clearBets() {
+      if (phase !== 'betting') return;
+      if (totalBet > 0) {
+        XstikCredits.awardWinnings(totalBet, GAME_SLUG);
+      }
+      bets = { player: 0, banker: 0, tie: 0 };
+      updateBetDisplay();
+      updateChipStates();
+    }
+
+    /* ================================================================
+       DEALING & GAME LOGIC
+       ================================================================ */
+    function resetTable() {
+      $bankerHand.innerHTML = '';
+      $playerHand.innerHTML = '';
+      $bankerValue.textContent = '';
+      $playerValue.textContent = '';
+      $vsDivider.textContent = '';
+      $bankerSection.classList.remove('winner');
+      $playerSection.classList.remove('winner');
+      $resultOverlay.classList.remove('show');
+      bankerCards = [];
+      playerCards = [];
+    }
+
+    function dealInitial() {
+      if (phase !== 'betting' || totalBet === 0) return;
+      setPhase('dealing');
+      resetTable();
+
+      // Ensure enough cards
+      if (deckIndex + 6 > deck.length) shuffleDeck();
+
+      // Deal 2 cards each: P1, B1, P2, B2 (staggered)
+      var p1 = drawCard();
+      var b1 = drawCard();
+      var p2 = drawCard();
+      var b2 = drawCard();
+
+      playerCards = [p1, p2];
+      bankerCards = [b1, b2];
+
+      // Staggered deal animation
+      var delay = 0;
+      var dealDelay = 300;
+
+      // Player card 1
+      setTimeout(function () {
+        var el = createCardEl(p1, true);
+        el.classList.add('deal-in');
+        $playerHand.appendChild(el);
+        $playerValue.textContent = handTotal(playerCards.slice(0, 1));
+      }, delay);
+      delay += dealDelay;
+
+      // Banker card 1
+      setTimeout(function () {
+        var el = createCardEl(b1, true);
+        el.classList.add('deal-in');
+        $bankerHand.appendChild(el);
+        $bankerValue.textContent = handTotal(bankerCards.slice(0, 1));
+      }, delay);
+      delay += dealDelay;
+
+      // Player card 2
+      setTimeout(function () {
+        var el = createCardEl(p2, true);
+        el.classList.add('deal-in');
+        $playerHand.appendChild(el);
+        $playerValue.textContent = handTotal(playerCards);
+      }, delay);
+      delay += dealDelay;
+
+      // Banker card 2
+      setTimeout(function () {
+        var el = createCardEl(b2, true);
+        el.classList.add('deal-in');
+        $bankerHand.appendChild(el);
+        $bankerValue.textContent = handTotal(bankerCards);
+        $vsDivider.textContent = 'VS';
+      }, delay);
+      delay += dealDelay;
+
+      // After initial deal, check for naturals / drawing
+      setTimeout(function () {
+        checkNaturalsAndDraw();
+      }, delay + 200);
+    }
+
+    function checkNaturalsAndDraw() {
+      var pTotal = handTotal(playerCards);
+      var bTotal = handTotal(bankerCards);
+
+      // Natural check
+      if (pTotal >= 8 || bTotal >= 8) {
+        showResult();
+        return;
+      }
+
+      // Player drawing rule
+      var playerThirdCard = null;
+      if (pTotal <= 5) {
+        playerThirdCard = drawCard();
+        playerCards.push(playerThirdCard);
+
+        var el = createCardEl(playerThirdCard, true);
+        el.classList.add('deal-in');
+        $playerHand.appendChild(el);
+        $playerValue.textContent = handTotal(playerCards);
+      }
+      // Player stands on 6 or 7
+
+      // Banker drawing rules
+      var bankerDraws = false;
+      if (playerThirdCard === null) {
+        // Player did not draw (stood on 6 or 7)
+        // Banker draws on 0–5, stands on 6–7
+        bankerDraws = bTotal <= 5;
+      } else {
+        var p3val = baccaratValue(playerThirdCard);
+        if (bTotal <= 2) {
+          bankerDraws = true;
+        } else if (bTotal === 3) {
+          bankerDraws = p3val !== 8;
+        } else if (bTotal === 4) {
+          bankerDraws = p3val >= 2 && p3val <= 7;
+        } else if (bTotal === 5) {
+          bankerDraws = p3val >= 4 && p3val <= 7;
+        } else if (bTotal === 6) {
+          bankerDraws = p3val === 6 || p3val === 7;
+        }
+        // bTotal === 7: stands
+      }
+
+      var drawDelay = playerThirdCard ? 400 : 100;
+
+      if (bankerDraws) {
+        setTimeout(function () {
+          var b3 = drawCard();
+          bankerCards.push(b3);
+          var el2 = createCardEl(b3, true);
+          el2.classList.add('deal-in');
+          $bankerHand.appendChild(el2);
+          $bankerValue.textContent = handTotal(bankerCards);
+
+          setTimeout(function () {
+            showResult();
+          }, 500);
+        }, drawDelay);
+      } else {
+        setTimeout(function () {
+          showResult();
+        }, drawDelay + 200);
+      }
+    }
+
+    /* ================================================================
+       RESULT & PAYOUT
+       ================================================================ */
+    function showResult() {
+      var pTotal = handTotal(playerCards);
+      var bTotal = handTotal(bankerCards);
+
+      var winner; // 'player', 'banker', 'tie'
+      if (pTotal > bTotal) {
+        winner = 'player';
+      } else if (bTotal > pTotal) {
+        winner = 'banker';
+      } else {
+        winner = 'tie';
+      }
+
+      // Calculate payout
+      var payout = 0;
+      var won = false;
+      var resultClass = 'lose';
+      var titleText = '';
+      var detailsText = 'Player ' + pTotal + ' — Banker ' + bTotal;
+
+      if (winner === 'player') {
+        titleText = 'PLAYER WINS';
+        if (bets.player > 0) {
+          payout += bets.player * 2; // 1:1 + original
+          won = true;
+        }
+        if (bets.tie > 0) {
+          // tie bet lost
+        }
+        if (bets.banker > 0) {
+          // banker bet lost
+        }
+        $playerSection.classList.add('winner');
+      } else if (winner === 'banker') {
+        titleText = 'BANKER WINS';
+        if (bets.banker > 0) {
+          payout += bets.banker + Math.floor(bets.banker * 0.95); // 0.95:1 + original
+          won = true;
+        }
+        $bankerSection.classList.add('winner');
+      } else {
+        titleText = 'TIE';
+        // Tie: player/banker bets push (returned)
+        if (bets.player > 0) {
+          payout += bets.player; // push — return bet
+        }
+        if (bets.banker > 0) {
+          payout += bets.banker; // push — return bet
+        }
+        if (bets.tie > 0) {
+          payout += bets.tie * 9; // 8:1 + original
+          won = true;
+        }
+        $playerSection.classList.add('winner');
+        $bankerSection.classList.add('winner');
+      }
+
+      if (won) {
+        resultClass = 'win';
+      } else if (winner === 'tie' && bets.tie === 0 && (bets.player > 0 || bets.banker > 0)) {
+        resultClass = 'push';
+      }
+
+      // Natural indicator
+      if ((handTotal(playerCards.slice(0, 2)) >= 8 || handTotal(bankerCards.slice(0, 2)) >= 8) &&
+          playerCards.length === 2 && bankerCards.length === 2) {
+        detailsText += ' — NATURAL!';
+      }
+
+      // Award winnings
+      if (payout > 0) {
+        XstikCredits.awardWinnings(payout, GAME_SLUG);
+      }
+
+      var netGain = payout - totalBet;
+
+      // Update stats
+      stats.handsPlayed++;
+      if (won) {
+        stats.wins++;
+        stats.creditsWon += netGain;
+      } else if (resultClass === 'push') {
+        // push — no win/loss counted
+      } else {
+        stats.creditsWon += netGain; // negative
+      }
+      updateStats();
+
+      // Submit to leaderboard
+      var playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
+        handsPlayed: stats.handsPlayed,
+        wins: stats.wins,
+        creditsWon: stats.creditsWon
+      });
+      XstikLeaderboard.rebuildUnified();
+
+      // Show overlay
+      $resultTitle.className = 'result-text ' + resultClass;
+      $resultTitle.textContent = titleText;
+      $resultDetails.textContent = detailsText;
+      if (won) {
+        $resultPayout.textContent = '+' + netGain + ' CREDITS';
+        $resultPayout.style.color = '#22c55e';
+      } else if (resultClass === 'push') {
+        $resultPayout.textContent = 'BET RETURNED';
+        $resultPayout.style.color = 'var(--primary)';
+      } else {
+        $resultPayout.textContent = netGain + ' CREDITS';
+        $resultPayout.style.color = '#ef4444';
+      }
+
+      setTimeout(function () {
+        $resultOverlay.classList.add('show');
+        setPhase('result');
+      }, 300);
+    }
+
+    function nextHand() {
+      resetTable();
+      bets = { player: 0, banker: 0, tie: 0 };
+      totalBet = 0;
+      updateBetDisplay();
+      setPhase('betting');
+      updateChipStates();
+
+      // Bankruptcy check
+      if (XstikCredits.isBankrupt()) {
+        XstikCredits.triggerBankruptcy(function () {
+          updateChipStates();
+        });
+      }
+    }
+
+    /* ================================================================
+       EVENT WIRING
+       ================================================================ */
+    function wireEvents() {
+      // Rules overlay
+      document.getElementById('btn-rules').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+
+      // Chip selection
+      var chipBtns = document.querySelectorAll('.chip-btn');
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].addEventListener('click', function () {
+          if (this.classList.contains('disabled')) return;
+          selectedChip = parseInt(this.dataset.chip, 10);
+          for (var j = 0; j < chipBtns.length; j++) chipBtns[j].classList.remove('selected');
+          this.classList.add('selected');
+        });
+      }
+
+      // Bet zone clicks
+      var zones = document.querySelectorAll('.bet-zone');
+      for (var k = 0; k < zones.length; k++) {
+        zones[k].addEventListener('click', function () {
+          if (this.classList.contains('disabled')) return;
+          var side = this.dataset.bet;
+          placeBetOn(side);
+        });
+      }
+
+      // Deal button
+      $btnDeal.addEventListener('click', dealInitial);
+
+      // Clear button
+      $btnClear.addEventListener('click', clearBets);
+
+      // Next hand button
+      $btnNext.addEventListener('click', nextHand);
+
+      // Listen for balance changes
+      XstikCredits.onBalanceChange(function () {
+        updateChipStates();
+      });
+    }
+
+    /* ================================================================
+       INIT
+       ================================================================ */
+    XstikGameInit.showDisclaimer();
+    XstikGameInit.boot(GAME_SLUG, {
+      preloadCards: true,
+      onReady: function () {
+        shuffleDeck();
+        wireEvents();
+        updateBetDisplay();
+        updateStats();
+        updateChipStates();
+        setPhase('betting');
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

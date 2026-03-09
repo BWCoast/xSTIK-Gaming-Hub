@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Three Card Brag — Play on XRPL</title>
+  <title>xSTIK Three Card Brag</title>
 
   <!-- OG Meta -->
   <meta property="og:title" content="xSTIK Three Card Brag">
@@ -14,11 +14,893 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/logo.jpg" type="image/jpeg">
 
-  <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
   <style>
     /* ================================================================
+       THREE CARD BRAG — Game-Specific CSS
+       ================================================================ */
+
+    /* Dealer section */
+    .dealer-section, .player-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .cards-row {
+      display: flex;
+      gap: var(--card-gap);
+      justify-content: center;
+      min-height: var(--card-h);
+      align-items: center;
+    }
+
+    .hand-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--primary);
+      text-align: center;
+      min-height: 1.1em;
+      letter-spacing: 0.5px;
+    }
+
+    /* Ante chip buttons */
+    .chip-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chip-btn {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      background: radial-gradient(circle at 35% 35%, rgba(245,197,24,0.25), rgba(0,0,0,0.8));
+      color: var(--primary);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(245,197,24,0.15), inset 0 0 8px rgba(245,197,24,0.1);
+    }
+    .chip-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(245,197,24,0.4), inset 0 0 12px rgba(245,197,24,0.2);
+    }
+    .chip-btn.selected {
+      background: radial-gradient(circle at 35% 35%, rgba(245,197,24,0.5), rgba(0,0,0,0.6));
+      box-shadow: 0 0 20px rgba(245,197,24,0.5), inset 0 0 15px rgba(245,197,24,0.3);
+      transform: scale(1.1);
+    }
+
+    /* Bet info strip */
+    .bet-info {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--muted-text, #B3B3B3);
+      text-align: center;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .bet-info .amount {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* Result display */
+    .result-banner {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      text-align: center;
+      min-height: 1.2em;
+      letter-spacing: 1px;
+    }
+    .result-banner.win { color: #22c55e; }
+    .result-banner.lose { color: #ef4444; }
+    .result-banner.push { color: var(--primary); }
+
+    .result-detail {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 0.75rem;
+      color: var(--muted-text, #B3B3B3);
+      text-align: center;
+      min-height: 1em;
+    }
+
+    /* Dealer qualifier badge */
+    .qualifier-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+    .qualifier-badge.qualifies {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .qualifier-badge.no-qualify {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Compact spacing for no-scroll fit */
+    .table-felt {
+      gap: 0.4rem;
+      padding: 0.2rem 0;
+    }
+
+    /* Middle area for bet/action/result info */
+    .middle-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      min-height: 3.5rem;
+    }
+
+    @media (max-width: 767px) {
+      .chip-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 0.65rem;
+        border-width: 2px;
+      }
+      .hand-name { font-size: 0.75rem; }
+      .result-banner { font-size: 0.7rem; }
+      .bet-info { font-size: 0.7rem; gap: 0.6rem; }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">THREE CARD BRAG</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">← Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </header>
 
+    <main class="game-area">
+      <div class="table-felt">
+
+        <!-- DEALER AREA -->
+        <div class="dealer-section">
+          <div class="hand-label">DEALER</div>
+          <div class="cards-row" id="dealer-cards"></div>
+          <div class="hand-name" id="dealer-hand-name"></div>
+        </div>
+
+        <!-- MIDDLE ZONE: results, qualifier, bet info, actions -->
+        <div class="middle-zone" id="middle-zone">
+          <div class="result-banner" id="result-banner"></div>
+          <div class="result-detail" id="result-detail"></div>
+        </div>
+
+        <!-- PLAYER AREA -->
+        <div class="player-section">
+          <div class="hand-name" id="player-hand-name"></div>
+          <div class="cards-row" id="player-cards"></div>
+          <div class="hand-label">YOUR HAND</div>
+        </div>
+
+        <!-- BET / ACTION AREA -->
+        <div class="bet-controls" id="bet-area"></div>
+        <div class="action-buttons" id="action-area"></div>
+
+      </div>
+
+      <!-- START OVERLAY -->
+      <div class="center-overlay show" id="overlay-start">
+        <div class="overlay-title">THREE CARD BRAG</div>
+        <div class="overlay-text">Beat the dealer with 3 cards. Place your ante, see your hand, then decide: Play or Fold.</div>
+        <div class="overlay-text" style="font-size:0.75rem; opacity:0.7;">Select your ante to begin</div>
+        <div class="chip-row" id="start-chips"></div>
+      </div>
+
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- Rules Overlay -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY</div>
+
+      <div class="rules-section">
+        <h3>Basics</h3>
+        <p>Place an ante bet, then 3 cards are dealt to you (face-up) and the dealer (face-down).</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Play or Fold</h3>
+        <ul>
+          <li><strong>PLAY</strong> — costs 1× your ante. Dealer reveals cards.</li>
+          <li><strong>FOLD</strong> — forfeit your ante bet.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Dealer Qualification</h3>
+        <p>Dealer needs <strong>Queen-high or better</strong> to qualify.</p>
+        <ul>
+          <li>Doesn't qualify: ante pays 1:1, play bet returned.</li>
+          <li>Qualifies &amp; you win: both ante and play pay 1:1.</li>
+          <li>Qualifies &amp; dealer wins: lose both bets.</li>
+          <li>Tie: all bets returned (push).</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Hand Rankings (Highest → Lowest)</h3>
+        <ul>
+          <li><strong>Prial</strong> — Three of a kind (3-3-3 is HIGHEST!)</li>
+          <li><strong>Running Flush</strong> — Straight flush (A-2-3 beats A-K-Q)</li>
+          <li><strong>Run</strong> — Straight (A-2-3 beats A-K-Q)</li>
+          <li><strong>Flush</strong> — Three cards of same suit</li>
+          <li><strong>Pair</strong> — Two matching cards + kicker</li>
+          <li><strong>High Card</strong> — Highest card wins</li>
+        </ul>
+      </div>
+
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Panel -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- Win Screen -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var GAME_SLUG = 'three-card-brag';
+    var ANTE_OPTIONS = [10, 25, 50];
+
+    // Session stats
+    var stats = {
+      handsPlayed: 0,
+      wins: 0,
+      creditsWon: 0
+    };
+
+    var currentAnte = 0;
+    var deck = [];
+    var deckIdx = 0;
+    var playerHand = [];
+    var dealerHand = [];
+    var phase = 'idle'; // idle, dealt, resolved
+
+    // ================================================================
+    // BRAG RANK VALUES — used for hand evaluation
+    // In Brag, card rank order is: 2,3,4,5,6,7,8,9,10,J,Q,K,A (A=14)
+    // EXCEPT for prial: 3-3-3 is highest, then A-A-A, K-K-K, etc.
+    // ================================================================
+    var RANK_VAL = { '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
+
+    // Prial rank order (3 is highest, then A, K, Q, ... 2)
+    var PRIAL_VAL = { '3':15, 'A':14, 'K':13, 'Q':12, 'J':11, '10':10, '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '2':2 };
+
+    // ================================================================
+    // DECK
+    // ================================================================
+    function shuffleDeck() {
+      deck = XstikImageLoader.getShuffledDeck();
+      deckIdx = 0;
+    }
+
+    function drawCard() {
+      if (deckIdx >= deck.length) shuffleDeck();
+      return deck[deckIdx++];
+    }
+
+    function drawHand() {
+      return [drawCard(), drawCard(), drawCard()];
+    }
+
+    // ================================================================
+    // HAND EVALUATION
+    // Returns: { type: number (6=prial...1=high), name: string, ranks: [sorted rank values for comparison] }
+    // Type values: 6=Prial, 5=Running Flush, 4=Run, 3=Flush, 2=Pair, 1=High Card
+    // ================================================================
+
+    function getRankVal(card) { return RANK_VAL[card.rank]; }
+
+    function sortByRank(cards) {
+      return cards.slice().sort(function(a, b) { return getRankVal(b) - getRankVal(a); });
+    }
+
+    function isFlush(cards) {
+      return cards[0].suit === cards[1].suit && cards[1].suit === cards[2].suit;
+    }
+
+    // Check for a run (straight) — returns sorted rank values if run, or null
+    // Brag special: A-2-3 is the HIGHEST run, then A-K-Q, then K-Q-J, etc.
+    function checkRun(cards) {
+      var vals = cards.map(getRankVal).sort(function(a, b) { return a - b; });
+
+      // Check A-2-3 (highest run in brag) — vals would be [2, 3, 14]
+      if (vals[0] === 2 && vals[1] === 3 && vals[2] === 14) {
+        // Return comparison value: A-2-3 is highest, so give it value [15, 3, 2]
+        return [15, 3, 2];
+      }
+
+      // Check A-K-Q — vals would be [12, 13, 14]
+      if (vals[0] === 12 && vals[1] === 13 && vals[2] === 14) {
+        return [14, 13, 12];
+      }
+
+      // Normal consecutive check
+      if (vals[2] - vals[1] === 1 && vals[1] - vals[0] === 1) {
+        return [vals[2], vals[1], vals[0]];
+      }
+
+      return null;
+    }
+
+    function evaluateHand(cards) {
+      var sorted = sortByRank(cards);
+      var v0 = getRankVal(sorted[0]);
+      var v1 = getRankVal(sorted[1]);
+      var v2 = getRankVal(sorted[2]);
+
+      // 1. Prial (Three of a Kind)
+      if (v0 === v1 && v1 === v2) {
+        return {
+          type: 6,
+          name: 'Prial of ' + rankName(sorted[0].rank) + 's',
+          ranks: [PRIAL_VAL[sorted[0].rank]]
+        };
+      }
+
+      // 2. Check for Run / Running Flush
+      var runVals = checkRun(cards);
+      var flush = isFlush(cards);
+
+      if (runVals && flush) {
+        return {
+          type: 5,
+          name: 'Running Flush',
+          ranks: runVals
+        };
+      }
+
+      if (runVals) {
+        return {
+          type: 4,
+          name: 'Run',
+          ranks: runVals
+        };
+      }
+
+      // 3. Flush
+      if (flush) {
+        return {
+          type: 3,
+          name: 'Flush',
+          ranks: [v0, v1, v2]
+        };
+      }
+
+      // 4. Pair
+      if (v0 === v1) {
+        return {
+          type: 2,
+          name: 'Pair of ' + rankName(sorted[0].rank) + 's',
+          ranks: [v0, v2] // pair value, then kicker
+        };
+      }
+      if (v1 === v2) {
+        return {
+          type: 2,
+          name: 'Pair of ' + rankName(sorted[1].rank) + 's',
+          ranks: [v1, v0] // pair value, then kicker
+        };
+      }
+      if (v0 === v2) {
+        // This can't happen with 3 cards sorted desc (v0 >= v1 >= v2), but handle edge:
+        // Actually if v0 == v2 and v0 != v1, impossible since v0 >= v1 >= v2.
+        // But let's be safe: the middle card is the odd one out
+        return {
+          type: 2,
+          name: 'Pair of ' + rankName(sorted[0].rank) + 's',
+          ranks: [v0, v1]
+        };
+      }
+
+      // 5. High Card
+      return {
+        type: 1,
+        name: rankName(sorted[0].rank) + ' High',
+        ranks: [v0, v1, v2]
+      };
+    }
+
+    function rankName(r) {
+      var names = { 'A':'Ace', '2':'Two', '3':'Three', '4':'Four', '5':'Five', '6':'Six', '7':'Seven', '8':'Eight', '9':'Nine', '10':'Ten', 'J':'Jack', 'Q':'Queen', 'K':'King' };
+      return names[r] || r;
+    }
+
+    // Compare two evaluated hands. Returns: 1 = hand1 wins, -1 = hand2 wins, 0 = tie
+    function compareHands(eval1, eval2) {
+      if (eval1.type !== eval2.type) {
+        return eval1.type > eval2.type ? 1 : -1;
+      }
+      // Same type — compare rank arrays
+      var len = Math.min(eval1.ranks.length, eval2.ranks.length);
+      for (var i = 0; i < len; i++) {
+        if (eval1.ranks[i] !== eval2.ranks[i]) {
+          return eval1.ranks[i] > eval2.ranks[i] ? 1 : -1;
+        }
+      }
+      return 0; // tie
+    }
+
+    // Dealer qualifies with Queen-high or better
+    function dealerQualifies(evalResult) {
+      // Any hand type >= 2 (pair or better) always qualifies
+      if (evalResult.type >= 2) return true;
+      // High card: highest card must be Q (12) or better
+      return evalResult.ranks[0] >= 12;
+    }
+
+    // ================================================================
+    // CARD RENDERING (per BUILD-CONTEXT pattern)
+    // ================================================================
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].indexOf(card.suit) >= 0 ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    // ================================================================
+    // RENDER FUNCTIONS
+    // ================================================================
+
+    function renderDealerCards(faceUp) {
+      var container = document.getElementById('dealer-cards');
+      container.innerHTML = '';
+      dealerHand.forEach(function(card, i) {
+        var el = createCardEl(card, faceUp);
+        el.classList.add('deal-in');
+        el.style.animationDelay = (i * 0.12) + 's';
+        if (faceUp) {
+          el.classList.add('card-flip');
+          el.style.animationDelay = (i * 0.15) + 's';
+        }
+        container.appendChild(el);
+      });
+    }
+
+    function renderPlayerCards() {
+      var container = document.getElementById('player-cards');
+      container.innerHTML = '';
+      playerHand.forEach(function(card, i) {
+        var el = createCardEl(card, true);
+        el.classList.add('deal-in');
+        el.style.animationDelay = (i * 0.12 + 0.1) + 's';
+        container.appendChild(el);
+      });
+    }
+
+    function clearTable() {
+      document.getElementById('dealer-cards').innerHTML = '';
+      document.getElementById('player-cards').innerHTML = '';
+      document.getElementById('dealer-hand-name').textContent = '';
+      document.getElementById('player-hand-name').textContent = '';
+      document.getElementById('result-banner').textContent = '';
+      document.getElementById('result-banner').className = 'result-banner';
+      document.getElementById('result-detail').textContent = '';
+    }
+
+    function showAnteSelection() {
+      var betArea = document.getElementById('bet-area');
+      var actionArea = document.getElementById('action-area');
+
+      betArea.innerHTML = '';
+      actionArea.innerHTML = '';
+
+      // Chip buttons for ante
+      var chipRow = document.createElement('div');
+      chipRow.className = 'chip-row';
+
+      ANTE_OPTIONS.forEach(function(amt) {
+        var chip = document.createElement('button');
+        chip.className = 'chip-btn';
+        chip.textContent = amt;
+        chip.addEventListener('click', function() {
+          dealHand(amt);
+        });
+        // Disable if can't afford (ante + play = 2× ante)
+        if (XstikCredits.getBalance() < amt * 2) {
+          chip.disabled = true;
+          chip.style.opacity = '0.35';
+          chip.style.cursor = 'not-allowed';
+        }
+        chipRow.appendChild(chip);
+      });
+
+      betArea.appendChild(chipRow);
+    }
+
+    function showPlayFoldButtons() {
+      var actionArea = document.getElementById('action-area');
+      actionArea.innerHTML = '';
+
+      var playBtn = document.createElement('button');
+      playBtn.className = 'btn-game';
+      playBtn.textContent = 'PLAY — ' + currentAnte + ' CREDITS';
+      playBtn.addEventListener('click', function() { playerPlay(); });
+
+      var foldBtn = document.createElement('button');
+      foldBtn.className = 'btn-sm';
+      foldBtn.textContent = 'FOLD';
+      foldBtn.style.marginLeft = '0.3rem';
+      foldBtn.addEventListener('click', function() { playerFold(); });
+
+      actionArea.appendChild(playBtn);
+      actionArea.appendChild(foldBtn);
+
+      // Show bet info
+      var betArea = document.getElementById('bet-area');
+      betArea.innerHTML = '<div class="bet-info">ANTE: <span class="amount">' + currentAnte + '</span></div>';
+    }
+
+    function showNextHandButton() {
+      var actionArea = document.getElementById('action-area');
+      actionArea.innerHTML = '';
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-game';
+      btn.textContent = 'NEXT HAND';
+      btn.addEventListener('click', function() { nextHand(); });
+      actionArea.appendChild(btn);
+    }
+
+    // ================================================================
+    // GAME FLOW
+    // ================================================================
+
+    function startGame() {
+      document.getElementById('overlay-start').classList.remove('show');
+      clearTable();
+      showAnteSelection();
+    }
+
+    function dealHand(ante) {
+      currentAnte = ante;
+
+      // Check balance for ante (we'll deduct ante now; play bet deducted if they choose play)
+      if (XstikCredits.getBalance() < ante) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function() { showAnteSelection(); });
+        }
+        return;
+      }
+
+      // Deduct ante
+      var ok = XstikCredits.placeBet(ante, GAME_SLUG);
+      if (!ok) return;
+
+      phase = 'dealt';
+
+      // Shuffle and deal
+      shuffleDeck();
+      playerHand = drawHand();
+      dealerHand = drawHand();
+
+      // Render cards
+      clearTable();
+      renderDealerCards(false); // face-down
+      renderPlayerCards(); // face-up
+
+      // Show player hand evaluation
+      var playerEval = evaluateHand(playerHand);
+      document.getElementById('player-hand-name').textContent = playerEval.name;
+
+      // Show play/fold
+      showPlayFoldButtons();
+    }
+
+    function playerPlay() {
+      if (phase !== 'dealt') return;
+      phase = 'resolved';
+
+      // Deduct play bet (same as ante)
+      var ok = XstikCredits.placeBet(currentAnte, GAME_SLUG);
+      if (!ok) {
+        // Can't afford play — shouldn't happen since we check 2×ante, but handle gracefully
+        playerFold();
+        return;
+      }
+
+      stats.handsPlayed++;
+
+      // Flip dealer cards
+      renderDealerCards(true);
+
+      var dealerEval = evaluateHand(dealerHand);
+      var playerEval = evaluateHand(playerHand);
+
+      document.getElementById('dealer-hand-name').textContent = dealerEval.name;
+
+      var resultBanner = document.getElementById('result-banner');
+      var resultDetail = document.getElementById('result-detail');
+      var betArea = document.getElementById('bet-area');
+
+      // Check dealer qualification
+      if (!dealerQualifies(dealerEval)) {
+        // Dealer doesn't qualify — ante pays 1:1, play returned
+        var winnings = currentAnte * 2 + currentAnte; // ante back + ante win + play returned
+        XstikCredits.awardWinnings(winnings, GAME_SLUG);
+        var profit = currentAnte;
+        stats.wins++;
+        stats.creditsWon += profit;
+
+        resultBanner.textContent = 'DEALER DOES NOT QUALIFY';
+        resultBanner.className = 'result-banner win';
+        resultDetail.innerHTML = '<span class="qualifier-badge no-qualify">No Qualify</span> — Ante pays 1:1, play returned. Won <strong style="color:var(--primary)">+' + profit + '</strong>';
+        betArea.innerHTML = '<div class="bet-info">ANTE: <span class="amount">' + currentAnte + '</span> &nbsp; PLAY: <span class="amount">' + currentAnte + '</span> &nbsp; WON: <span class="amount">+' + profit + '</span></div>';
+      } else {
+        // Dealer qualifies — compare hands
+        var cmp = compareHands(playerEval, dealerEval);
+
+        if (cmp > 0) {
+          // Player wins — 1:1 on both
+          var winnings2 = currentAnte * 2 + currentAnte * 2; // both bets back + both wins
+          XstikCredits.awardWinnings(winnings2, GAME_SLUG);
+          var profit2 = currentAnte * 2;
+          stats.wins++;
+          stats.creditsWon += profit2;
+
+          resultBanner.textContent = 'YOU WIN!';
+          resultBanner.className = 'result-banner win';
+          resultDetail.innerHTML = '<span class="qualifier-badge qualifies">Qualifies</span> — ' + playerEval.name + ' beats ' + dealerEval.name + '. Won <strong style="color:var(--primary)">+' + profit2 + '</strong>';
+          betArea.innerHTML = '<div class="bet-info">ANTE: <span class="amount">' + currentAnte + '</span> &nbsp; PLAY: <span class="amount">' + currentAnte + '</span> &nbsp; WON: <span class="amount">+' + profit2 + '</span></div>';
+        } else if (cmp < 0) {
+          // Dealer wins — lose both bets
+          var loss = currentAnte * 2;
+
+          resultBanner.textContent = 'DEALER WINS';
+          resultBanner.className = 'result-banner lose';
+          resultDetail.innerHTML = '<span class="qualifier-badge qualifies">Qualifies</span> — ' + dealerEval.name + ' beats ' + playerEval.name + '. Lost <strong style="color:#ef4444">-' + loss + '</strong>';
+          betArea.innerHTML = '<div class="bet-info">ANTE: <span class="amount">' + currentAnte + '</span> &nbsp; PLAY: <span class="amount">' + currentAnte + '</span> &nbsp; LOST: <span class="amount" style="color:#ef4444">-' + loss + '</span></div>';
+        } else {
+          // Tie — push, all bets returned
+          XstikCredits.awardWinnings(currentAnte * 2, GAME_SLUG);
+
+          resultBanner.textContent = 'PUSH — TIE';
+          resultBanner.className = 'result-banner push';
+          resultDetail.innerHTML = '<span class="qualifier-badge qualifies">Qualifies</span> — Both hands: ' + playerEval.name + '. Bets returned.';
+          betArea.innerHTML = '<div class="bet-info">ANTE: <span class="amount">' + currentAnte + '</span> &nbsp; PLAY: <span class="amount">' + currentAnte + '</span> &nbsp; PUSH</div>';
+        }
+      }
+
+      // Submit to leaderboard
+      submitLeaderboard();
+      showNextHandButton();
+    }
+
+    function playerFold() {
+      if (phase !== 'dealt') return;
+      phase = 'resolved';
+      stats.handsPlayed++;
+
+      // Ante already deducted, player loses it
+      var resultBanner = document.getElementById('result-banner');
+      var resultDetail = document.getElementById('result-detail');
+      var betArea = document.getElementById('bet-area');
+
+      // Reveal dealer cards (optional, adds interest)
+      renderDealerCards(true);
+      var dealerEval = evaluateHand(dealerHand);
+      document.getElementById('dealer-hand-name').textContent = dealerEval.name;
+
+      resultBanner.textContent = 'FOLDED';
+      resultBanner.className = 'result-banner lose';
+      resultDetail.textContent = 'Ante forfeited. Dealer had: ' + dealerEval.name;
+      betArea.innerHTML = '<div class="bet-info">LOST ANTE: <span class="amount" style="color:#ef4444">-' + currentAnte + '</span></div>';
+
+      submitLeaderboard();
+      showNextHandButton();
+    }
+
+    function nextHand() {
+      phase = 'idle';
+      clearTable();
+
+      // Check bankruptcy
+      var minNeeded = ANTE_OPTIONS[0] * 2; // need at least 2× minimum ante
+      if (XstikCredits.getBalance() < minNeeded) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function() {
+            showAnteSelection();
+          });
+          return;
+        }
+      }
+
+      showAnteSelection();
+    }
+
+    // ================================================================
+    // LEADERBOARD
+    // ================================================================
+    function submitLeaderboard() {
+      try {
+        var playerName = XstikPlayer.getUsername() || 'Anonymous';
+        XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
+          handsPlayed: stats.handsPlayed,
+          wins: stats.wins,
+          creditsWon: stats.creditsWon
+        });
+        XstikLeaderboard.rebuildUnified();
+      } catch (e) {
+        // silent
+      }
+
+      // Also store to localStorage
+      submitLocalScore();
+    }
+
+    function submitLocalScore() {
+      try {
+        var score = (stats.wins * 100) + stats.creditsWon;
+        if (score <= 0) return;
+        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-three-card-brag-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = entries.findIndex(function (e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) {
+            entries[existingIdx] = newEntry;
+          }
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function (a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // silent
+      }
+    }
+
+    // ================================================================
+    // EVENT WIRING (per BUILD-CONTEXT pattern)
+    // ================================================================
+    function wireEvents() {
+      document.getElementById('btn-rules').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+
+      // Start screen chip buttons
+      buildStartChips();
+    }
+
+    function buildStartChips() {
+      var container = document.getElementById('start-chips');
+      container.innerHTML = '';
+      ANTE_OPTIONS.forEach(function(amt) {
+        var chip = document.createElement('button');
+        chip.className = 'chip-btn';
+        chip.textContent = amt;
+        chip.addEventListener('click', function() {
+          startGameWithAnte(amt);
+        });
+        container.appendChild(chip);
+      });
+    }
+
+    function startGameWithAnte(ante) {
+      document.getElementById('overlay-start').classList.remove('show');
+      dealHand(ante);
+    }
+
+    // ================================================================
+    // BOOT
+    // ================================================================
+    XstikGameInit.showDisclaimer();
+
+    XstikGameInit.boot(GAME_SLUG, {
+      preloadCards: true,
+      onReady: function () {
+        shuffleDeck();
+        wireEvents();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

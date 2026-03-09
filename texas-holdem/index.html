@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Texas Hold'Em — Play Poker on XRPL</title>
+  <title>xSTIK Texas Hold'Em</title>
 
   <!-- OG Meta -->
   <meta property="og:title" content="xSTIK Texas Hold'Em">
@@ -14,11 +14,1519 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/logo.jpg" type="image/jpeg">
 
-  <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
   <style>
     /* ================================================================
+       TEXAS HOLD'EM — Game-specific CSS
+       ================================================================ */
+    .poker-table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      padding: 0.25rem 0.5rem;
+      gap: 0;
+    }
+
+    /* --- ROUND INDICATOR --- */
+    .round-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+      width: 100%;
+      padding: 0.15rem 0;
+    }
+    .round-phase {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.15rem 0.6rem;
+      border-radius: 0.25rem;
+      background: rgba(245, 197, 24, 0.08);
+      border: 1px solid rgba(245, 197, 24, 0.2);
+      color: var(--muted-text);
+      transition: all 0.3s;
+    }
+    .round-phase.active {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: rgba(245, 197, 24, 0.15);
+      box-shadow: 0 0 8px rgba(245, 197, 24, 0.2);
+    }
+
+    /* --- AI SECTION (top) --- */
+    .ai-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      flex-shrink: 0;
+    }
+    .ai-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.5rem;
+      font-weight: 700;
+      color: var(--muted-text);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .ai-status {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent, #E8A902);
+      min-height: 1em;
+      letter-spacing: 0.5px;
+    }
+    .ai-cards {
+      display: flex;
+      gap: var(--card-gap);
+      justify-content: center;
+    }
+    .ai-cards .card {
+      width: calc(var(--card-w) * 0.85);
+      height: calc(var(--card-h) * 0.85);
+    }
+
+    /* --- COMMUNITY CENTER --- */
+    .community-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
+    }
+    .pot-display {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 1px;
+      padding: 0.2rem 0.8rem;
+      background: rgba(245, 197, 24, 0.08);
+      border: 1px solid rgba(245, 197, 24, 0.2);
+      border-radius: 0.3rem;
+    }
+    .community-cards {
+      display: flex;
+      gap: var(--card-gap);
+      justify-content: center;
+      align-items: center;
+      min-height: var(--card-h);
+    }
+    .community-cards .card {
+      width: calc(var(--card-w) * 0.9);
+      height: calc(var(--card-h) * 0.9);
+    }
+    .community-cards .card-slot {
+      width: calc(var(--card-w) * 0.9);
+      height: calc(var(--card-h) * 0.9);
+      border: 1.5px dashed rgba(245, 197, 24, 0.12);
+    }
+
+    /* --- PLAYER SECTION (bottom) --- */
+    .player-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      flex-shrink: 0;
+    }
+    .player-cards {
+      display: flex;
+      gap: var(--card-gap);
+      justify-content: center;
+    }
+    .player-cards .card {
+      width: calc(var(--card-w) * 0.95);
+      height: calc(var(--card-h) * 0.95);
+      transition: transform 0.15s ease;
+    }
+    .player-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.5rem;
+      font-weight: 700;
+      color: var(--muted-text);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .player-hand-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--primary);
+      min-height: 1em;
+    }
+
+    /* --- BETTING CONTROLS --- */
+    .betting-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      flex-shrink: 0;
+      padding: 0.15rem 0;
+    }
+    .bet-actions {
+      display: flex;
+      gap: 0.35rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .bet-actions .btn-game {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.8rem;
+      min-height: 30px;
+      letter-spacing: 1px;
+    }
+    .bet-actions .btn-game.fold-btn {
+      background: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    .bet-actions .btn-game.fold-btn:hover {
+      background: #dc2626;
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
+    }
+    .bet-actions .btn-game.check-btn {
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+    }
+    .bet-actions .btn-game.check-btn:hover {
+      background: #16a34a;
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.4);
+    }
+    .bet-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    .bet-slider-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+      height: 4px;
+      cursor: pointer;
+    }
+    .bet-amount-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 3rem;
+      text-align: center;
+    }
+    .preset-row {
+      display: flex;
+      gap: 0.25rem;
+      justify-content: center;
+    }
+    .preset-btn {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      background: transparent;
+      color: var(--muted-text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preset-btn:hover {
+      background: rgba(245, 197, 24, 0.12);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* --- OVERLAYS --- */
+    .center-overlay .btn-primary {
+      background: var(--primary);
+      color: #0D0D0D;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.5rem 1.5rem;
+      border: none;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(245, 197, 24, 0.3);
+      transition: all 0.2s;
+    }
+    .center-overlay .btn-primary:hover {
+      background: var(--accent, #E8A902);
+      box-shadow: 0 0 25px rgba(232, 169, 2, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Result details */
+    .result-details {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      color: var(--muted-text);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .result-details .hand-name {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .result-details .payout {
+      color: #22c55e;
+      font-weight: 700;
+    }
+    .result-details .loss {
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    /* Showdown reveal cards */
+    .showdown-cards {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin: 0.3rem 0;
+    }
+    .showdown-hand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .showdown-hand .sh-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.45rem;
+      font-weight: 700;
+      color: var(--muted-text);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .showdown-hand .sh-cards {
+      display: flex;
+      gap: 2px;
+    }
+    .showdown-hand .card {
+      width: calc(var(--card-w) * 0.55);
+      height: calc(var(--card-h) * 0.55);
+    }
+    .showdown-hand .sh-rank {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Hide betting when not player turn */
+    .betting-controls.hidden { display: none; }
+
+    /* Highlight winning hand cards */
+    .card.winning-card {
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.6), 0 0 3px #22c55e;
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 767px) {
+      .poker-table { padding: 0.15rem 0.25rem; }
+      .ai-cards .card { width: calc(var(--card-w) * 0.8); height: calc(var(--card-h) * 0.8); }
+      .community-cards .card,
+      .community-cards .card-slot { width: calc(var(--card-w) * 0.8); height: calc(var(--card-h) * 0.8); }
+      .player-cards .card { width: calc(var(--card-w) * 0.9); height: calc(var(--card-h) * 0.9); }
+      .pot-display { font-size: 0.6rem; }
+      .round-phase { font-size: 0.45rem; padding: 0.1rem 0.4rem; }
+      .bet-actions .btn-game { font-size: 0.65rem; padding: 0.3rem 0.6rem; min-height: 28px; }
+      .ai-status { font-size: 0.65rem; }
+      .player-hand-name { font-size: 0.6rem; }
+      .bet-amount-label { font-size: 0.75rem; }
+      .showdown-hand .card { width: calc(var(--card-w) * 0.45); height: calc(var(--card-h) * 0.45); }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">TEXAS HOLD'EM</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">← Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </header>
 
+    <main class="game-area">
+      <div class="poker-table" id="poker-table">
+        <!-- Round Phases -->
+        <div class="round-strip">
+          <span class="round-phase" id="phase-preflop">PRE-FLOP</span>
+          <span class="round-phase" id="phase-flop">FLOP</span>
+          <span class="round-phase" id="phase-turn">TURN</span>
+          <span class="round-phase" id="phase-river">RIVER</span>
+        </div>
+
+        <!-- AI Section -->
+        <div class="ai-section">
+          <div class="ai-label">AI OPPONENT</div>
+          <div class="ai-cards" id="ai-cards"></div>
+          <div class="ai-status" id="ai-status"></div>
+        </div>
+
+        <!-- Community Cards -->
+        <div class="community-section">
+          <div class="pot-display" id="pot-display">POT: 0</div>
+          <div class="community-cards" id="community-cards"></div>
+        </div>
+
+        <!-- Betting Controls -->
+        <div class="betting-controls hidden" id="betting-controls">
+          <div class="bet-slider-row" id="bet-slider-row" style="display:none;">
+            <input type="range" id="bet-slider" min="20" max="500" step="10" value="20">
+            <span class="bet-amount-label" id="bet-amount-label">20</span>
+          </div>
+          <div class="preset-row" id="preset-row" style="display:none;"></div>
+          <div class="bet-actions" id="bet-actions"></div>
+        </div>
+
+        <!-- Player Section -->
+        <div class="player-section">
+          <div class="player-hand-name" id="player-hand-name"></div>
+          <div class="player-cards" id="player-cards"></div>
+          <div class="player-label">YOUR HAND</div>
+        </div>
+
+        <!-- Overlays -->
+        <div class="center-overlay show" id="overlay-start">
+          <div class="overlay-title">TEXAS HOLD'EM</div>
+          <div class="overlay-text">Beat the AI in heads-up poker. Post the big blind to start each hand.</div>
+          <button class="btn-primary" id="btn-start">DEAL — 20 CREDITS</button>
+        </div>
+
+        <div class="center-overlay" id="overlay-result">
+          <div class="result-text" id="result-text"></div>
+          <div class="result-details" id="result-details"></div>
+          <div class="showdown-cards" id="showdown-cards"></div>
+          <button class="btn-primary" id="btn-next-hand">NEXT HAND</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- Rules overlay -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY</div>
+      <div class="rules-section">
+        <h3>Overview</h3>
+        <p>Texas Hold'Em heads-up against an AI opponent. Make the best 5-card hand from your 2 hole cards and 5 community cards.</p>
+      </div>
+      <div class="rules-section">
+        <h3>Blinds</h3>
+        <p>Small blind: 10 credits (AI). Big blind: 20 credits (you). The big blind is your entry fee each hand.</p>
+      </div>
+      <div class="rules-section">
+        <h3>Rounds</h3>
+        <ul>
+          <li><strong>Pre-Flop:</strong> 2 hole cards dealt. First betting round.</li>
+          <li><strong>Flop:</strong> 3 community cards revealed. Second betting.</li>
+          <li><strong>Turn:</strong> 4th community card. Third betting.</li>
+          <li><strong>River:</strong> 5th community card. Final betting.</li>
+          <li><strong>Showdown:</strong> Best 5-card hand wins the pot.</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h3>Actions</h3>
+        <ul>
+          <li><strong>Check:</strong> Pass (if no bet to call).</li>
+          <li><strong>Bet:</strong> Place a wager.</li>
+          <li><strong>Call:</strong> Match the current bet.</li>
+          <li><strong>Raise:</strong> Increase the current bet.</li>
+          <li><strong>Fold:</strong> Surrender the hand.</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h3>Hand Rankings</h3>
+        <p>Royal Flush → Straight Flush → Four of a Kind → Full House → Flush → Straight → Three of a Kind → Two Pair → One Pair → High Card</p>
+      </div>
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- Win screen -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var GAME_SLUG = 'texas-holdem';
+    var BIG_BLIND = 20;
+    var SMALL_BLIND = 10;
+    var RANK_ORDER = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+    var HAND_NAMES = [
+      'High Card','One Pair','Two Pair','Three of a Kind','Straight',
+      'Flush','Full House','Four of a Kind','Straight Flush','Royal Flush'
+    ];
+
+    // Session stats
+    var stats = { handsPlayed: 0, wins: 0, creditsWon: 0 };
+
+    // Game state
+    var G = {
+      deck: [],
+      deckIdx: 0,
+      playerHole: [],
+      aiHole: [],
+      community: [],
+      pot: 0,
+      playerChipsIn: 0,   // total chips player put in this hand
+      aiChipsIn: 0,       // total chips AI put in this hand
+      playerBetRound: 0,  // chips player bet this round
+      aiBetRound: 0,      // chips AI bet this round
+      currentBet: 0,      // current bet to match this round
+      phase: 'start',     // start, preflop, flop, turn, river, showdown
+      minRaise: BIG_BLIND,
+      isPlayerTurn: false,
+      handOver: false
+    };
+
+    // ================================================================
+    //  DECK
+    // ================================================================
+    function shuffleDeck() {
+      G.deck = XstikImageLoader.getShuffledDeck();
+      G.deckIdx = 0;
+    }
+    function drawCard() {
+      if (G.deckIdx >= G.deck.length) shuffleDeck();
+      return G.deck[G.deckIdx++];
+    }
+
+    // ================================================================
+    //  CARD RENDERING (per BUILD-CONTEXT pattern)
+    // ================================================================
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].indexOf(card.suit) >= 0 ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'\u2665',Diamonds:'\u2666',Clubs:'\u2663',Spades:'\u2660'}[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    // ================================================================
+    //  HAND EVALUATION — Best 5 from 7 cards
+    // ================================================================
+    function rankVal(card) { return RANK_ORDER[card.rank]; }
+
+    // Generate all C(n,5) combinations
+    function combinations(arr, k) {
+      var result = [];
+      function combo(start, chosen) {
+        if (chosen.length === k) { result.push(chosen.slice()); return; }
+        for (var i = start; i < arr.length; i++) {
+          chosen.push(arr[i]);
+          combo(i + 1, chosen);
+          chosen.pop();
+        }
+      }
+      combo(0, []);
+      return result;
+    }
+
+    // Evaluate exactly 5 cards. Returns { rank: 0-9, tiebreakers: [...] }
+    function evaluate5(cards) {
+      var ranks = cards.map(function(c) { return rankVal(c); }).sort(function(a,b) { return b - a; });
+      var suits = cards.map(function(c) { return c.suit; });
+
+      // Count ranks
+      var counts = {};
+      for (var i = 0; i < ranks.length; i++) {
+        counts[ranks[i]] = (counts[ranks[i]] || 0) + 1;
+      }
+
+      var groups = [];
+      for (var r in counts) {
+        if (counts.hasOwnProperty(r)) {
+          groups.push({ rank: parseInt(r), count: counts[r] });
+        }
+      }
+      // Sort by count desc, then rank desc
+      groups.sort(function(a, b) {
+        return b.count - a.count || b.rank - a.rank;
+      });
+
+      var isFlush = suits[0] === suits[1] && suits[1] === suits[2] && suits[2] === suits[3] && suits[3] === suits[4];
+
+      // Check straight
+      var uniqueRanks = [];
+      for (var j = 0; j < ranks.length; j++) {
+        if (uniqueRanks.indexOf(ranks[j]) < 0) uniqueRanks.push(ranks[j]);
+      }
+      uniqueRanks.sort(function(a,b) { return b - a; });
+
+      var isStraight = false;
+      var straightHigh = 0;
+
+      if (uniqueRanks.length === 5) {
+        if (uniqueRanks[0] - uniqueRanks[4] === 4) {
+          isStraight = true;
+          straightHigh = uniqueRanks[0];
+        }
+        // Ace-low straight (A-2-3-4-5)
+        if (uniqueRanks[0] === 14 && uniqueRanks[1] === 5 && uniqueRanks[2] === 4 && uniqueRanks[3] === 3 && uniqueRanks[4] === 2) {
+          isStraight = true;
+          straightHigh = 5; // 5-high straight
+        }
+      }
+
+      // Build tiebreaker from groups: list each group's rank in order (count desc, rank desc)
+      var tiebreakers = [];
+      for (var g = 0; g < groups.length; g++) {
+        tiebreakers.push(groups[g].rank);
+      }
+
+      // Determine hand rank
+      if (isStraight && isFlush) {
+        if (straightHigh === 14) return { rank: 9, tiebreakers: [14] }; // Royal Flush
+        return { rank: 8, tiebreakers: [straightHigh] }; // Straight Flush
+      }
+
+      if (groups[0].count === 4) {
+        return { rank: 7, tiebreakers: tiebreakers }; // Four of a Kind
+      }
+
+      if (groups[0].count === 3 && groups[1].count === 2) {
+        return { rank: 6, tiebreakers: tiebreakers }; // Full House
+      }
+
+      if (isFlush) {
+        return { rank: 5, tiebreakers: ranks }; // Flush
+      }
+
+      if (isStraight) {
+        return { rank: 4, tiebreakers: [straightHigh] }; // Straight
+      }
+
+      if (groups[0].count === 3) {
+        return { rank: 3, tiebreakers: tiebreakers }; // Three of a Kind
+      }
+
+      if (groups[0].count === 2 && groups[1].count === 2) {
+        return { rank: 2, tiebreakers: tiebreakers }; // Two Pair
+      }
+
+      if (groups[0].count === 2) {
+        return { rank: 1, tiebreakers: tiebreakers }; // One Pair
+      }
+
+      return { rank: 0, tiebreakers: ranks }; // High Card
+    }
+
+    // Best hand from 7 cards
+    function bestHand(holeCards, communityCards) {
+      var all = holeCards.concat(communityCards);
+      var combos = combinations(all, 5);
+      var best = null;
+      for (var i = 0; i < combos.length; i++) {
+        var ev = evaluate5(combos[i]);
+        ev.cards = combos[i];
+        if (!best || compareHands(ev, best) > 0) {
+          best = ev;
+        }
+      }
+      return best;
+    }
+
+    // Compare two evaluated hands. Returns >0 if a wins, <0 if b wins, 0 if tie.
+    function compareHands(a, b) {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      var lenA = a.tiebreakers.length;
+      var lenB = b.tiebreakers.length;
+      var len = Math.max(lenA, lenB);
+      for (var i = 0; i < len; i++) {
+        var va = i < lenA ? a.tiebreakers[i] : 0;
+        var vb = i < lenB ? b.tiebreakers[i] : 0;
+        if (va !== vb) return va - vb;
+      }
+      return 0;
+    }
+
+    // Quick hand strength for AI (0-1 scale)
+    function handStrength(holeCards, communityCards) {
+      if (communityCards.length === 0) {
+        // Pre-flop: estimate based on hole cards
+        var r1 = rankVal(holeCards[0]);
+        var r2 = rankVal(holeCards[1]);
+        var high = Math.max(r1, r2);
+        var low = Math.min(r1, r2);
+        var suited = holeCards[0].suit === holeCards[1].suit;
+        var paired = r1 === r2;
+
+        if (paired) {
+          if (high >= 10) return 0.9;
+          if (high >= 7) return 0.7;
+          return 0.55;
+        }
+        var score = (high / 14) * 0.5 + (low / 14) * 0.2;
+        if (suited) score += 0.08;
+        if (Math.abs(r1 - r2) <= 2) score += 0.05; // connectors
+        if (high === 14) score += 0.1; // ace
+        return Math.min(0.85, Math.max(0.1, score));
+      }
+
+      // Post-flop: evaluate actual hand
+      var ev = bestHand(holeCards, communityCards);
+      // Map hand rank to strength
+      var baseStrength = [0.1, 0.35, 0.55, 0.65, 0.72, 0.78, 0.85, 0.92, 0.97, 1.0];
+      var s = baseStrength[ev.rank];
+
+      // Adjust by tiebreaker quality within rank
+      if (ev.rank <= 1 && ev.tiebreakers[0]) {
+        s += (ev.tiebreakers[0] / 14) * 0.1;
+      }
+
+      return Math.min(1.0, s);
+    }
+
+    // ================================================================
+    //  RENDER
+    // ================================================================
+    function renderPhases() {
+      var phases = ['preflop', 'flop', 'turn', 'river'];
+      for (var i = 0; i < phases.length; i++) {
+        var el = document.getElementById('phase-' + phases[i]);
+        el.classList.toggle('active', G.phase === phases[i]);
+      }
+    }
+
+    function renderAICards() {
+      var el = document.getElementById('ai-cards');
+      el.innerHTML = '';
+      for (var i = 0; i < G.aiHole.length; i++) {
+        var faceUp = G.phase === 'showdown';
+        var cardEl = createCardEl(G.aiHole[i], faceUp);
+        if (faceUp) cardEl.classList.add('deal-in');
+        el.appendChild(cardEl);
+      }
+    }
+
+    function renderCommunity() {
+      var el = document.getElementById('community-cards');
+      el.innerHTML = '';
+      for (var i = 0; i < 5; i++) {
+        if (i < G.community.length) {
+          var cardEl = createCardEl(G.community[i], true);
+          cardEl.classList.add('deal-in');
+          el.appendChild(cardEl);
+        } else {
+          var slot = document.createElement('div');
+          slot.className = 'card-slot';
+          el.appendChild(slot);
+        }
+      }
+    }
+
+    function renderPlayerCards() {
+      var el = document.getElementById('player-cards');
+      el.innerHTML = '';
+      for (var i = 0; i < G.playerHole.length; i++) {
+        var cardEl = createCardEl(G.playerHole[i], true);
+        cardEl.classList.add('deal-in');
+        el.appendChild(cardEl);
+      }
+
+      // Show current hand name if community cards exist
+      var nameEl = document.getElementById('player-hand-name');
+      if (G.playerHole.length === 2 && G.community.length > 0) {
+        var ev = bestHand(G.playerHole, G.community);
+        nameEl.textContent = HAND_NAMES[ev.rank];
+      } else {
+        nameEl.textContent = '';
+      }
+    }
+
+    function renderPot() {
+      document.getElementById('pot-display').textContent = 'POT: ' + G.pot;
+    }
+
+    function renderAll() {
+      renderPhases();
+      renderAICards();
+      renderCommunity();
+      renderPlayerCards();
+      renderPot();
+    }
+
+    function setAIStatus(text) {
+      document.getElementById('ai-status').textContent = text;
+    }
+
+    // ================================================================
+    //  BETTING UI
+    // ================================================================
+    function showBettingControls() {
+      var controls = document.getElementById('betting-controls');
+      controls.classList.remove('hidden');
+
+      var actions = document.getElementById('bet-actions');
+      actions.innerHTML = '';
+
+      var sliderRow = document.getElementById('bet-slider-row');
+      var presetRow = document.getElementById('preset-row');
+      sliderRow.style.display = 'none';
+      presetRow.style.display = 'none';
+      presetRow.innerHTML = '';
+
+      var toCall = G.currentBet - G.playerBetRound;
+      var playerBalance = XstikCredits.getBalance();
+
+      if (toCall > 0) {
+        // There's a bet to match: CALL, RAISE, FOLD
+        var callBtn = document.createElement('button');
+        callBtn.className = 'btn-game';
+        callBtn.textContent = 'CALL ' + toCall;
+        callBtn.addEventListener('click', function() { playerCall(); });
+        if (playerBalance < toCall) callBtn.disabled = true;
+        actions.appendChild(callBtn);
+
+        // Raise
+        var canRaise = playerBalance > toCall;
+        if (canRaise) {
+          var raiseBtn = document.createElement('button');
+          raiseBtn.className = 'btn-game';
+          raiseBtn.textContent = 'RAISE';
+          raiseBtn.addEventListener('click', function() { showRaiseSlider(); });
+          actions.appendChild(raiseBtn);
+        }
+
+        // Fold
+        var foldBtn = document.createElement('button');
+        foldBtn.className = 'btn-game fold-btn';
+        foldBtn.textContent = 'FOLD';
+        foldBtn.addEventListener('click', function() { playerFold(); });
+        actions.appendChild(foldBtn);
+      } else {
+        // No bet: CHECK, BET
+        var checkBtn = document.createElement('button');
+        checkBtn.className = 'btn-game check-btn';
+        checkBtn.textContent = 'CHECK';
+        checkBtn.addEventListener('click', function() { playerCheck(); });
+        actions.appendChild(checkBtn);
+
+        var betBtn = document.createElement('button');
+        betBtn.className = 'btn-game';
+        betBtn.textContent = 'BET';
+        betBtn.addEventListener('click', function() { showBetSlider(); });
+        actions.appendChild(betBtn);
+
+        // Fold always available
+        var foldBtn2 = document.createElement('button');
+        foldBtn2.className = 'btn-game fold-btn';
+        foldBtn2.textContent = 'FOLD';
+        foldBtn2.addEventListener('click', function() { playerFold(); });
+        actions.appendChild(foldBtn2);
+      }
+    }
+
+    function showBetSlider() {
+      var sliderRow = document.getElementById('bet-slider-row');
+      var presetRow = document.getElementById('preset-row');
+      var slider = document.getElementById('bet-slider');
+      var label = document.getElementById('bet-amount-label');
+
+      var playerBalance = XstikCredits.getBalance();
+      var minBet = Math.max(BIG_BLIND, G.minRaise);
+      var maxBet = Math.min(playerBalance, G.pot * 4);
+      if (maxBet < minBet) maxBet = Math.min(playerBalance, minBet);
+
+      slider.min = minBet;
+      slider.max = maxBet;
+      slider.step = 10;
+      slider.value = minBet;
+      label.textContent = minBet;
+
+      slider.oninput = function() { label.textContent = this.value; };
+      sliderRow.style.display = 'flex';
+
+      // Presets
+      presetRow.innerHTML = '';
+      presetRow.style.display = 'flex';
+      var presets = [
+        { label: 'MIN', val: minBet },
+        { label: '½ POT', val: Math.max(minBet, Math.floor(G.pot / 2)) },
+        { label: 'POT', val: Math.min(maxBet, G.pot) },
+        { label: 'ALL-IN', val: maxBet }
+      ];
+      for (var i = 0; i < presets.length; i++) {
+        (function(p) {
+          var btn = document.createElement('button');
+          btn.className = 'preset-btn';
+          btn.textContent = p.label;
+          var v = Math.min(maxBet, Math.max(minBet, p.val));
+          btn.addEventListener('click', function() {
+            slider.value = v;
+            label.textContent = v;
+          });
+          presetRow.appendChild(btn);
+        })(presets[i]);
+      }
+
+      // Replace actions with confirm/cancel
+      var actions = document.getElementById('bet-actions');
+      actions.innerHTML = '';
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn-game';
+      confirmBtn.textContent = 'BET';
+      confirmBtn.addEventListener('click', function() {
+        var amount = parseInt(slider.value);
+        playerBet(amount);
+      });
+      actions.appendChild(confirmBtn);
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn-game fold-btn';
+      cancelBtn.textContent = 'CANCEL';
+      cancelBtn.addEventListener('click', function() { showBettingControls(); });
+      actions.appendChild(cancelBtn);
+    }
+
+    function showRaiseSlider() {
+      var sliderRow = document.getElementById('bet-slider-row');
+      var presetRow = document.getElementById('preset-row');
+      var slider = document.getElementById('bet-slider');
+      var label = document.getElementById('bet-amount-label');
+
+      var playerBalance = XstikCredits.getBalance();
+      var toCall = G.currentBet - G.playerBetRound;
+      var minRaise = G.currentBet + G.minRaise;
+      var totalMin = minRaise - G.playerBetRound; // additional chips needed
+      var maxRaise = playerBalance;
+
+      if (totalMin > maxRaise) totalMin = maxRaise;
+
+      slider.min = totalMin;
+      slider.max = maxRaise;
+      slider.step = 10;
+      slider.value = totalMin;
+      label.textContent = totalMin;
+
+      slider.oninput = function() { label.textContent = this.value; };
+      sliderRow.style.display = 'flex';
+
+      // Presets
+      presetRow.innerHTML = '';
+      presetRow.style.display = 'flex';
+      var presets = [
+        { label: 'MIN', val: totalMin },
+        { label: '2× BET', val: Math.max(totalMin, (G.currentBet * 2) - G.playerBetRound) },
+        { label: 'POT', val: Math.min(maxRaise, Math.max(totalMin, G.pot + toCall)) },
+        { label: 'ALL-IN', val: maxRaise }
+      ];
+      for (var i = 0; i < presets.length; i++) {
+        (function(p) {
+          var btn = document.createElement('button');
+          btn.className = 'preset-btn';
+          btn.textContent = p.label;
+          var v = Math.min(maxRaise, Math.max(totalMin, p.val));
+          btn.addEventListener('click', function() {
+            slider.value = v;
+            label.textContent = v;
+          });
+          presetRow.appendChild(btn);
+        })(presets[i]);
+      }
+
+      var actions = document.getElementById('bet-actions');
+      actions.innerHTML = '';
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn-game';
+      confirmBtn.textContent = 'RAISE';
+      confirmBtn.addEventListener('click', function() {
+        var totalAdditional = parseInt(slider.value);
+        playerRaise(totalAdditional);
+      });
+      actions.appendChild(confirmBtn);
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn-game fold-btn';
+      cancelBtn.textContent = 'CANCEL';
+      cancelBtn.addEventListener('click', function() { showBettingControls(); });
+      actions.appendChild(cancelBtn);
+    }
+
+    function hideBettingControls() {
+      document.getElementById('betting-controls').classList.add('hidden');
+      document.getElementById('bet-slider-row').style.display = 'none';
+      document.getElementById('preset-row').style.display = 'none';
+    }
+
+    // ================================================================
+    //  PLAYER ACTIONS
+    // ================================================================
+    function playerCheck() {
+      if (!G.isPlayerTurn || G.handOver) return;
+      G.isPlayerTurn = false;
+      hideBettingControls();
+      afterPlayerAction('check');
+    }
+
+    function playerBet(amount) {
+      if (!G.isPlayerTurn || G.handOver) return;
+      var balance = XstikCredits.getBalance();
+      if (amount > balance) amount = balance;
+      if (amount < BIG_BLIND) amount = BIG_BLIND;
+
+      XstikCredits.placeBet(amount, GAME_SLUG);
+      G.playerBetRound += amount;
+      G.playerChipsIn += amount;
+      G.currentBet = G.playerBetRound;
+      G.pot += amount;
+      G.minRaise = amount;
+      G.isPlayerTurn = false;
+      hideBettingControls();
+      renderPot();
+      afterPlayerAction('bet', amount);
+    }
+
+    function playerCall() {
+      if (!G.isPlayerTurn || G.handOver) return;
+      var toCall = G.currentBet - G.playerBetRound;
+      var balance = XstikCredits.getBalance();
+      if (toCall > balance) toCall = balance; // all-in
+
+      XstikCredits.placeBet(toCall, GAME_SLUG);
+      G.playerBetRound += toCall;
+      G.playerChipsIn += toCall;
+      G.pot += toCall;
+      G.isPlayerTurn = false;
+      hideBettingControls();
+      renderPot();
+      afterPlayerAction('call', toCall);
+    }
+
+    function playerRaise(totalAdditional) {
+      if (!G.isPlayerTurn || G.handOver) return;
+      var balance = XstikCredits.getBalance();
+      if (totalAdditional > balance) totalAdditional = balance;
+
+      XstikCredits.placeBet(totalAdditional, GAME_SLUG);
+      G.playerBetRound += totalAdditional;
+      G.playerChipsIn += totalAdditional;
+      var raiseAmount = G.playerBetRound - G.currentBet;
+      G.minRaise = Math.max(G.minRaise, raiseAmount);
+      G.currentBet = G.playerBetRound;
+      G.pot += totalAdditional;
+      G.isPlayerTurn = false;
+      hideBettingControls();
+      renderPot();
+      afterPlayerAction('raise', totalAdditional);
+    }
+
+    function playerFold() {
+      if (!G.isPlayerTurn || G.handOver) return;
+      G.isPlayerTurn = false;
+      G.handOver = true;
+      hideBettingControls();
+      // AI wins pot
+      endHand('ai-fold');
+    }
+
+    // ================================================================
+    //  AI ACTIONS
+    // ================================================================
+    function aiTurn() {
+      if (G.handOver) return;
+      var strength = handStrength(G.aiHole, G.community);
+      var toCall = G.currentBet - G.aiBetRound;
+      var random = Math.random();
+
+      // Add randomness
+      strength += (Math.random() - 0.5) * 0.15;
+      strength = Math.max(0, Math.min(1, strength));
+
+      if (toCall > 0) {
+        // Must call, raise, or fold
+        if (strength < 0.2 && toCall > BIG_BLIND) {
+          // Fold with weak hand if bet is significant
+          if (random < 0.7) {
+            setTimeout(function() {
+              setAIStatus('AI folds');
+              G.handOver = true;
+              endHand('player-fold');
+            }, 600);
+            return;
+          }
+        }
+
+        if (strength > 0.7 && random < 0.5) {
+          // Raise with strong hand
+          var raiseAmt = Math.floor(toCall + G.pot * (0.3 + strength * 0.4));
+          raiseAmt = Math.max(toCall + G.minRaise, raiseAmt);
+          raiseAmt = Math.ceil(raiseAmt / 10) * 10;
+
+          setTimeout(function() {
+            G.aiBetRound += raiseAmt;
+            G.aiChipsIn += raiseAmt;
+            var raiseOver = G.aiBetRound - G.currentBet;
+            G.minRaise = Math.max(G.minRaise, raiseOver);
+            G.currentBet = G.aiBetRound;
+            G.pot += raiseAmt;
+            renderPot();
+            setAIStatus('AI raises ' + raiseAmt);
+            afterAIAction('raise');
+          }, 600);
+          return;
+        }
+
+        // Call
+        setTimeout(function() {
+          G.aiBetRound += toCall;
+          G.aiChipsIn += toCall;
+          G.pot += toCall;
+          renderPot();
+          setAIStatus('AI calls ' + toCall);
+          afterAIAction('call');
+        }, 600);
+      } else {
+        // Can check or bet
+        if (strength > 0.6 && random < 0.55) {
+          // Bet with decent hand
+          var betAmt = Math.floor(G.pot * (0.3 + strength * 0.4));
+          betAmt = Math.max(BIG_BLIND, betAmt);
+          betAmt = Math.ceil(betAmt / 10) * 10;
+
+          setTimeout(function() {
+            G.aiBetRound += betAmt;
+            G.aiChipsIn += betAmt;
+            G.currentBet = G.aiBetRound;
+            G.pot += betAmt;
+            G.minRaise = betAmt;
+            renderPot();
+            setAIStatus('AI bets ' + betAmt);
+            afterAIAction('bet');
+          }, 600);
+          return;
+        }
+
+        // Check
+        setTimeout(function() {
+          setAIStatus('AI checks');
+          afterAIAction('check');
+        }, 600);
+      }
+    }
+
+    // ================================================================
+    //  GAME FLOW
+    // ================================================================
+
+    // After player acts, AI responds or round ends
+    function afterPlayerAction(action, amount) {
+      if (G.handOver) return;
+
+      // If player just called or checked, and AI already acted first this round => round done
+      // If player bet or raised => AI needs to respond
+      if (action === 'check') {
+        // If we are first to act (pre-flop BB) and AI hasn't acted, AI goes
+        // If AI already checked, round is done
+        if (G._aiActedThisRound) {
+          endBettingRound();
+        } else {
+          aiTurn();
+        }
+      } else if (action === 'call') {
+        // Calling ends the round
+        endBettingRound();
+      } else if (action === 'bet' || action === 'raise') {
+        // AI must respond
+        G._aiActedThisRound = false;
+        aiTurn();
+      }
+    }
+
+    // After AI acts, player may need to respond or round ends
+    function afterAIAction(action) {
+      if (G.handOver) return;
+      G._aiActedThisRound = true;
+
+      if (action === 'check') {
+        if (G._playerActedFirst) {
+          // Both checked
+          endBettingRound();
+        } else {
+          // Player's turn
+          G.isPlayerTurn = true;
+          showBettingControls();
+        }
+      } else if (action === 'call') {
+        endBettingRound();
+      } else if (action === 'bet' || action === 'raise') {
+        // Player must respond
+        G.isPlayerTurn = true;
+        showBettingControls();
+      }
+    }
+
+    function startBettingRound() {
+      G.playerBetRound = 0;
+      G.aiBetRound = 0;
+      G.currentBet = 0;
+      G.minRaise = BIG_BLIND;
+      G._aiActedThisRound = false;
+      G._playerActedFirst = false;
+
+      renderAll();
+
+      if (G.phase === 'preflop') {
+        // Pre-flop: AI is SB/first to act pre-flop in heads-up
+        // In heads-up: SB(dealer) acts first pre-flop, BB acts first post-flop
+        // We simplify: AI acts first pre-flop, player acts first post-flop
+        aiTurn();
+      } else {
+        // Post-flop: player (BB) acts first
+        G._playerActedFirst = true;
+        G.isPlayerTurn = true;
+        showBettingControls();
+      }
+    }
+
+    function endBettingRound() {
+      hideBettingControls();
+
+      if (G.phase === 'preflop') {
+        // Deal flop
+        G.phase = 'flop';
+        G.community.push(drawCard(), drawCard(), drawCard());
+        renderAll();
+        setTimeout(function() { startBettingRound(); }, 400);
+      } else if (G.phase === 'flop') {
+        G.phase = 'turn';
+        G.community.push(drawCard());
+        renderAll();
+        setTimeout(function() { startBettingRound(); }, 400);
+      } else if (G.phase === 'turn') {
+        G.phase = 'river';
+        G.community.push(drawCard());
+        renderAll();
+        setTimeout(function() { startBettingRound(); }, 400);
+      } else if (G.phase === 'river') {
+        // Showdown
+        G.phase = 'showdown';
+        showdown();
+      }
+    }
+
+    // ================================================================
+    //  DEAL & START
+    // ================================================================
+    function startHand() {
+      var balance = XstikCredits.getBalance();
+      if (balance < BIG_BLIND) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function() {});
+        }
+        return;
+      }
+
+      // Reset
+      shuffleDeck();
+      G.playerHole = [];
+      G.aiHole = [];
+      G.community = [];
+      G.pot = 0;
+      G.playerChipsIn = 0;
+      G.aiChipsIn = 0;
+      G.playerBetRound = 0;
+      G.aiBetRound = 0;
+      G.currentBet = 0;
+      G.minRaise = BIG_BLIND;
+      G.isPlayerTurn = false;
+      G.handOver = false;
+      G._aiActedThisRound = false;
+      G._playerActedFirst = false;
+
+      setAIStatus('');
+      hideAllOverlays();
+
+      // Post blinds: AI posts SB (10), Player posts BB (20)
+      G.pot = SMALL_BLIND + BIG_BLIND;
+      G.aiChipsIn = SMALL_BLIND;
+      G.aiBetRound = SMALL_BLIND;
+      G.playerChipsIn = BIG_BLIND;
+      G.playerBetRound = BIG_BLIND;
+      G.currentBet = BIG_BLIND;
+      XstikCredits.placeBet(BIG_BLIND, GAME_SLUG);
+
+      // Deal hole cards
+      G.playerHole.push(drawCard(), drawCard());
+      G.aiHole.push(drawCard(), drawCard());
+
+      G.phase = 'preflop';
+      stats.handsPlayed++;
+
+      renderAll();
+
+      // Start pre-flop betting
+      setTimeout(function() { startBettingRound(); }, 500);
+    }
+
+    // ================================================================
+    //  SHOWDOWN
+    // ================================================================
+    function showdown() {
+      renderAll(); // shows AI cards face-up
+
+      var playerEv = bestHand(G.playerHole, G.community);
+      var aiEv = bestHand(G.aiHole, G.community);
+      var cmp = compareHands(playerEv, aiEv);
+
+      var resultText = document.getElementById('result-text');
+      var resultDetails = document.getElementById('result-details');
+      var showdownCards = document.getElementById('showdown-cards');
+      showdownCards.innerHTML = '';
+
+      // Build showdown display
+      function makeShowdownHand(label, holeCards, ev) {
+        var div = document.createElement('div');
+        div.className = 'showdown-hand';
+        var lbl = document.createElement('div');
+        lbl.className = 'sh-label';
+        lbl.textContent = label;
+        div.appendChild(lbl);
+        var cardsDiv = document.createElement('div');
+        cardsDiv.className = 'sh-cards';
+        for (var i = 0; i < holeCards.length; i++) {
+          var c = createCardEl(holeCards[i], true);
+          cardsDiv.appendChild(c);
+        }
+        div.appendChild(cardsDiv);
+        var rankDiv = document.createElement('div');
+        rankDiv.className = 'sh-rank';
+        rankDiv.textContent = HAND_NAMES[ev.rank];
+        div.appendChild(rankDiv);
+        return div;
+      }
+
+      showdownCards.appendChild(makeShowdownHand('YOU', G.playerHole, playerEv));
+      showdownCards.appendChild(makeShowdownHand('AI', G.aiHole, aiEv));
+
+      if (cmp > 0) {
+        // Player wins
+        var winnings = G.pot;
+        XstikCredits.awardWinnings(winnings, GAME_SLUG);
+        stats.wins++;
+        stats.creditsWon += (winnings - G.playerChipsIn);
+
+        resultText.textContent = 'YOU WIN!';
+        resultText.className = 'result-text win';
+        resultDetails.innerHTML = 'Your <span class="hand-name">' + HAND_NAMES[playerEv.rank] +
+          '</span> beats AI\'s <span class="hand-name">' + HAND_NAMES[aiEv.rank] +
+          '</span><br><span class="payout">+' + (winnings - G.playerChipsIn) + ' credits</span>';
+      } else if (cmp < 0) {
+        // AI wins
+        resultText.textContent = 'AI WINS';
+        resultText.className = 'result-text lose';
+        resultDetails.innerHTML = 'AI\'s <span class="hand-name">' + HAND_NAMES[aiEv.rank] +
+          '</span> beats your <span class="hand-name">' + HAND_NAMES[playerEv.rank] +
+          '</span><br><span class="loss">-' + G.playerChipsIn + ' credits</span>';
+      } else {
+        // Tie — split pot
+        var halfPot = Math.floor(G.pot / 2);
+        XstikCredits.awardWinnings(halfPot, GAME_SLUG);
+        var netGain = halfPot - G.playerChipsIn;
+
+        resultText.textContent = 'SPLIT POT';
+        resultText.className = 'result-text push';
+        resultDetails.innerHTML = 'Both have <span class="hand-name">' + HAND_NAMES[playerEv.rank] +
+          '</span><br>' + (netGain >= 0 ?
+            '<span class="payout">+' + netGain + ' credits</span>' :
+            '<span class="loss">' + netGain + ' credits</span>');
+      }
+
+      showOverlay('overlay-result');
+      submitScore();
+    }
+
+    function endHand(reason) {
+      G.handOver = true;
+      hideBettingControls();
+
+      var resultText = document.getElementById('result-text');
+      var resultDetails = document.getElementById('result-details');
+      var showdownCards = document.getElementById('showdown-cards');
+      showdownCards.innerHTML = '';
+
+      if (reason === 'player-fold') {
+        // AI folded — player wins
+        var winnings = G.pot;
+        XstikCredits.awardWinnings(winnings, GAME_SLUG);
+        stats.wins++;
+        stats.creditsWon += (winnings - G.playerChipsIn);
+
+        resultText.textContent = 'AI FOLDS!';
+        resultText.className = 'result-text win';
+        resultDetails.innerHTML = 'AI surrenders the hand.<br><span class="payout">+' + (winnings - G.playerChipsIn) + ' credits</span>';
+      } else if (reason === 'ai-fold') {
+        // Player folded — AI wins
+        resultText.textContent = 'YOU FOLD';
+        resultText.className = 'result-text lose';
+        resultDetails.innerHTML = 'You surrender the hand.<br><span class="loss">-' + G.playerChipsIn + ' credits</span>';
+      }
+
+      showOverlay('overlay-result');
+      submitScore();
+    }
+
+    // ================================================================
+    //  OVERLAYS
+    // ================================================================
+    function hideAllOverlays() {
+      var overlays = document.querySelectorAll('.center-overlay');
+      for (var i = 0; i < overlays.length; i++) {
+        overlays[i].classList.remove('show');
+      }
+    }
+
+    function showOverlay(id) {
+      hideAllOverlays();
+      document.getElementById(id).classList.add('show');
+    }
+
+    // ================================================================
+    //  LEADERBOARD
+    // ================================================================
+    function submitScore() {
+      var playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
+        handsPlayed: stats.handsPlayed,
+        wins: stats.wins,
+        creditsWon: stats.creditsWon
+      });
+      XstikLeaderboard.rebuildUnified();
+
+      // Also local leaderboard
+      try {
+        var score = Math.round((stats.wins * 100) + (stats.creditsWon * 0.5));
+        if (score <= 0) return;
+        var key = 'xstik-texas-holdem-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+        var existingIdx = entries.findIndex(function(e) { return e.name === playerName; });
+        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) entries[existingIdx] = newEntry;
+        } else {
+          entries.push(newEntry);
+        }
+        entries.sort(function(a,b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch(err) { /* silent */ }
+    }
+
+    // ================================================================
+    //  EVENTS
+    // ================================================================
+    function wireEvents() {
+      document.getElementById('btn-start').addEventListener('click', function() { startHand(); });
+      document.getElementById('btn-next-hand').addEventListener('click', function() { startHand(); });
+
+      // Rules
+      document.getElementById('btn-rules').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+    }
+
+    // ================================================================
+    //  BOOT
+    // ================================================================
+    XstikGameInit.showDisclaimer();
+    XstikGameInit.boot(GAME_SLUG, {
+      preloadCards: true,
+      onReady: function() {
+        wireEvents();
+        showOverlay('overlay-start');
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

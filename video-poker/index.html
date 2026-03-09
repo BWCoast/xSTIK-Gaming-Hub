@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Video Poker — Jacks or Better on XRPL</title>
+  <title>xSTIK Video Poker — Jacks or Better</title>
 
   <!-- OG Meta -->
   <meta property="og:title" content="xSTIK Video Poker">
@@ -17,8 +17,890 @@
   <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
   <style>
     /* ================================================================
+       VIDEO POKER — Game-Specific CSS
+       ================================================================ */
+
+    /* Pay Table */
+    .pay-table {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.2rem 0.4rem;
+      padding: 0.25rem 0.5rem;
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.3);
+      border-radius: 0.4rem;
+      border: 1px solid rgba(245,197,24,0.12);
+    }
+    .pay-row {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--muted-text);
+      white-space: nowrap;
+    }
+    .pay-row .pay-hand {
+      color: rgba(250,250,250,0.8);
+    }
+    .pay-row .pay-mult {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .pay-row.active {
+      background: rgba(245,197,24,0.15);
+      border-radius: 0.2rem;
+      padding: 0 0.3rem;
+    }
+    .pay-row.active .pay-hand {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .pay-row .pay-sep {
+      color: rgba(179,179,179,0.3);
+    }
+
+    /* Poker Hand Area */
+    .poker-hand-area {
+      display: flex;
+      gap: clamp(0.3rem, 1.2vw, 0.7rem);
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0.25rem 0;
+    }
+    .poker-hand-area .card {
+      --card-w: clamp(4.5rem, 13vw, 7.5rem);
+      --card-h: calc(var(--card-w) * 1.5);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+    .poker-hand-area .card:hover:not(.face-down) {
+      transform: translateY(-4px);
+    }
+
+    /* Card Column (card + hold label) */
+    .card-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    /* Held State */
+    .card-col .card.held {
+      box-shadow: 0 0 12px rgba(245,197,24,0.7), 0 0 4px var(--primary), inset 0 0 3px rgba(245,197,24,0.15);
+      border: 2px solid var(--primary);
+      transform: translateY(-6px);
+    }
+    .card-col .card.held:hover {
+      transform: translateY(-6px);
+    }
+
+    .hold-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--primary);
+      text-shadow: 0 0 8px rgba(245,197,24,0.5);
+      height: 0.85rem;
+      display: flex;
+      align-items: center;
+      visibility: hidden;
+    }
+    .card-col .card.held + .hold-label,
+    .hold-label.visible {
+      visibility: visible;
+    }
+
+    /* Result Display */
+    .result-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 1.6rem;
+      flex-shrink: 0;
+    }
+    .result-hand-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.7rem, 2.2vw, 1rem);
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(245,197,24,0.4);
+      letter-spacing: 1px;
+    }
+    .result-payout {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.75rem, 2.2vw, 1rem);
+      color: #22c55e;
+    }
+    .result-lose {
+      color: var(--muted-text);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    /* Bet & Action Controls */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      padding: 0.15rem 0;
+    }
+    .chip-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.65rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 50px;
+      border: 2px solid var(--primary);
+      background: rgba(245,197,24,0.08);
+      color: var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 2.8rem;
+      text-align: center;
+    }
+    .chip-btn:hover {
+      background: rgba(245,197,24,0.2);
+      box-shadow: 0 0 12px rgba(245,197,24,0.3);
+    }
+    .chip-btn.active {
+      background: var(--primary);
+      color: #0D0D0D;
+      box-shadow: 0 0 15px rgba(245,197,24,0.5);
+    }
+    .chip-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .deal-btn {
+      min-width: 7rem;
+    }
+
+    /* Win animation */
+    @keyframes winFlash {
+      0%, 100% { box-shadow: 0 0 12px rgba(245,197,24,0.7), 0 0 4px var(--primary); }
+      50% { box-shadow: 0 0 25px rgba(245,197,24,1), 0 0 50px rgba(245,197,24,0.5); }
+    }
+    .card.win-glow {
+      animation: winFlash 0.5s ease-in-out 3;
+    }
+
+    @keyframes resultPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .result-bar.win-pulse {
+      animation: resultPulse 0.4s ease-in-out 3;
+    }
+
+    /* Table felt layout */
+    .vp-felt {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      overflow: hidden;
+    }
+
+    /* Game info (hands played / wins) */
+    .vp-stats {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      color: var(--muted-text);
+      flex-shrink: 0;
+    }
+    .vp-stats strong {
+      color: var(--primary);
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 767px) {
+      .poker-hand-area .card {
+        --card-w: clamp(3.2rem, 16vw, 4.5rem);
+      }
+      .pay-table {
+        gap: 0.1rem 0.3rem;
+        padding: 0.15rem 0.3rem;
+      }
+      .pay-row {
+        font-size: 0.5rem;
+      }
+      .hold-label {
+        font-size: 0.45rem;
+      }
+      .chip-btn {
+        font-size: 0.55rem;
+        padding: 0.25rem 0.5rem;
+        min-width: 2.2rem;
+      }
+      .result-bar {
+        min-height: 1.2rem;
+      }
+      .vp-stats {
+        font-size: 0.6rem;
+      }
+    }
+
+    @media (max-height: 600px) {
+      .poker-hand-area .card {
+        --card-w: clamp(3rem, 10vw, 4.5rem);
+      }
+      .pay-table { padding: 0.1rem 0.3rem; }
+      .pay-row { font-size: 0.5rem; }
+      .vp-felt { gap: 0.2rem; }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">VIDEO POKER</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">← Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </header>
 
+    <main class="game-area">
+      <div class="vp-felt">
+
+        <!-- Pay Table -->
+        <div class="pay-table" id="pay-table">
+          <div class="pay-row" data-hand="royal-flush"><span class="pay-hand">Royal Flush</span><span class="pay-mult">250×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="straight-flush"><span class="pay-hand">Str. Flush</span><span class="pay-mult">50×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="four-of-a-kind"><span class="pay-hand">4 of a Kind</span><span class="pay-mult">25×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="full-house"><span class="pay-hand">Full House</span><span class="pay-mult">9×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="flush"><span class="pay-hand">Flush</span><span class="pay-mult">6×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="straight"><span class="pay-hand">Straight</span><span class="pay-mult">4×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="three-of-a-kind"><span class="pay-hand">3 of a Kind</span><span class="pay-mult">3×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="two-pair"><span class="pay-hand">Two Pair</span><span class="pay-mult">2×</span></div>
+          <span class="pay-sep">·</span>
+          <div class="pay-row" data-hand="jacks-or-better"><span class="pay-hand">Jacks+</span><span class="pay-mult">1×</span></div>
+        </div>
+
+        <!-- Stat Bar -->
+        <div class="vp-stats">
+          <span>Hands: <strong id="stat-hands">0</strong></span>
+          <span>Wins: <strong id="stat-wins">0</strong></span>
+          <span>Won: <strong id="stat-credits">0</strong></span>
+        </div>
+
+        <!-- Cards -->
+        <div class="poker-hand-area" id="hand-area">
+          <div class="card-col" data-idx="0">
+            <div class="card face-down" id="card-0"><img src="" alt="Card back"></div>
+            <div class="hold-label" id="hold-0">HELD</div>
+          </div>
+          <div class="card-col" data-idx="1">
+            <div class="card face-down" id="card-1"><img src="" alt="Card back"></div>
+            <div class="hold-label" id="hold-1">HELD</div>
+          </div>
+          <div class="card-col" data-idx="2">
+            <div class="card face-down" id="card-2"><img src="" alt="Card back"></div>
+            <div class="hold-label" id="hold-2">HELD</div>
+          </div>
+          <div class="card-col" data-idx="3">
+            <div class="card face-down" id="card-3"><img src="" alt="Card back"></div>
+            <div class="hold-label" id="hold-3">HELD</div>
+          </div>
+          <div class="card-col" data-idx="4">
+            <div class="card face-down" id="card-4"><img src="" alt="Card back"></div>
+            <div class="hold-label" id="hold-4">HELD</div>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="result-bar" id="result-bar"></div>
+
+        <!-- Bet Controls -->
+        <div class="controls-row" id="bet-row">
+          <button class="chip-btn active" data-bet="10">10</button>
+          <button class="chip-btn" data-bet="20">20</button>
+          <button class="chip-btn" data-bet="50">50</button>
+        </div>
+
+        <!-- Action Button -->
+        <div class="controls-row">
+          <button class="btn-game deal-btn" id="btn-action" disabled>DEAL</button>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- Rules Overlay -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY</div>
+      <div class="rules-section">
+        <h3>Jacks or Better</h3>
+        <p>Classic 5-card draw video poker. Get a pair of Jacks or better to win!</p>
+      </div>
+      <div class="rules-section">
+        <h3>Gameplay</h3>
+        <ul>
+          <li>Choose your bet: 10, 20, or 50 credits</li>
+          <li>Click DEAL to receive 5 cards</li>
+          <li>Click cards to HOLD the ones you want to keep</li>
+          <li>Click DRAW — non-held cards are replaced</li>
+          <li>Your final hand is evaluated and winnings paid</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h3>Pay Table (× Bet)</h3>
+        <ul>
+          <li>Royal Flush — 250×</li>
+          <li>Straight Flush — 50×</li>
+          <li>Four of a Kind — 25×</li>
+          <li>Full House — 9×</li>
+          <li>Flush — 6×</li>
+          <li>Straight — 4×</li>
+          <li>Three of a Kind — 3×</li>
+          <li>Two Pair — 2×</li>
+          <li>Jacks or Better — 1×</li>
+        </ul>
+      </div>
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Panel -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- Win Screen -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var GAME_SLUG = 'video-poker';
+    var CARD_BACK_PATH = '/SHARED-CORE/assets/cardback.jpg';
+
+    /* ===== PAY TABLE ===== */
+    var PAY_TABLE = [
+      { id: 'royal-flush',     name: 'Royal Flush',     mult: 250 },
+      { id: 'straight-flush',  name: 'Straight Flush',  mult: 50  },
+      { id: 'four-of-a-kind',  name: 'Four of a Kind',  mult: 25  },
+      { id: 'full-house',      name: 'Full House',       mult: 9   },
+      { id: 'flush',           name: 'Flush',            mult: 6   },
+      { id: 'straight',        name: 'Straight',         mult: 4   },
+      { id: 'three-of-a-kind', name: 'Three of a Kind',  mult: 3   },
+      { id: 'two-pair',        name: 'Two Pair',         mult: 2   },
+      { id: 'jacks-or-better', name: 'Jacks or Better',  mult: 1   }
+    ];
+
+    /* ===== STATE ===== */
+    var deck = [];
+    var deckIdx = 0;
+    var hand = [null, null, null, null, null];
+    var held = [false, false, false, false, false];
+    var currentBet = 10;
+    var phase = 'bet';        // bet | hold | result
+    var totalHands = 0;
+    var totalWins = 0;
+    var totalCreditsWon = 0;
+
+    /* ===== ELEMENTS ===== */
+    var cardEls = [];
+    var holdLabels = [];
+    var btnAction = document.getElementById('btn-action');
+    var resultBar = document.getElementById('result-bar');
+    var chipBtns = document.querySelectorAll('.chip-btn');
+    var payRows = document.querySelectorAll('.pay-row');
+    var statHands = document.getElementById('stat-hands');
+    var statWins = document.getElementById('stat-wins');
+    var statCredits = document.getElementById('stat-credits');
+
+    for (var i = 0; i < 5; i++) {
+      cardEls.push(document.getElementById('card-' + i));
+      holdLabels.push(document.getElementById('hold-' + i));
+    }
+
+    /* ===== RANK HELPERS ===== */
+    var RANK_ORDER = { '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
+
+    function rankVal(rank) {
+      return RANK_ORDER[rank] || 0;
+    }
+
+    /* ===== HAND EVALUATION ===== */
+    function evaluateHand(cards) {
+      var ranks = cards.map(function(c) { return rankVal(c.rank); }).sort(function(a,b) { return a - b; });
+      var suits = cards.map(function(c) { return c.suit; });
+
+      // Count ranks
+      var counts = {};
+      for (var i = 0; i < ranks.length; i++) {
+        counts[ranks[i]] = (counts[ranks[i]] || 0) + 1;
+      }
+      var countVals = Object.values(counts).sort(function(a,b) { return b - a; });
+
+      // Flush check
+      var isFlush = suits[0] === suits[1] && suits[1] === suits[2] && suits[2] === suits[3] && suits[3] === suits[4];
+
+      // Straight check
+      var isStraight = false;
+      var uniqueRanks = [];
+      for (var key in counts) { uniqueRanks.push(parseInt(key)); }
+      uniqueRanks.sort(function(a,b) { return a - b; });
+
+      if (uniqueRanks.length === 5) {
+        // Normal straight: consecutive
+        if (uniqueRanks[4] - uniqueRanks[0] === 4) {
+          isStraight = true;
+        }
+        // Ace-low straight: A,2,3,4,5 → ranks [2,3,4,5,14]
+        if (uniqueRanks[0] === 2 && uniqueRanks[1] === 3 && uniqueRanks[2] === 4 && uniqueRanks[3] === 5 && uniqueRanks[4] === 14) {
+          isStraight = true;
+        }
+      }
+
+      // Royal Flush: A,K,Q,J,10 same suit
+      var isRoyal = isFlush && uniqueRanks.length === 5 && uniqueRanks[0] === 10 && uniqueRanks[4] === 14;
+
+      if (isRoyal) return { id: 'royal-flush', name: 'Royal Flush', mult: 250 };
+      if (isFlush && isStraight) return { id: 'straight-flush', name: 'Straight Flush', mult: 50 };
+      if (countVals[0] === 4) return { id: 'four-of-a-kind', name: 'Four of a Kind', mult: 25 };
+      if (countVals[0] === 3 && countVals[1] === 2) return { id: 'full-house', name: 'Full House', mult: 9 };
+      if (isFlush) return { id: 'flush', name: 'Flush', mult: 6 };
+      if (isStraight) return { id: 'straight', name: 'Straight', mult: 4 };
+      if (countVals[0] === 3) return { id: 'three-of-a-kind', name: 'Three of a Kind', mult: 3 };
+      if (countVals[0] === 2 && countVals[1] === 2) return { id: 'two-pair', name: 'Two Pair', mult: 2 };
+
+      // Jacks or Better: pair of J, Q, K, or A
+      if (countVals[0] === 2) {
+        for (var rv in counts) {
+          if (counts[rv] === 2 && parseInt(rv) >= 11) {
+            return { id: 'jacks-or-better', name: 'Jacks or Better', mult: 1 };
+          }
+        }
+      }
+
+      return null; // No win
+    }
+
+    /* ===== CARD RENDERING ===== */
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    function renderCard(idx, card, faceUp, animate) {
+      var col = cardEls[idx].parentElement;
+      var oldCard = cardEls[idx];
+      var newCard = createCardEl(card, faceUp);
+      if (animate) {
+        newCard.classList.add(animate);
+      }
+      col.replaceChild(newCard, oldCard);
+      cardEls[idx] = newCard;
+
+      // Bind click for hold toggle
+      newCard.addEventListener('click', function() {
+        if (phase === 'hold') {
+          toggleHold(idx);
+        }
+      });
+    }
+
+    function renderCardBack(idx) {
+      var col = cardEls[idx].parentElement;
+      var oldCard = cardEls[idx];
+      var el = document.createElement('div');
+      el.className = 'card face-down';
+      var img = document.createElement('img');
+      img.src = CARD_BACK_PATH;
+      img.alt = 'Card back';
+      el.appendChild(img);
+      col.replaceChild(el, oldCard);
+      cardEls[idx] = el;
+    }
+
+    /* ===== TOGGLE HOLD ===== */
+    function toggleHold(idx) {
+      held[idx] = !held[idx];
+      if (held[idx]) {
+        cardEls[idx].classList.add('held');
+      } else {
+        cardEls[idx].classList.remove('held');
+      }
+    }
+
+    function clearHolds() {
+      for (var i = 0; i < 5; i++) {
+        held[i] = false;
+        cardEls[i].classList.remove('held');
+      }
+    }
+
+    /* ===== DECK ===== */
+    function freshDeck() {
+      deck = XstikImageLoader.getShuffledDeck();
+      deckIdx = 0;
+    }
+
+    function drawCard() {
+      if (deckIdx >= deck.length) {
+        freshDeck();
+      }
+      return deck[deckIdx++];
+    }
+
+    /* ===== HIGHLIGHT PAY TABLE ===== */
+    function highlightPayRow(handId) {
+      for (var i = 0; i < payRows.length; i++) {
+        payRows[i].classList.remove('active');
+      }
+      if (handId) {
+        var row = document.querySelector('.pay-row[data-hand="' + handId + '"]');
+        if (row) row.classList.add('active');
+      }
+    }
+
+    /* ===== UPDATE STATS ===== */
+    function updateStats() {
+      statHands.textContent = totalHands;
+      statWins.textContent = totalWins;
+      statCredits.textContent = totalCreditsWon;
+    }
+
+    /* ===== BET SELECTION ===== */
+    function selectBet(amount) {
+      currentBet = amount;
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].classList.toggle('active', parseInt(chipBtns[i].dataset.bet) === amount);
+      }
+    }
+
+    function enableBetting(on) {
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].disabled = !on;
+      }
+    }
+
+    /* ===== GAME FLOW ===== */
+    function startDeal() {
+      // Check bankruptcy
+      if (XstikCredits.isBankrupt()) {
+        XstikCredits.triggerBankruptcy(function() {
+          // After recovery, re-enable
+          phase = 'bet';
+          btnAction.disabled = false;
+          btnAction.textContent = 'DEAL';
+          enableBetting(true);
+        });
+        return;
+      }
+
+      // Place bet
+      if (!XstikCredits.placeBet(currentBet, GAME_SLUG)) {
+        // Not enough credits
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function() {
+            phase = 'bet';
+            btnAction.disabled = false;
+            btnAction.textContent = 'DEAL';
+            enableBetting(true);
+          });
+        }
+        return;
+      }
+
+      // New deck
+      freshDeck();
+
+      // Clear state
+      clearHolds();
+      resultBar.innerHTML = '';
+      highlightPayRow(null);
+      resultBar.classList.remove('win-pulse');
+      for (var j = 0; j < 5; j++) {
+        cardEls[j].classList.remove('win-glow');
+      }
+
+      // Deal 5 cards
+      phase = 'deal';
+      enableBetting(false);
+      btnAction.disabled = true;
+
+      for (var i = 0; i < 5; i++) {
+        hand[i] = drawCard();
+      }
+
+      // Animate deal-in with staggered timing
+      var dealDelay = 0;
+      for (var d = 0; d < 5; d++) {
+        (function(idx) {
+          setTimeout(function() {
+            renderCard(idx, hand[idx], true, 'deal-in');
+          }, dealDelay);
+        })(d);
+        dealDelay += 120;
+      }
+
+      setTimeout(function() {
+        phase = 'hold';
+        btnAction.textContent = 'DRAW';
+        btnAction.disabled = false;
+        resultBar.innerHTML = '<span style="font-family:Rajdhani,sans-serif;font-size:0.75rem;color:var(--muted-text);">Click cards to HOLD, then DRAW</span>';
+      }, dealDelay + 100);
+    }
+
+    function doDraw() {
+      phase = 'drawing';
+      btnAction.disabled = true;
+      resultBar.innerHTML = '';
+
+      // Replace non-held cards
+      var replaceIdxs = [];
+      for (var i = 0; i < 5; i++) {
+        if (!held[i]) {
+          replaceIdxs.push(i);
+          hand[i] = drawCard();
+        }
+      }
+
+      if (replaceIdxs.length === 0) {
+        // All held — skip animation, go straight to eval
+        finishHand();
+        return;
+      }
+
+      // Flip animation for replaced cards
+      var flipDelay = 0;
+      for (var r = 0; r < replaceIdxs.length; r++) {
+        (function(idx) {
+          setTimeout(function() {
+            renderCard(idx, hand[idx], true, 'card-flip');
+          }, flipDelay);
+        })(replaceIdxs[r]);
+        flipDelay += 150;
+      }
+
+      setTimeout(function() {
+        finishHand();
+      }, flipDelay + 200);
+    }
+
+    function finishHand() {
+      totalHands++;
+      var result = evaluateHand(hand);
+      phase = 'result';
+
+      if (result) {
+        var payout = result.mult * currentBet;
+        XstikCredits.awardWinnings(payout, GAME_SLUG);
+        totalWins++;
+        totalCreditsWon += payout;
+
+        highlightPayRow(result.id);
+        resultBar.innerHTML = '<span class="result-hand-name">' + result.name + '</span><span class="result-payout">+' + payout + ' CREDITS</span>';
+        resultBar.classList.add('win-pulse');
+
+        // Win glow on all cards
+        for (var w = 0; w < 5; w++) {
+          cardEls[w].classList.add('win-glow');
+        }
+
+        // Submit score
+        var playerName = XstikPlayer.getUsername() || 'Anonymous';
+        XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
+          handsPlayed: totalHands,
+          wins: totalWins,
+          creditsWon: totalCreditsWon
+        });
+        XstikLeaderboard.rebuildUnified();
+      } else {
+        resultBar.innerHTML = '<span class="result-lose">No winning hand</span>';
+        highlightPayRow(null);
+      }
+
+      updateStats();
+
+      btnAction.textContent = 'NEW HAND';
+      btnAction.disabled = false;
+    }
+
+    function newHand() {
+      // Reset for next round
+      clearHolds();
+      resultBar.innerHTML = '';
+      resultBar.classList.remove('win-pulse');
+      highlightPayRow(null);
+      for (var i = 0; i < 5; i++) {
+        cardEls[i].classList.remove('win-glow');
+        renderCardBack(i);
+      }
+      phase = 'bet';
+      btnAction.textContent = 'DEAL';
+      enableBetting(true);
+
+      // Check bankruptcy before allowing next deal
+      if (XstikCredits.isBankrupt()) {
+        XstikCredits.triggerBankruptcy(function() {
+          phase = 'bet';
+          btnAction.disabled = false;
+        });
+      }
+    }
+
+    /* ===== ACTION BUTTON HANDLER ===== */
+    function onActionClick() {
+      if (phase === 'bet') {
+        startDeal();
+      } else if (phase === 'hold') {
+        doDraw();
+      } else if (phase === 'result') {
+        newHand();
+      }
+    }
+
+    /* ===== EVENT WIRING ===== */
+    function wireEvents() {
+      // Rules overlay
+      document.getElementById('btn-rules').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+
+      // Chip buttons
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].addEventListener('click', function() {
+          if (phase === 'bet') {
+            selectBet(parseInt(this.dataset.bet));
+          }
+        });
+      }
+
+      // Action button
+      btnAction.addEventListener('click', onActionClick);
+
+      // Card click for holds (via parent delegation)
+      document.getElementById('hand-area').addEventListener('click', function(e) {
+        var cardCol = e.target.closest('.card-col');
+        if (!cardCol || phase !== 'hold') return;
+        var idx = parseInt(cardCol.dataset.idx);
+        if (!isNaN(idx)) {
+          toggleHold(idx);
+        }
+      });
+    }
+
+    /* ===== INIT ===== */
+    function initGame() {
+      // Set initial card backs
+      for (var i = 0; i < 5; i++) {
+        var img = cardEls[i].querySelector('img');
+        if (img) img.src = CARD_BACK_PATH;
+      }
+      btnAction.disabled = false;
+      btnAction.textContent = 'DEAL';
+      phase = 'bet';
+      updateStats();
+    }
+
+    /* ===== BOOT ===== */
+    XstikGameInit.showDisclaimer();
+    XstikGameInit.boot(GAME_SLUG, {
+      preloadCards: true,
+      onReady: function () {
+        wireEvents();
+        initGame();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

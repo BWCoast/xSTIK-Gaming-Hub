@@ -1,0 +1,759 @@
+/**
+ * xSTIK SHARED GAME LAYOUT CSS
+ * ==============================
+ * Common layout, card styling, overlays, and components for ALL games.
+ * Include AFTER xstik-brand.css.
+ *
+ * Load order:
+ *   1. Google Fonts (Orbitron + Rajdhani)
+ *   2. xstik-brand.css (brand variables + base reset)
+ *   3. game-layout.css (THIS FILE — shared game components)
+ *   4. Game-specific inline <style> (minimal overrides only)
+ */
+
+/* ================================================================
+   TAP / SELECT RESET
+   ================================================================ */
+* { -webkit-tap-highlight-color: transparent; }
+html, body { overflow: hidden; height: 100%; height: 100dvh; }
+
+/* ================================================================
+   CARD SIZING — One Size Everywhere
+   ================================================================ */
+:root {
+  /* Desktop: cards sized to fit 7-column solitaire comfortably */
+  --card-w: clamp(4rem, 9.5vw, 6.5rem);
+  --card-h: calc(var(--card-w) * 1.5);
+  --card-radius: 0.35rem;
+  --card-gap: 0.35rem;
+
+  /* Solitaire stack offsets */
+  --stack-face-down: 18px;
+  --stack-face-up: 40px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --card-w: clamp(2.6rem, 12vw, 4.2rem);
+    --stack-face-down: 14px;
+    --stack-face-up: 30px;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --card-w: clamp(3.8rem, 8.5vw, 5.2rem);
+    --stack-face-down: 16px;
+    --stack-face-up: 35px;
+  }
+}
+
+/* ================================================================
+   FULL-VIEWPORT GAME LAYOUT — No Scrolling
+   ================================================================ */
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ===== COMPACT HEADER ===== */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem max(0.5rem, env(safe-area-inset-left));
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(245, 197, 24, 0.2);
+  flex-shrink: 0;
+  height: 3rem;
+  z-index: 100;
+}
+
+.game-header .logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+
+.game-header .logo-coin {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(245, 197, 24, 0.4);
+  box-shadow: 0 0 8px var(--glow-primary, rgba(245,197,24,0.4));
+}
+
+.game-header .logo-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--primary);
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(245, 197, 24, 0.4);
+}
+
+.game-header .logo-sub {
+  font-size: 0.55rem;
+  color: var(--accent, #E8A902);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: -2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ===== COMPACT FOOTER ===== */
+.game-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem max(0.5rem, env(safe-area-inset-left));
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(245, 197, 24, 0.15);
+  flex-shrink: 0;
+  height: 2rem;
+  z-index: 90;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.7rem;
+}
+
+.game-footer-bar a {
+  color: var(--muted-text, #B3B3B3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.game-footer-bar a:hover { color: var(--primary); }
+
+.game-footer-bar .footer-legal {
+  color: rgba(179, 179, 179, 0.6);
+  font-size: 0.65rem;
+}
+
+/* ===== MAIN GAME AREA — fills remaining space ===== */
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  padding: 0.3rem max(0.3rem, env(safe-area-inset-left));
+}
+
+/* ===== GAME CONTROLS BAR ===== */
+.game-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.game-info {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--muted-text, #B3B3B3);
+}
+
+.game-info span strong {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.3rem;
+}
+
+/* ================================================================
+   SHARED BUTTONS
+   ================================================================ */
+.btn-sm {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-sm:hover { background: rgba(245, 197, 24, 0.12); }
+
+.btn-game {
+  background: var(--primary);
+  color: #0D0D0D;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 15px rgba(245, 197, 24, 0.3);
+  min-height: 36px;
+}
+.btn-game:hover {
+  background: var(--accent, #E8A902);
+  box-shadow: 0 0 25px rgba(232, 169, 2, 0.4);
+  transform: translateY(-1px);
+}
+.btn-game:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-back-link {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted-text, #B3B3B3);
+  background: none;
+  border: 1px solid rgba(245, 197, 24, 0.25);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.btn-back-link:hover { color: var(--primary); border-color: var(--primary); }
+
+/* ================================================================
+   PLAYING CARD COMPONENT
+   ================================================================ */
+.card {
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  cursor: pointer;
+  background: #000;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.card.face-down { cursor: default; }
+.card.face-up { cursor: grab; }
+
+.card.selected {
+  box-shadow: 0 0 10px rgba(245, 197, 24, 0.7), 0 0 3px var(--primary);
+  z-index: 50;
+}
+
+/* Card rank/suit badge — small indicator on top-left for readability at small sizes */
+.card .card-badge {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.55rem;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+.card .card-badge.red { color: #ef4444; }
+
+/* Card slot (empty pile placeholder) */
+.card-slot {
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px dashed rgba(245, 197, 24, 0.2);
+  border-radius: var(--card-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(31, 31, 31, 0.3);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.card-slot .slot-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem;
+  color: rgba(245, 197, 24, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+.card-slot.has-cards {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* ================================================================
+   CARD ANIMATIONS — deal, flip, slide
+   ================================================================ */
+/* Deal-in: cards slide from off-screen when dealt */
+@keyframes dealIn {
+  from { transform: translateY(-30px) scale(0.9); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.deal-in {
+  animation: dealIn 0.25s ease-out forwards;
+}
+
+/* Card flip */
+@keyframes flipCard {
+  0%   { transform: scaleX(1); }
+  50%  { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+.card-flip {
+  animation: flipCard 0.3s ease-in-out;
+}
+
+/* Slide to position */
+@keyframes slideCard {
+  from { transform: translate(var(--slide-x, 0), var(--slide-y, 0)); }
+  to   { transform: translate(0, 0); }
+}
+.slide-card {
+  animation: slideCard 0.2s ease-out;
+}
+
+/* Win celebration */
+@keyframes winPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ================================================================
+   DRAG GHOST (shared across solitaire, etc.)
+   ================================================================ */
+#drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  display: none;
+}
+#drag-ghost .card {
+  position: relative;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+}
+
+/* ================================================================
+   CENTER OVERLAY — for start screen, bid screen, game over, etc.
+   ================================================================ */
+.center-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 60;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  gap: 0.75rem;
+}
+.center-overlay.show { display: flex; }
+
+.overlay-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  background: linear-gradient(135deg, var(--primary), var(--accent, #E8A902));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlay-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted-text, #B3B3B3);
+  max-width: 24rem;
+  line-height: 1.5;
+}
+
+.result-text {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.8rem, 6vw, 3rem);
+}
+.result-text.win { color: #22c55e; }
+.result-text.lose { color: #ef4444; }
+.result-text.push { color: var(--primary); }
+
+/* ================================================================
+   WIN SCREEN (fullscreen overlay)
+   ================================================================ */
+.win-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.92);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+.win-screen.show { display: flex; }
+
+.win-screen .win-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  background: linear-gradient(135deg, var(--primary), var(--accent, #E8A902));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.win-screen .stat {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  color: var(--muted-text, #B3B3B3);
+  margin: 0.15rem 0;
+}
+.win-screen .stat strong { color: var(--primary); }
+
+/* ================================================================
+   LEADERBOARD SLIDE-UP PANEL
+   ================================================================ */
+.lb-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+}
+.lb-overlay.open { display: block; }
+
+.lb-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.lb-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  background: var(--background, #141414);
+  border-top: 2px solid var(--primary);
+  border-radius: 0.75rem 0.75rem 0 0;
+  box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.5), 0 -2px 15px rgba(245, 197, 24, 0.3);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.lb-overlay.open .lb-panel { transform: translateY(0); }
+
+.lb-handle-bar {
+  width: 2rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--muted-text, #B3B3B3);
+  position: absolute;
+  left: 50%;
+  top: 0.4rem;
+  transform: translateX(-50%);
+}
+
+.lb-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(28, 27, 25, 0.8);
+  flex-shrink: 0;
+}
+
+.lb-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--primary);
+  letter-spacing: 1px;
+}
+
+.lb-close {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted-text, #B3B3B3);
+  background: none;
+  border: 1px solid rgba(28, 27, 25, 0.8);
+  border-radius: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lb-close:hover { color: var(--primary); border-color: var(--primary); }
+
+.lb-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1rem 1.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+.lb-content::-webkit-scrollbar { width: 3px; }
+.lb-content::-webkit-scrollbar-track { background: rgba(38, 38, 38, 0.5); }
+.lb-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+/* ================================================================
+   HOW TO PLAY MODAL
+   ================================================================ */
+.rules-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.rules-overlay.open { display: flex; }
+
+.rules-box {
+  background: var(--card-bg, #1F1F1F);
+  border: 1px solid rgba(245, 197, 24, 0.3);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  max-height: 75vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(245, 197, 24, 0.15);
+}
+
+.rules-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--primary);
+  text-shadow: 0 0 8px rgba(245, 197, 24, 0.4);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.rules-section {
+  margin-bottom: 0.75rem;
+}
+.rules-section h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent, #E8A902);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.rules-section p,
+.rules-section li {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted-text, #B3B3B3);
+  line-height: 1.5;
+}
+.rules-section ul { padding-left: 1.1rem; }
+
+.rules-close {
+  width: 100%;
+  margin-top: 1rem;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: #0D0D0D;
+  background: var(--primary);
+  border: none;
+  padding: 0.6rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(245, 197, 24, 0.3);
+  transition: all 0.2s;
+}
+.rules-close:hover { background: var(--accent, #E8A902); }
+
+/* ================================================================
+   TABLE GAMES LAYOUT (Blackjack, Baccarat, Casino War, etc.)
+   ================================================================ */
+.table-felt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dealer and player hand areas */
+.hand-area {
+  display: flex;
+  gap: var(--card-gap);
+  align-items: flex-start;
+  justify-content: center;
+  min-height: var(--card-h);
+  padding: 0.25rem;
+}
+
+.hand-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--muted-text, #B3B3B3);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-align: center;
+  margin-bottom: 0.2rem;
+}
+
+.hand-value {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary);
+  text-align: center;
+}
+
+/* Bet controls row */
+.bet-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.25rem;
+}
+
+.bet-display {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary);
+  min-width: 4rem;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   POKER-STYLE HAND (fan layout for player cards)
+   ================================================================ */
+.fan-hand {
+  display: flex;
+  justify-content: center;
+  gap: -0.5rem;
+  padding: 0.25rem;
+}
+
+.fan-hand .card {
+  transition: transform 0.15s ease;
+}
+.fan-hand .card:hover {
+  transform: translateY(-6px);
+}
+.fan-hand .card.playable {
+  cursor: pointer;
+}
+.fan-hand .card.playable:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 12px rgba(245, 197, 24, 0.5);
+}
+.fan-hand .card.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   RESPONSIVE — mobile compact
+   ================================================================ */
+@media (max-width: 767px) {
+  .game-header { height: 2.5rem; padding: 0.25rem max(0.4rem, env(safe-area-inset-left)); }
+  .game-header .logo-coin { width: 1.6rem; height: 1.6rem; }
+  .game-header .logo-text { font-size: 0.85rem; }
+  .game-header .logo-sub { font-size: 0.45rem; }
+  .game-footer-bar { height: 1.6rem; font-size: 0.6rem; }
+  .game-info { font-size: 0.75rem; gap: 0.4rem; }
+  .btn-sm { font-size: 0.7rem; padding: 0.2rem 0.5rem; min-height: 28px; }
+  .btn-game { font-size: 0.8rem; padding: 0.4rem 0.9rem; min-height: 32px; }
+  .game-area { padding: 0.2rem max(0.2rem, env(safe-area-inset-left)); }
+  .hand-label { font-size: 0.5rem; }
+  .hand-value { font-size: 0.85rem; }
+  .btn-back-link { display: none; }
+  .card .card-badge { font-size: 0.45rem; }
+}

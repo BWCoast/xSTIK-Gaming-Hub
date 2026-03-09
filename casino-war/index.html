@@ -3,22 +3,942 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Casino War — Play on XRPL</title>
-
-  <!-- OG Meta -->
-  <meta property="og:title" content="xSTIK Casino War">
-  <meta property="og:description" content="Play Casino War with NFT playing cards on XRPL. Higher card wins — go to war on ties.">
-  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
-  <meta property="og:url" content="https://games.xstik.art/casino-war">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
+  <title>xSTIK Casino War</title>
   <link rel="icon" href="/logo.jpg" type="image/jpeg">
-
-  <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
   <style>
     /* ================================================================
+       CASINO WAR — Game-Specific CSS
+       ================================================================ */
+
+    /* VS Divider */
+    .vs-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .vs-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      background: linear-gradient(135deg, var(--primary), var(--accent, #E8A902));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      letter-spacing: 4px;
+      position: relative;
+    }
+    .vs-line {
+      flex: 1;
+      max-width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(245,197,24,0.4), transparent);
+    }
+
+    /* Hand sections */
+    .war-hand-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      flex-shrink: 0;
+    }
+    .war-cards-row {
+      display: flex;
+      gap: var(--card-gap);
+      align-items: center;
+      justify-content: center;
+      min-height: var(--card-h);
+    }
+
+    /* Burn cards (face-down during war) */
+    .burn-card {
+      opacity: 0.5;
+      transform: rotate(-3deg);
+    }
+    .burn-card:nth-child(2) { transform: rotate(3deg); }
+    .burn-card:nth-child(3) { transform: rotate(-1deg); }
+
+    /* War indicator */
+    .war-indicator {
+      display: none;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(0.7rem, 2vw, 0.9rem);
+      color: #ef4444;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: warPulse 0.8s ease-in-out infinite alternate;
+    }
+    .war-indicator.show { display: block; }
+
+    @keyframes warPulse {
+      0% { opacity: 0.6; text-shadow: 0 0 8px rgba(239,68,68,0.3); }
+      100% { opacity: 1; text-shadow: 0 0 20px rgba(239,68,68,0.8); }
+    }
+
+    /* Chip buttons */
+    .chip-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      background: rgba(20, 20, 20, 0.9);
+      color: var(--primary);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .chip-btn:hover {
+      background: rgba(245, 197, 24, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 0 12px rgba(245, 197, 24, 0.4);
+    }
+    .chip-btn.selected {
+      background: var(--primary);
+      color: #0D0D0D;
+      box-shadow: 0 0 18px rgba(245, 197, 24, 0.5);
+    }
+    .chip-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Bet area */
+    .bet-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+    .bet-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--muted-text);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .bet-amount {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    /* War action buttons */
+    .war-actions {
+      display: none;
+      gap: 0.6rem;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .war-actions.show { display: flex; }
+
+    .btn-war {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      padding: 0.5rem 1.2rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 36px;
+      text-transform: uppercase;
+    }
+    .btn-war-go {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+    .btn-war-go:hover {
+      background: #dc2626;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+      transform: translateY(-1px);
+    }
+    .btn-surrender {
+      background: transparent;
+      color: var(--muted-text);
+      border: 1px solid rgba(179,179,179,0.4);
+    }
+    .btn-surrender:hover {
+      color: var(--foreground);
+      border-color: var(--foreground);
+    }
+
+    /* Result overlay */
+    .result-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 70;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-align: center;
+    }
+    .result-overlay.show { display: flex; }
+
+    .result-label {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 6vw, 3rem);
+    }
+    .result-label.win { color: #22c55e; }
+    .result-label.lose { color: #ef4444; }
+
+    .result-amount {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--muted-text);
+    }
+    .result-amount strong {
+      color: var(--primary);
+    }
+
+    /* Dramatic war reveal */
+    @keyframes dramaticReveal {
+      0% { transform: scale(0.8) rotateY(180deg); opacity: 0; }
+      50% { transform: scale(1.1) rotateY(90deg); opacity: 0.5; }
+      100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+    }
+    .dramatic-reveal {
+      animation: dramaticReveal 0.6s ease-out forwards;
+    }
+
+    /* Card glow for winner */
+    @keyframes winGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.3); }
+      50% { box-shadow: 0 0 20px rgba(34,197,94,0.7), 0 0 40px rgba(34,197,94,0.3); }
+    }
+    .card.winner-glow {
+      animation: winGlow 1s ease-in-out infinite;
+    }
+
+    @keyframes loseGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(239,68,68,0.3); }
+      50% { box-shadow: 0 0 20px rgba(239,68,68,0.7), 0 0 40px rgba(239,68,68,0.3); }
+    }
+    .card.loser-glow {
+      animation: loseGlow 1s ease-in-out infinite;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      color: var(--muted-text);
+      font-weight: 500;
+    }
+    .stat-item strong {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+      .chip-btn { width: 40px; height: 40px; font-size: 0.65rem; border-width: 2px; }
+      .vs-text { font-size: 1.2rem; letter-spacing: 2px; }
+      .bet-amount { font-size: 1rem; }
+      .btn-war { font-size: 0.6rem; padding: 0.4rem 0.8rem; min-height: 30px; }
+      .result-amount { font-size: 1rem; }
+      .stat-item { font-size: 0.65rem; }
+    }
+
+    @media (max-height: 600px) {
+      .vs-text { font-size: 1rem; }
+      .war-cards-row { min-height: auto; }
+      .table-felt { gap: 0.35rem; }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">CASINO WAR</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">← Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </header>
 
+    <main class="game-area">
+      <div class="table-felt">
+
+        <!-- DEALER SECTION -->
+        <div class="war-hand-section">
+          <div class="hand-label">DEALER</div>
+          <div class="war-cards-row" id="dealer-cards"></div>
+        </div>
+
+        <!-- VS SECTION -->
+        <div class="vs-section">
+          <div class="vs-line"></div>
+          <div class="vs-text" id="vs-text">VS</div>
+          <div class="vs-line"></div>
+        </div>
+
+        <!-- WAR INDICATOR -->
+        <div class="war-indicator" id="war-indicator">⚔ WAR ⚔</div>
+
+        <!-- WAR ACTION BUTTONS (tie) -->
+        <div class="war-actions" id="war-actions">
+          <button class="btn-war btn-war-go" id="btn-go-war">⚔ GO TO WAR</button>
+          <button class="btn-war btn-surrender" id="btn-surrender">SURRENDER</button>
+        </div>
+
+        <!-- PLAYER SECTION -->
+        <div class="war-hand-section">
+          <div class="war-cards-row" id="player-cards"></div>
+          <div class="hand-label">PLAYER</div>
+        </div>
+
+        <!-- BET AREA -->
+        <div class="bet-area" id="bet-area">
+          <div class="bet-label">BET</div>
+          <div class="bet-controls">
+            <button class="chip-btn" data-chip="10">10</button>
+            <button class="chip-btn" data-chip="25">25</button>
+            <button class="chip-btn" data-chip="50">50</button>
+            <button class="chip-btn" data-chip="100">100</button>
+          </div>
+          <div class="bet-amount" id="bet-amount"></div>
+          <button class="btn-game" id="btn-deal" disabled>DEAL</button>
+        </div>
+
+        <!-- PLAY AGAIN (hidden until result) -->
+        <div class="action-buttons" id="play-again-area" style="display:none;">
+          <button class="btn-game" id="btn-play-again">PLAY AGAIN</button>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-bar" id="stats-bar">
+          <span class="stat-item">Hands: <strong id="stat-hands">0</strong></span>
+          <span class="stat-item">Wins: <strong id="stat-wins">0</strong></span>
+          <span class="stat-item">Won: <strong id="stat-credits">0</strong></span>
+        </div>
+
+        <!-- RESULT OVERLAY -->
+        <div class="result-overlay" id="result-overlay">
+          <div class="result-label" id="result-label"></div>
+          <div class="result-amount" id="result-amount"></div>
+          <button class="btn-game" id="btn-result-continue" style="margin-top:0.5rem;">PLAY AGAIN</button>
+        </div>
+
+        <!-- START OVERLAY -->
+        <div class="center-overlay show" id="overlay-start">
+          <div class="overlay-title">CASINO WAR</div>
+          <div class="overlay-text">Higher card wins. Tie? Go to War or Surrender. Place your bet and deal!</div>
+          <button class="btn-game" id="btn-start">PLAY</button>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- RULES OVERLAY -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY</div>
+      <div class="rules-section">
+        <h3>Basics</h3>
+        <p>Casino War is the simplest card game in the casino. You and the dealer each get one card — higher card wins!</p>
+      </div>
+      <div class="rules-section">
+        <h3>Card Rankings</h3>
+        <p>2 (low) → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → J → Q → K → A (high). Suits don't matter.</p>
+      </div>
+      <div class="rules-section">
+        <h3>Winning</h3>
+        <ul>
+          <li>Higher card wins — pays 1:1</li>
+          <li>Dealer's higher card — you lose your bet</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h3>Tie — Go to War!</h3>
+        <ul>
+          <li><strong>Go to War:</strong> Your bet is doubled. Both get one more card. Win or tie again — pays 1:1 on the raised bet. Lose — you lose the war bet.</li>
+          <li><strong>Surrender:</strong> Lose half your original bet.</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h3>Chips</h3>
+        <p>Bet 10, 25, 50, or 100 credits per hand.</p>
+      </div>
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD PANEL -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- WIN SCREEN (not used directly — we use result-overlay instead) -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var GAME_SLUG = 'casino-war';
+    var CARD_BACK_PATH = '/SHARED-CORE/assets/cardback.jpg';
+
+    /* ========== RANK ORDER ========== */
+    var RANK_ORDER = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+
+    function rankValue(card) {
+      return RANK_ORDER[card.rank] || 0;
+    }
+
+    /* ========== STATE ========== */
+    var deck = [];
+    var currentBet = 0;
+    var selectedChip = 0;
+    var playerCard = null;
+    var dealerCard = null;
+    var isWar = false;
+    var gameActive = false;
+
+    /* Stats */
+    var totalHands = 0;
+    var totalWins = 0;
+    var totalCreditsWon = 0;
+
+    /* ========== DOM REFS ========== */
+    var dealerCardsEl = document.getElementById('dealer-cards');
+    var playerCardsEl = document.getElementById('player-cards');
+    var vsTextEl = document.getElementById('vs-text');
+    var warIndicator = document.getElementById('war-indicator');
+    var warActions = document.getElementById('war-actions');
+    var betArea = document.getElementById('bet-area');
+    var betAmountEl = document.getElementById('bet-amount');
+    var btnDeal = document.getElementById('btn-deal');
+    var playAgainArea = document.getElementById('play-again-area');
+    var resultOverlay = document.getElementById('result-overlay');
+    var resultLabel = document.getElementById('result-label');
+    var resultAmount = document.getElementById('result-amount');
+    var statsBar = document.getElementById('stats-bar');
+
+    /* ========== CARD RENDERING ========== */
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    /* ========== DECK ========== */
+    function freshDeck() {
+      deck = XstikImageLoader.getShuffledDeck();
+    }
+
+    function drawCard() {
+      if (deck.length < 6) freshDeck();
+      return deck.pop();
+    }
+
+    /* ========== UI HELPERS ========== */
+    function updateStats() {
+      document.getElementById('stat-hands').textContent = totalHands;
+      document.getElementById('stat-wins').textContent = totalWins;
+      document.getElementById('stat-credits').textContent = totalCreditsWon;
+    }
+
+    function showBetArea(show) {
+      betArea.style.display = show ? '' : 'none';
+    }
+
+    function showPlayAgain(show) {
+      playAgainArea.style.display = show ? 'flex' : 'none';
+    }
+
+    function clearTable() {
+      dealerCardsEl.innerHTML = '';
+      playerCardsEl.innerHTML = '';
+      warIndicator.classList.remove('show');
+      warActions.classList.remove('show');
+      resultOverlay.classList.remove('show');
+      vsTextEl.textContent = 'VS';
+      isWar = false;
+    }
+
+    function setChipButtons(enabled) {
+      var btns = document.querySelectorAll('.chip-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].disabled = !enabled;
+      }
+    }
+
+    function updateBetDisplay() {
+      betAmountEl.textContent = currentBet > 0 ? currentBet + ' CREDITS' : '';
+      btnDeal.disabled = currentBet <= 0;
+    }
+
+    /* ========== ANIMATIONS ========== */
+    function dealCardAnimated(container, card, faceUp, delay) {
+      return new Promise(function(resolve) {
+        setTimeout(function() {
+          var el = createCardEl(card, faceUp);
+          el.classList.add('deal-in');
+          container.appendChild(el);
+          el.addEventListener('animationend', function() {
+            el.classList.remove('deal-in');
+            resolve(el);
+          }, { once: true });
+        }, delay);
+      });
+    }
+
+    function flipCardEl(cardEl, card) {
+      return new Promise(function(resolve) {
+        cardEl.classList.add('card-flip');
+        setTimeout(function() {
+          /* At midpoint, swap content */
+          cardEl.className = 'card face-up';
+          cardEl.innerHTML = '';
+          var img = document.createElement('img');
+          img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+          img.alt = card.name;
+          img.onerror = function () { XstikImageLoader.handleError(this, card); };
+          cardEl.appendChild(img);
+          var badge = document.createElement('span');
+          badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
+          badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+          cardEl.appendChild(badge);
+        }, 150);
+        cardEl.addEventListener('animationend', function() {
+          cardEl.classList.remove('card-flip');
+          resolve();
+        }, { once: true });
+      });
+    }
+
+    function dramaticRevealCard(container, card, delay) {
+      return new Promise(function(resolve) {
+        setTimeout(function() {
+          var el = createCardEl(card, true);
+          el.classList.add('dramatic-reveal');
+          container.appendChild(el);
+          el.addEventListener('animationend', function() {
+            el.classList.remove('dramatic-reveal');
+            resolve(el);
+          }, { once: true });
+        }, delay);
+      });
+    }
+
+    /* ========== GAME FLOW ========== */
+    function startNewHand() {
+      clearTable();
+      showBetArea(true);
+      showPlayAgain(false);
+      setChipButtons(true);
+      currentBet = 0;
+      selectedChip = 0;
+      updateBetDisplay();
+      gameActive = false;
+
+      /* Deselect all chips */
+      var chipBtns = document.querySelectorAll('.chip-btn');
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].classList.remove('selected');
+      }
+
+      /* Check bankruptcy */
+      if (XstikCredits.isBankrupt()) {
+        XstikCredits.triggerBankruptcy(function() {
+          /* After recovery, just let them pick */
+        });
+      }
+    }
+
+    function selectChip(amount) {
+      var balance = XstikCredits.getBalance();
+      if (amount > balance) return;
+
+      selectedChip = amount;
+      currentBet = amount;
+      updateBetDisplay();
+
+      var chipBtns = document.querySelectorAll('.chip-btn');
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].classList.remove('selected');
+        if (parseInt(chipBtns[i].dataset.chip) === amount) {
+          chipBtns[i].classList.add('selected');
+        }
+      }
+    }
+
+    function deal() {
+      if (currentBet <= 0 || gameActive) return;
+
+      /* Place bet */
+      if (!XstikCredits.placeBet(currentBet, GAME_SLUG)) {
+        return;
+      }
+
+      gameActive = true;
+      showBetArea(false);
+      setChipButtons(false);
+      totalHands++;
+      updateStats();
+
+      /* Draw cards */
+      playerCard = drawCard();
+      dealerCard = drawCard();
+
+      /* Animate dealing */
+      dealCardAnimated(playerCardsEl, playerCard, true, 0).then(function() {
+        return dealCardAnimated(dealerCardsEl, dealerCard, true, 200);
+      }).then(function() {
+        setTimeout(compareCards, 400);
+      });
+    }
+
+    function compareCards() {
+      var pVal = rankValue(playerCard);
+      var dVal = rankValue(dealerCard);
+
+      if (pVal > dVal) {
+        /* Player wins */
+        playerWins(currentBet);
+      } else if (dVal > pVal) {
+        /* Dealer wins */
+        dealerWins();
+      } else {
+        /* Tie — offer war */
+        offerWar();
+      }
+    }
+
+    function playerWins(winAmount) {
+      XstikCredits.awardWinnings(winAmount * 2, GAME_SLUG);
+      totalWins++;
+      totalCreditsWon += winAmount;
+      updateStats();
+
+      /* Glow effects */
+      highlightCards('win');
+
+      submitScore();
+
+      setTimeout(function() {
+        showResult('WIN', '+' + winAmount + ' CREDITS', true);
+      }, 600);
+    }
+
+    function dealerWins() {
+      highlightCards('lose');
+
+      submitScore();
+
+      setTimeout(function() {
+        showResult('LOSE', '-' + currentBet + ' CREDITS', false);
+      }, 600);
+    }
+
+    function offerWar() {
+      vsTextEl.textContent = 'TIE!';
+      warIndicator.classList.add('show');
+      warActions.classList.add('show');
+    }
+
+    function goToWar() {
+      warActions.classList.remove('show');
+
+      /* Double the bet (player pays another ante) */
+      var warBet = currentBet;
+      if (!XstikCredits.placeBet(warBet, GAME_SLUG)) {
+        /* Can't afford war — auto surrender */
+        surrender();
+        return;
+      }
+      var totalWarBet = currentBet * 2;
+
+      warIndicator.classList.add('show');
+      vsTextEl.textContent = '⚔ WAR ⚔';
+
+      /* Burn 3 cards each (face down) then deal one each face up */
+      var burnDelay = 0;
+      var burnPromises = [];
+
+      /* Burn 3 for dealer */
+      for (var i = 0; i < 3; i++) {
+        var burnCard = drawCard();
+        (function(bc, d) {
+          burnPromises.push(new Promise(function(resolve) {
+            setTimeout(function() {
+              var el = createCardEl(bc, false);
+              el.classList.add('deal-in', 'burn-card');
+              dealerCardsEl.appendChild(el);
+              el.addEventListener('animationend', function() { el.classList.remove('deal-in'); resolve(); }, { once: true });
+            }, d);
+          }));
+        })(burnCard, burnDelay);
+        burnDelay += 120;
+      }
+
+      /* Burn 3 for player */
+      for (var j = 0; j < 3; j++) {
+        var burnCardP = drawCard();
+        (function(bc, d) {
+          burnPromises.push(new Promise(function(resolve) {
+            setTimeout(function() {
+              var el = createCardEl(bc, false);
+              el.classList.add('deal-in', 'burn-card');
+              playerCardsEl.appendChild(el);
+              el.addEventListener('animationend', function() { el.classList.remove('deal-in'); resolve(); }, { once: true });
+            }, d);
+          }));
+        })(burnCardP, burnDelay);
+        burnDelay += 120;
+      }
+
+      /* After burns, deal war cards */
+      Promise.all(burnPromises).then(function() {
+        var warPlayerCard = drawCard();
+        var warDealerCard = drawCard();
+
+        return dramaticRevealCard(playerCardsEl, warPlayerCard, 300).then(function() {
+          return dramaticRevealCard(dealerCardsEl, warDealerCard, 300).then(function() {
+            return { player: warPlayerCard, dealer: warDealerCard, totalBet: totalWarBet };
+          });
+        });
+      }).then(function(result) {
+        setTimeout(function() {
+          resolveWar(result.player, result.dealer, result.totalBet);
+        }, 400);
+      });
+    }
+
+    function resolveWar(warPlayerCard, warDealerCard, totalBet) {
+      var pVal = rankValue(warPlayerCard);
+      var dVal = rankValue(warDealerCard);
+
+      warIndicator.classList.remove('show');
+
+      if (pVal >= dVal) {
+        /* Player wins war (including ties during war) — pays 1:1 on the raised bet */
+        XstikCredits.awardWinnings(totalBet * 2, GAME_SLUG);
+        totalWins++;
+        totalCreditsWon += totalBet;
+        updateStats();
+
+        highlightCards('win');
+        submitScore();
+
+        setTimeout(function() {
+          showResult('WIN', '+' + totalBet + ' CREDITS', true);
+        }, 600);
+      } else {
+        /* Dealer wins war */
+        highlightCards('lose');
+        submitScore();
+
+        setTimeout(function() {
+          showResult('LOSE', '-' + totalBet + ' CREDITS', false);
+        }, 600);
+      }
+    }
+
+    function surrender() {
+      warActions.classList.remove('show');
+      warIndicator.classList.remove('show');
+
+      /* Return half the bet */
+      var halfBet = Math.floor(currentBet / 2);
+      var lostAmount = currentBet - halfBet;
+      if (halfBet > 0) {
+        XstikCredits.awardWinnings(halfBet, GAME_SLUG);
+      }
+
+      submitScore();
+
+      highlightCards('lose');
+
+      setTimeout(function() {
+        showResult('SURRENDER', '-' + lostAmount + ' CREDITS', false);
+      }, 400);
+    }
+
+    function highlightCards(type) {
+      var pCards = playerCardsEl.querySelectorAll('.card.face-up');
+      var dCards = dealerCardsEl.querySelectorAll('.card.face-up');
+      var cls = type === 'win' ? 'winner-glow' : 'loser-glow';
+
+      if (pCards.length > 0) {
+        pCards[pCards.length - 1].classList.add(type === 'win' ? 'winner-glow' : 'loser-glow');
+      }
+      if (dCards.length > 0) {
+        dCards[dCards.length - 1].classList.add(type === 'win' ? 'loser-glow' : 'winner-glow');
+      }
+    }
+
+    function showResult(text, amountText, isWin) {
+      resultLabel.textContent = text;
+      resultLabel.className = 'result-label ' + (isWin ? 'win' : 'lose');
+      resultAmount.innerHTML = amountText;
+      resultOverlay.classList.add('show');
+      gameActive = false;
+    }
+
+    /* ========== SCORE SUBMISSION ========== */
+    function submitScore() {
+      var playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
+        handsPlayed: totalHands,
+        wins: totalWins,
+        creditsWon: totalCreditsWon
+      });
+      XstikLeaderboard.rebuildUnified();
+    }
+
+    /* ========== EVENT WIRING ========== */
+    function wireEvents() {
+      /* Rules modal */
+      document.getElementById('btn-rules').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function() {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      /* Leaderboard */
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+
+      /* Chip selection */
+      var chipBtns = document.querySelectorAll('.chip-btn');
+      for (var i = 0; i < chipBtns.length; i++) {
+        chipBtns[i].addEventListener('click', function() {
+          selectChip(parseInt(this.dataset.chip));
+        });
+      }
+
+      /* Deal button */
+      btnDeal.addEventListener('click', function() {
+        deal();
+      });
+
+      /* War actions */
+      document.getElementById('btn-go-war').addEventListener('click', function() {
+        goToWar();
+      });
+      document.getElementById('btn-surrender').addEventListener('click', function() {
+        surrender();
+      });
+
+      /* Result continue / Play again */
+      document.getElementById('btn-result-continue').addEventListener('click', function() {
+        startNewHand();
+      });
+      document.getElementById('btn-play-again').addEventListener('click', function() {
+        startNewHand();
+      });
+
+      /* Start button */
+      document.getElementById('btn-start').addEventListener('click', function() {
+        document.getElementById('overlay-start').classList.remove('show');
+        startNewHand();
+      });
+    }
+
+    /* ========== BOOT ========== */
+    XstikGameInit.showDisclaimer();
+    XstikGameInit.boot(GAME_SLUG, {
+      preloadCards: true,
+      onReady: function () {
+        freshDeck();
+        wireEvents();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

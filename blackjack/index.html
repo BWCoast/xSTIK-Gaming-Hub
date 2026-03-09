@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Blackjack — Play 21 on XRPL</title>
+  <title>xSTIK Blackjack</title>
 
   <!-- OG Meta -->
   <meta property="og:title" content="xSTIK Blackjack">
@@ -17,8 +17,994 @@
   <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
+
   <style>
     /* ================================================================
+       BLACKJACK-SPECIFIC STYLES
+       ================================================================ */
+
+    /* Chip buttons */
+    .chip-btn {
+      width: 3.2rem;
+      height: 3.2rem;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      background: radial-gradient(circle at 30% 30%, #2a2a2a, #111);
+      color: var(--primary);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(245, 197, 24, 0.15), inset 0 0 8px rgba(245, 197, 24, 0.1);
+      position: relative;
+    }
+    .chip-btn:hover {
+      transform: translateY(-3px) scale(1.08);
+      box-shadow: 0 0 20px rgba(245, 197, 24, 0.4), inset 0 0 12px rgba(245, 197, 24, 0.15);
+    }
+    .chip-btn:active {
+      transform: scale(0.95);
+    }
+    .chip-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .chip-btn.selected {
+      border-color: #22c55e;
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.5), inset 0 0 10px rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    /* Chip row */
+    .chip-row {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Bet amount display */
+    .bet-amount {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.4rem;
+      color: var(--primary);
+      text-shadow: 0 0 12px rgba(245, 197, 24, 0.5);
+      margin: 0.15rem 0;
+    }
+
+    .bet-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 0.75rem;
+      color: var(--muted-text, #B3B3B3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Deal button in bet overlay */
+    .btn-deal {
+      background: var(--primary);
+      color: #0D0D0D;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      padding: 0.6rem 2rem;
+      border: none;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 18px rgba(245, 197, 24, 0.35);
+      margin-top: 0.3rem;
+    }
+    .btn-deal:hover {
+      background: var(--accent, #E8A902);
+      box-shadow: 0 0 28px rgba(232, 169, 2, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-deal:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Hand section wrapper */
+    .hand-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      flex-shrink: 0;
+    }
+
+    /* Middle section with bet and actions */
+    .middle-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Result overlay additions */
+    .result-amount {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-top: 0.15rem;
+    }
+    .result-amount.win { color: #22c55e; }
+    .result-amount.lose { color: #ef4444; }
+    .result-amount.push { color: var(--primary); }
+
+    /* Table felt layout override for blackjack */
+    .table-felt {
+      padding: 0.3rem 0;
+      gap: 0.3rem;
+      justify-content: space-between;
+    }
+
+    /* Card in blackjack: no grab cursor */
+    .hand-area .card {
+      cursor: default;
+    }
+    .hand-area .card.face-up {
+      cursor: default;
+    }
+
+    /* Action button row spacing */
+    .action-buttons {
+      gap: 0.5rem;
+    }
+    .action-buttons .btn-game {
+      min-width: 5rem;
+    }
+
+    /* Current bet display in play */
+    .current-bet-display {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--primary);
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    /* Win screen stat rows */
+    .win-screen .stat-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      color: var(--muted-text, #B3B3B3);
+      margin: 0.15rem 0;
+    }
+    .win-screen .stat-row strong {
+      color: var(--primary);
+    }
+
+    /* Clear bet button */
+    .btn-clear-bet {
+      background: none;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #ef4444;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 0.3rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-clear-bet:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+    .btn-clear-bet:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+      .chip-btn {
+        width: 2.6rem;
+        height: 2.6rem;
+        font-size: 0.6rem;
+        border-width: 2px;
+      }
+      .bet-amount { font-size: 1.1rem; }
+      .btn-deal { font-size: 0.75rem; padding: 0.5rem 1.5rem; }
+      .result-amount { font-size: 1rem; }
+      .action-buttons .btn-game { min-width: 4rem; font-size: 0.75rem; padding: 0.35rem 0.7rem; }
+      .current-bet-display { font-size: 0.75rem; }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">BLACKJACK</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">← Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">🏆</button>
+      </div>
+    </header>
 
+    <main class="game-area">
+      <div class="table-felt" id="table-felt">
+
+        <!-- DEALER HAND -->
+        <div class="hand-section" id="dealer-section">
+          <div class="hand-label">DEALER</div>
+          <div class="hand-value" id="dealer-value"></div>
+          <div class="hand-area" id="dealer-hand"></div>
+        </div>
+
+        <!-- MIDDLE: bet display + actions -->
+        <div class="middle-section" id="middle-section">
+          <div class="current-bet-display" id="current-bet-display"></div>
+          <div class="action-buttons" id="action-buttons" style="display:none;">
+            <button class="btn-game" id="btn-hit">HIT</button>
+            <button class="btn-game" id="btn-stand">STAND</button>
+            <button class="btn-game" id="btn-double">DOUBLE DOWN</button>
+          </div>
+        </div>
+
+        <!-- PLAYER HAND -->
+        <div class="hand-section" id="player-section">
+          <div class="hand-area" id="player-hand"></div>
+          <div class="hand-value" id="player-value"></div>
+          <div class="hand-label">PLAYER</div>
+        </div>
+
+        <!-- BET OVERLAY (inside table-felt for positioning) -->
+        <div class="center-overlay show" id="bet-overlay">
+          <div class="overlay-title">BLACKJACK</div>
+          <div class="overlay-text">Place your bet to begin</div>
+          <div class="chip-row" id="chip-row">
+            <button class="chip-btn" data-chip="10">10</button>
+            <button class="chip-btn" data-chip="25">25</button>
+            <button class="chip-btn" data-chip="50">50</button>
+            <button class="chip-btn" data-chip="100">100</button>
+          </div>
+          <div class="bet-label">BET</div>
+          <div class="bet-amount" id="bet-amount-display">0</div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <button class="btn-clear-bet" id="btn-clear-bet" disabled>CLEAR</button>
+            <button class="btn-deal" id="btn-deal" disabled>DEAL</button>
+          </div>
+        </div>
+
+        <!-- RESULT OVERLAY -->
+        <div class="center-overlay" id="result-overlay">
+          <div class="result-text" id="result-title"></div>
+          <div class="result-amount" id="result-amount"></div>
+          <button class="btn-deal" id="btn-play-again">PLAY AGAIN</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- RULES OVERLAY -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY</div>
+
+      <div class="rules-section">
+        <h3>Objective</h3>
+        <p>Beat the dealer by getting a hand value as close to 21 as possible without going over.</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Card Values</h3>
+        <ul>
+          <li>Number cards (2–10) = face value</li>
+          <li>Face cards (J, Q, K) = 10</li>
+          <li>Ace = 1 or 11 (automatically optimized)</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Gameplay</h3>
+        <ul>
+          <li>Place a bet using chips (10, 25, 50, 100)</li>
+          <li>You and the dealer each receive 2 cards</li>
+          <li>One dealer card is face-down (the hole card)</li>
+          <li><strong>HIT</strong> — draw another card</li>
+          <li><strong>STAND</strong> — keep your current hand</li>
+          <li><strong>DOUBLE DOWN</strong> — double your bet, receive exactly one more card, then stand</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Winning</h3>
+        <ul>
+          <li><strong>Blackjack</strong> (Ace + 10-value on first two cards) pays 3:2</li>
+          <li>Beat the dealer's hand = win 1:1</li>
+          <li>Dealer busts (over 21) = you win</li>
+          <li>Push (tie) = bet returned</li>
+          <li>Dealer stands on 17 or higher</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Credits</h3>
+        <p>Bet increments: 10, 25, 50, 100. Stack chips to increase your bet. Winnings are added to your credit balance.</p>
+      </div>
+
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD PANEL -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">🏆 LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
+    </div>
+  </div>
+
+  <!-- WIN SCREEN -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <!-- SHARED-CORE Scripts -->
+  <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
+  <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
+  <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
+  <script src="/SHARED-CORE/player/player-system.js"></script>
+  <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
+  <script src="/SHARED-CORE/game-init.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ================================================================
+       CONSTANTS
+       ================================================================ */
+    var GAME_SLUG = 'blackjack';
+    var CARD_BACK_PATH = '/SHARED-CORE/assets/cardback.jpg';
+
+    /* ================================================================
+       GAME STATE
+       ================================================================ */
+    var deck = [];
+    var deckIndex = 0;
+    var playerHand = [];
+    var dealerHand = [];
+    var currentBet = 0;
+    var gameActive = false;
+    var playerTurnDone = false;
+
+    // Session stats
+    var stats = {
+      handsPlayed: 0,
+      wins: 0,
+      losses: 0,
+      pushes: 0,
+      blackjacks: 0,
+      profitCredits: 0,
+      consecutiveWins: 0,
+      maxConsecutiveWins: 0
+    };
+
+    /* ================================================================
+       DOM REFS
+       ================================================================ */
+    var dealerHandEl = document.getElementById('dealer-hand');
+    var playerHandEl = document.getElementById('player-hand');
+    var dealerValueEl = document.getElementById('dealer-value');
+    var playerValueEl = document.getElementById('player-value');
+    var betOverlay = document.getElementById('bet-overlay');
+    var resultOverlay = document.getElementById('result-overlay');
+    var resultTitle = document.getElementById('result-title');
+    var resultAmount = document.getElementById('result-amount');
+    var actionButtons = document.getElementById('action-buttons');
+    var btnHit = document.getElementById('btn-hit');
+    var btnStand = document.getElementById('btn-stand');
+    var btnDouble = document.getElementById('btn-double');
+    var btnDeal = document.getElementById('btn-deal');
+    var btnClearBet = document.getElementById('btn-clear-bet');
+    var btnPlayAgain = document.getElementById('btn-play-again');
+    var betAmountDisplay = document.getElementById('bet-amount-display');
+    var currentBetDisplay = document.getElementById('current-bet-display');
+    var chipButtons = document.querySelectorAll('.chip-btn');
+
+    /* ================================================================
+       CARD FUNCTIONS
+       ================================================================ */
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
+        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    function drawCard() {
+      if (deckIndex >= deck.length) {
+        deck = XstikImageLoader.getShuffledDeck();
+        deckIndex = 0;
+      }
+      return deck[deckIndex++];
+    }
+
+    function handValue(hand) {
+      var total = 0;
+      var aces = 0;
+      for (var i = 0; i < hand.length; i++) {
+        var card = hand[i];
+        if (card.ace) {
+          aces++;
+          total += 11;
+        } else if (['J','Q','K'].indexOf(card.rank) !== -1) {
+          total += 10;
+        } else {
+          total += parseInt(card.rank, 10);
+        }
+      }
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces--;
+      }
+      return total;
+    }
+
+    function isBlackjack(hand) {
+      return hand.length === 2 && handValue(hand) === 21;
+    }
+
+    function isBust(hand) {
+      return handValue(hand) > 21;
+    }
+
+    /* ================================================================
+       RENDERING
+       ================================================================ */
+    function renderDealerHand(revealAll) {
+      dealerHandEl.innerHTML = '';
+      for (var i = 0; i < dealerHand.length; i++) {
+        var faceUp = revealAll || i === 0;
+        var cardEl = createCardEl(dealerHand[i], faceUp);
+        dealerHandEl.appendChild(cardEl);
+      }
+      if (revealAll) {
+        dealerValueEl.textContent = handValue(dealerHand);
+      } else {
+        dealerValueEl.textContent = handValue([dealerHand[0]]);
+      }
+    }
+
+    function renderPlayerHand() {
+      playerHandEl.innerHTML = '';
+      for (var i = 0; i < playerHand.length; i++) {
+        var cardEl = createCardEl(playerHand[i], true);
+        playerHandEl.appendChild(cardEl);
+      }
+      playerValueEl.textContent = handValue(playerHand);
+    }
+
+    function addDealAnimation() {
+      var allCards = document.querySelectorAll('#dealer-hand .card, #player-hand .card');
+      for (var i = 0; i < allCards.length; i++) {
+        allCards[i].classList.add('deal-in');
+        allCards[i].style.animationDelay = (i * 0.12) + 's';
+      }
+    }
+
+    function addDealInToNew(container) {
+      var cards = container.querySelectorAll('.card');
+      var lastCard = cards[cards.length - 1];
+      if (lastCard) {
+        lastCard.classList.add('deal-in');
+      }
+    }
+
+    function flipDealerHoleCard() {
+      var cards = dealerHandEl.querySelectorAll('.card');
+      if (cards.length >= 2) {
+        var holeCardEl = cards[1];
+        holeCardEl.classList.add('card-flip');
+        setTimeout(function () {
+          // Replace face-down with face-up at midpoint of flip
+          var card = dealerHand[1];
+          var img = holeCardEl.querySelector('img');
+          img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+          img.alt = card.name;
+          img.onerror = function () { XstikImageLoader.handleError(this, card); };
+          holeCardEl.className = 'card face-up card-flip';
+          // Add badge
+          var badge = document.createElement('span');
+          badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
+          badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
+          holeCardEl.appendChild(badge);
+        }, 150);
+      }
+    }
+
+    /* ================================================================
+       BET LOGIC
+       ================================================================ */
+    var pendingBet = 0;
+
+    function updateBetDisplay() {
+      betAmountDisplay.textContent = pendingBet;
+      btnDeal.disabled = pendingBet < 10;
+      btnClearBet.disabled = pendingBet === 0;
+      updateChipStates();
+    }
+
+    function updateChipStates() {
+      var balance = XstikCredits.getBalance();
+      for (var i = 0; i < chipButtons.length; i++) {
+        var chipVal = parseInt(chipButtons[i].getAttribute('data-chip'), 10);
+        chipButtons[i].disabled = (pendingBet + chipVal) > balance;
+      }
+    }
+
+    function addChip(val) {
+      var balance = XstikCredits.getBalance();
+      if (pendingBet + val <= balance) {
+        pendingBet += val;
+        updateBetDisplay();
+      }
+    }
+
+    function clearBet() {
+      pendingBet = 0;
+      updateBetDisplay();
+    }
+
+    /* ================================================================
+       GAME FLOW
+       ================================================================ */
+    function showBetOverlay() {
+      gameActive = false;
+      playerTurnDone = false;
+      actionButtons.style.display = 'none';
+      resultOverlay.classList.remove('show');
+      betOverlay.classList.add('show');
+      currentBetDisplay.textContent = '';
+      dealerHandEl.innerHTML = '';
+      playerHandEl.innerHTML = '';
+      dealerValueEl.textContent = '';
+      playerValueEl.textContent = '';
+      pendingBet = 0;
+      updateBetDisplay();
+    }
+
+    function startRound() {
+      if (pendingBet < 10) return;
+
+      var betAmount = pendingBet;
+      if (!XstikCredits.placeBet(betAmount, GAME_SLUG)) {
+        // Not enough credits
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function () {
+            updateBetDisplay();
+          });
+        }
+        return;
+      }
+
+      currentBet = betAmount;
+      pendingBet = 0;
+      betOverlay.classList.remove('show');
+      currentBetDisplay.textContent = 'BET: ' + currentBet;
+      gameActive = true;
+      playerTurnDone = false;
+
+      // Shuffle if needed
+      if (deckIndex > deck.length - 20) {
+        deck = XstikImageLoader.getShuffledDeck();
+        deckIndex = 0;
+      }
+
+      // Deal cards
+      playerHand = [drawCard(), drawCard()];
+      dealerHand = [drawCard(), drawCard()];
+
+      renderDealerHand(false);
+      renderPlayerHand();
+      addDealAnimation();
+
+      // Check for player blackjack
+      if (isBlackjack(playerHand)) {
+        setTimeout(function () {
+          playerTurnDone = true;
+          resolveRound();
+        }, 600);
+        return;
+      }
+
+      // Show action buttons
+      setTimeout(function () {
+        showActions();
+      }, 500);
+    }
+
+    function showActions() {
+      if (!gameActive || playerTurnDone) return;
+      actionButtons.style.display = 'flex';
+      btnHit.disabled = false;
+      btnStand.disabled = false;
+      // Double down only available on first two cards and if player has enough credits
+      var canDouble = playerHand.length === 2 && XstikCredits.getBalance() >= currentBet;
+      btnDouble.disabled = !canDouble;
+      btnDouble.style.display = canDouble ? '' : 'none';
+    }
+
+    function hideActions() {
+      actionButtons.style.display = 'none';
+    }
+
+    function playerHit() {
+      if (!gameActive || playerTurnDone) return;
+      playerHand.push(drawCard());
+      renderPlayerHand();
+      addDealInToNew(playerHandEl);
+
+      if (isBust(playerHand)) {
+        playerTurnDone = true;
+        hideActions();
+        setTimeout(function () { resolveRound(); }, 400);
+        return;
+      }
+
+      if (handValue(playerHand) === 21) {
+        playerTurnDone = true;
+        hideActions();
+        setTimeout(function () { dealerPlay(); }, 400);
+        return;
+      }
+
+      // Update double availability
+      btnDouble.disabled = true;
+      btnDouble.style.display = 'none';
+    }
+
+    function playerStand() {
+      if (!gameActive || playerTurnDone) return;
+      playerTurnDone = true;
+      hideActions();
+      dealerPlay();
+    }
+
+    function playerDoubleDown() {
+      if (!gameActive || playerTurnDone) return;
+      if (playerHand.length !== 2) return;
+
+      // Place additional bet
+      if (!XstikCredits.placeBet(currentBet, GAME_SLUG)) {
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function () {});
+        }
+        return;
+      }
+
+      currentBet *= 2;
+      currentBetDisplay.textContent = 'BET: ' + currentBet;
+
+      // Draw exactly one card
+      playerHand.push(drawCard());
+      renderPlayerHand();
+      addDealInToNew(playerHandEl);
+
+      playerTurnDone = true;
+      hideActions();
+
+      if (isBust(playerHand)) {
+        setTimeout(function () { resolveRound(); }, 400);
+      } else {
+        setTimeout(function () { dealerPlay(); }, 400);
+      }
+    }
+
+    function dealerPlay() {
+      // Reveal hole card
+      flipDealerHoleCard();
+      renderDealerHand(true);
+
+      // Dealer draws until 17+
+      function dealerDraw() {
+        if (handValue(dealerHand) < 17) {
+          setTimeout(function () {
+            dealerHand.push(drawCard());
+            renderDealerHand(true);
+            addDealInToNew(dealerHandEl);
+            dealerDraw();
+          }, 500);
+        } else {
+          setTimeout(function () { resolveRound(); }, 400);
+        }
+      }
+
+      setTimeout(function () { dealerDraw(); }, 400);
+    }
+
+    function resolveRound() {
+      gameActive = false;
+      hideActions();
+
+      // Make sure dealer is fully revealed
+      renderDealerHand(true);
+
+      var pVal = handValue(playerHand);
+      var dVal = handValue(dealerHand);
+      var pBJ = isBlackjack(playerHand);
+      var dBJ = isBlackjack(dealerHand);
+      var pBust = pVal > 21;
+      var dBust = dVal > 21;
+
+      var resultType = '';
+      var resultLabel = '';
+      var winAmount = 0;
+      var amountText = '';
+
+      stats.handsPlayed++;
+
+      if (pBJ && dBJ) {
+        // Both blackjack = push
+        resultType = 'push';
+        resultLabel = 'PUSH';
+        winAmount = currentBet;
+        amountText = 'Bet returned: ' + currentBet;
+        XstikCredits.awardWinnings(currentBet, GAME_SLUG);
+        stats.pushes++;
+        stats.consecutiveWins = 0;
+      } else if (pBJ) {
+        // Player blackjack pays 3:2
+        resultType = 'win';
+        resultLabel = 'BLACKJACK!';
+        winAmount = currentBet + Math.floor(currentBet * 1.5);
+        amountText = '+' + Math.floor(currentBet * 1.5) + ' credits';
+        XstikCredits.awardWinnings(winAmount, GAME_SLUG);
+        stats.wins++;
+        stats.blackjacks++;
+        stats.profitCredits += Math.floor(currentBet * 1.5);
+        stats.consecutiveWins++;
+        if (stats.consecutiveWins > stats.maxConsecutiveWins) {
+          stats.maxConsecutiveWins = stats.consecutiveWins;
+        }
+      } else if (pBust) {
+        // Player bust
+        resultType = 'lose';
+        resultLabel = 'BUST';
+        winAmount = 0;
+        amountText = '-' + currentBet + ' credits';
+        stats.losses++;
+        stats.profitCredits -= currentBet;
+        stats.consecutiveWins = 0;
+      } else if (dBust) {
+        // Dealer bust
+        resultType = 'win';
+        resultLabel = 'DEALER BUSTS!';
+        winAmount = currentBet * 2;
+        amountText = '+' + currentBet + ' credits';
+        XstikCredits.awardWinnings(winAmount, GAME_SLUG);
+        stats.wins++;
+        stats.profitCredits += currentBet;
+        stats.consecutiveWins++;
+        if (stats.consecutiveWins > stats.maxConsecutiveWins) {
+          stats.maxConsecutiveWins = stats.consecutiveWins;
+        }
+      } else if (pVal > dVal) {
+        // Player wins
+        resultType = 'win';
+        resultLabel = 'YOU WIN!';
+        winAmount = currentBet * 2;
+        amountText = '+' + currentBet + ' credits';
+        XstikCredits.awardWinnings(winAmount, GAME_SLUG);
+        stats.wins++;
+        stats.profitCredits += currentBet;
+        stats.consecutiveWins++;
+        if (stats.consecutiveWins > stats.maxConsecutiveWins) {
+          stats.maxConsecutiveWins = stats.consecutiveWins;
+        }
+      } else if (pVal < dVal) {
+        // Dealer wins
+        resultType = 'lose';
+        resultLabel = 'DEALER WINS';
+        winAmount = 0;
+        amountText = '-' + currentBet + ' credits';
+        stats.losses++;
+        stats.profitCredits -= currentBet;
+        stats.consecutiveWins = 0;
+      } else {
+        // Push
+        resultType = 'push';
+        resultLabel = 'PUSH';
+        winAmount = currentBet;
+        amountText = 'Bet returned: ' + currentBet;
+        XstikCredits.awardWinnings(currentBet, GAME_SLUG);
+        stats.pushes++;
+        stats.consecutiveWins = 0;
+      }
+
+      // Submit score to leaderboard
+      var playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
+        handsPlayed: stats.handsPlayed,
+        wins: stats.wins,
+        profitCredits: stats.profitCredits,
+        consecutiveWins: stats.maxConsecutiveWins
+      });
+      XstikLeaderboard.rebuildUnified();
+
+      // Show result
+      showResult(resultType, resultLabel, amountText);
+    }
+
+    function showResult(type, label, amountText) {
+      resultTitle.className = 'result-text ' + type;
+      resultTitle.textContent = label;
+      resultAmount.className = 'result-amount ' + type;
+      resultAmount.textContent = amountText;
+      resultOverlay.classList.add('show');
+    }
+
+    /* ================================================================
+       WIN SCREEN (big wins)
+       ================================================================ */
+    function showWinScreen(label, amountText) {
+      var ws = document.getElementById('win-screen');
+      ws.innerHTML = '';
+
+      var title = document.createElement('div');
+      title.className = 'win-title';
+      title.textContent = label;
+      ws.appendChild(title);
+
+      var amount = document.createElement('div');
+      amount.className = 'stat';
+      amount.innerHTML = '<strong>' + amountText + '</strong>';
+      ws.appendChild(amount);
+
+      var statsDiv = document.createElement('div');
+      statsDiv.style.margin = '1rem 0';
+      statsDiv.innerHTML = '<div class="stat">Hands Played: <strong>' + stats.handsPlayed + '</strong></div>' +
+        '<div class="stat">Wins: <strong>' + stats.wins + '</strong></div>' +
+        '<div class="stat">Blackjacks: <strong>' + stats.blackjacks + '</strong></div>' +
+        '<div class="stat">Profit: <strong>' + (stats.profitCredits >= 0 ? '+' : '') + stats.profitCredits + '</strong></div>';
+      ws.appendChild(statsDiv);
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-game';
+      btn.textContent = 'CONTINUE';
+      btn.style.marginTop = '1rem';
+      btn.addEventListener('click', function () {
+        ws.classList.remove('show');
+        showBetOverlay();
+      });
+      ws.appendChild(btn);
+
+      ws.classList.add('show');
+    }
+
+    /* ================================================================
+       EVENT WIRING
+       ================================================================ */
+    function wireEvents() {
+      // Rules overlay
+      document.getElementById('btn-rules').addEventListener('click', function () {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function () {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      // Leaderboard
+      function openLB() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+        document.getElementById('lb-overlay').classList.add('open');
+      }
+      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
+      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
+
+      // Chip buttons
+      for (var i = 0; i < chipButtons.length; i++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            var val = parseInt(btn.getAttribute('data-chip'), 10);
+            addChip(val);
+          });
+        })(chipButtons[i]);
+      }
+
+      // Clear bet
+      btnClearBet.addEventListener('click', clearBet);
+
+      // Deal button
+      btnDeal.addEventListener('click', startRound);
+
+      // Action buttons
+      btnHit.addEventListener('click', playerHit);
+      btnStand.addEventListener('click', playerStand);
+      btnDouble.addEventListener('click', playerDoubleDown);
+
+      // Play again
+      btnPlayAgain.addEventListener('click', function () {
+        // Check for bankruptcy
+        if (XstikCredits.isBankrupt()) {
+          XstikCredits.triggerBankruptcy(function () {
+            showBetOverlay();
+          });
+          return;
+        }
+        showBetOverlay();
+      });
+    }
+
+    /* ================================================================
+       BOOT
+       ================================================================ */
+    XstikGameInit.showDisclaimer();
+    XstikGameInit.boot(GAME_SLUG, {
+      preloadCards: true,
+      onReady: function () {
+        deck = XstikImageLoader.getShuffledDeck();
+        deckIndex = 0;
+        wireEvents();
+        showBetOverlay();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

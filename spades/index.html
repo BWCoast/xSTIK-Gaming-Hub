@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Spades — Play on XRPL</title>
+  <title>xSTIK Spades</title>
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
+  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
 
   <!-- OG Meta -->
   <meta property="og:title" content="xSTIK Spades">
@@ -12,134 +16,614 @@
   <meta property="og:url" content="https://games.xstik.art/spades">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="/logo.jpg" type="image/jpeg">
-
-  <!-- REQUIRED: xSTIK Brand Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* ================================================================
+       SPADES-SPECIFIC LAYOUT
+       ================================================================ */
+
+    /* ---- Score strip ---- */
+    .score-strip {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 0.15rem 0;
+      flex-shrink: 0;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .team-score {
+      padding: 0.15rem 0.6rem;
+      border-radius: 0.25rem;
+      background: rgba(31, 31, 31, 0.6);
+      border: 1px solid rgba(245, 197, 24, 0.15);
+    }
+    .team-score strong { color: var(--primary); }
+    .team-us { border-color: rgba(34, 197, 94, 0.3); }
+    .team-them { border-color: rgba(239, 68, 68, 0.25); }
+
+    /* ---- Spades Table (CSS Grid: 4-player layout) ---- */
+    .spades-table {
+      flex: 1;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto 1fr auto;
+      gap: 0;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Seats */
+    .seat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15rem;
+      padding: 0.15rem;
+      z-index: 2;
+    }
+
+    .seat-top {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .seat-left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .seat-right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .seat-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.5rem;
+      font-weight: 700;
+      color: var(--muted-text);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .seat-label.active {
+      color: var(--primary);
+      text-shadow: 0 0 8px var(--glow-primary);
+    }
+    .seat-label.partner {
+      color: rgba(34, 197, 94, 0.8);
+    }
+    .seat-label.partner.active {
+      color: #22c55e;
+      text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+
+    .seat-bid {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--muted-text);
+      white-space: nowrap;
+    }
+
+    /* Mini cards (face-down for AI) */
+    .seat-cards-mini {
+      display: flex;
+      gap: 0;
+    }
+    .seat-top .seat-cards-mini {
+      flex-direction: row;
+    }
+    .seat-left .seat-cards-mini,
+    .seat-right .seat-cards-mini {
+      flex-direction: column;
+    }
+
+    .mini-card {
+      width: calc(var(--card-w) * 0.38);
+      height: calc(var(--card-h) * 0.38);
+      border-radius: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #000;
+    }
+    .mini-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Horizontal mini overlap */
+    .seat-top .mini-card + .mini-card {
+      margin-left: calc(var(--card-w) * -0.25);
+    }
+    /* Vertical mini overlap */
+    .seat-left .mini-card + .mini-card,
+    .seat-right .mini-card + .mini-card {
+      margin-top: calc(var(--card-h) * -0.28);
+    }
+
+    /* ---- Center trick area ---- */
+    .trick-area {
+      grid-column: 2;
+      grid-row: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .trick-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 0.25rem;
+      width: fit-content;
+    }
+
+    .trick-card {
+      width: var(--card-w);
+      height: var(--card-h);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      background: rgba(31, 31, 31, 0.3);
+      border: 1px dashed rgba(245, 197, 24, 0.12);
+      position: relative;
+    }
+    .trick-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .trick-card .card-badge {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.55rem;
+      line-height: 1;
+      padding: 1px 3px;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .trick-card .card-badge.red { color: #ef4444; }
+
+    .trick-card .trick-seat-label {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.45rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.7);
+      background: rgba(0,0,0,0.7);
+      padding: 0 3px;
+      border-radius: 2px;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Seat positions in the 2×2 trick grid:
+       Row1: [West(1)] [North(2)]
+       Row2: [South(0)] [East(3)] */
+    .trick-card[data-seat="2"] { grid-column: 2; grid-row: 1; }
+    .trick-card[data-seat="1"] { grid-column: 1; grid-row: 1; }
+    .trick-card[data-seat="0"] { grid-column: 1; grid-row: 2; }
+    .trick-card[data-seat="3"] { grid-column: 2; grid-row: 2; }
+
+    /* Empty trick slots */
+    .trick-slot {
+      width: var(--card-w);
+      height: var(--card-h);
+      border: 1px dashed rgba(245, 197, 24, 0.1);
+      border-radius: var(--card-radius);
+      background: rgba(31, 31, 31, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .trick-slot .slot-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.45rem;
+      color: rgba(245, 197, 24, 0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .trick-winner-badge {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 900;
+      color: #0D0D0D;
+      background: var(--primary);
+      padding: 0.2rem 0.6rem;
+      border-radius: 0.25rem;
+      box-shadow: 0 0 12px var(--glow-primary);
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 70;
+      white-space: nowrap;
+    }
+    .trick-winner-badge.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ---- Player Hand (bottom) ---- */
+    .player-hand-area {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.15rem 0.25rem;
+      gap: 0.1rem;
+      z-index: 10;
+    }
+
+    .hand-row {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      padding: 0.1rem;
+    }
+
+    .hand-card {
+      width: var(--card-w);
+      height: var(--card-h);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+      cursor: default;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      background: #000;
+    }
+    .hand-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+    .hand-card .card-badge {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.55rem;
+      line-height: 1;
+      padding: 1px 3px;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .hand-card .card-badge.red { color: #ef4444; }
+
+    /* Overlap cards in hand */
+    .hand-card + .hand-card {
+      margin-left: calc(var(--card-w) * -0.42);
+    }
+
+    .hand-card.playable {
+      cursor: pointer;
+    }
+    .hand-card.playable:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 0 12px rgba(245, 197, 24, 0.5);
+      z-index: 20;
+    }
+    .hand-card.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      filter: grayscale(0.3);
+    }
+
+    .your-hand-label {
+      font-size: 0.5rem;
+      color: var(--muted-text);
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* ---- Center overlays ---- */
+    .center-overlay {
+      border-radius: 0.5rem;
+    }
+
+    /* Bid row buttons */
+    .bid-row {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .bid-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bid-btn:hover {
+      background: rgba(245, 197, 24, 0.2);
+      box-shadow: 0 0 12px var(--glow-primary);
+      transform: scale(1.1);
+    }
+    .bid-btn.nil-btn {
+      border-color: #ef4444;
+      color: #ef4444;
+      font-size: 0.6rem;
+    }
+    .bid-btn.nil-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .round-score-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.8rem;
+      color: var(--muted-text);
+      text-align: center;
+      max-width: 22rem;
+      line-height: 1.5;
+    }
+
+    /* ---- Bid info strip (shows during play) ---- */
+    .bid-info-strip {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.1rem 0;
+      flex-shrink: 0;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.65rem;
+      color: var(--muted-text);
+    }
+    .bid-info-strip span strong { color: var(--primary); }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 767px) {
+      .score-strip { font-size: 0.65rem; gap: 0.75rem; }
+      .team-score { padding: 0.1rem 0.4rem; }
+      .seat-label { font-size: 0.4rem; }
+      .seat-bid { font-size: 0.5rem; }
+      .mini-card {
+        width: calc(var(--card-w) * 0.32);
+        height: calc(var(--card-h) * 0.32);
+      }
+      .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.5); }
+      .hand-card .card-badge { font-size: 0.45rem; }
+      .trick-card .card-badge { font-size: 0.45rem; }
+      .trick-card .trick-seat-label { font-size: 0.35rem; }
+      .bid-btn { width: 2rem; height: 2rem; font-size: 0.7rem; }
+      .bid-btn.nil-btn { font-size: 0.5rem; }
+      .your-hand-label { font-size: 0.4rem; }
+      .round-score-text { font-size: 0.7rem; }
+      .bid-info-strip { font-size: 0.55rem; }
+      .trick-winner-badge { font-size: 0.6rem; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.4); }
+    }
+  </style>
 </head>
 <body>
-
-  <!-- ===== HEADER ===== -->
-  <header class="top-bar">
-    <div class="logo-wrap">
-      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
-           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
-      <div>
-        <div class="logo-text">xSTIK</div>
-        <div class="logo-sub">SPADES</div>
-      </div>
-    </div>
-    <div class="header-stats"><div id="credit-display"></div></div>
-  </header>
-
-  <!-- ===== GAME ===== -->
-  <main id="game-container">
-    <div class="game-controls">
-      <div class="game-info">
-        <span>Round <strong id="round-num">1</strong></span>
-        <span>Trick <strong id="trick-num">0</strong>/13</span>
-        <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
-      </div>
-      <div class="btn-group">
-        <button class="btn-sm" id="btn-leaderboard">🏆</button>
-      </div>
-    </div>
-
-    <!-- Score Strip -->
-    <div class="score-strip">
-      <div class="team-score team-us">US (You+Partner): <strong id="score-us">0</strong></div>
-      <div class="team-score team-them">THEM: <strong id="score-them">0</strong></div>
-    </div>
-
-    <!-- Spades Table -->
-    <div class="spades-table">
-      <!-- Partner (top / seat 2) -->
-      <div class="seat seat-top" id="seat-2">
-        <div class="seat-label partner" id="label-2">PARTNER</div>
-        <div class="seat-bid" id="bid-2"></div>
-        <div class="seat-cards-mini" id="mini-2"></div>
-      </div>
-
-      <!-- Left opponent (seat 1) -->
-      <div class="seat seat-left" id="seat-1">
-        <div class="seat-label" id="label-1">WEST</div>
-        <div class="seat-bid" id="bid-1"></div>
-        <div class="seat-cards-mini" id="mini-1"></div>
-      </div>
-
-      <!-- Right opponent (seat 3) -->
-      <div class="seat seat-right" id="seat-3">
-        <div class="seat-label" id="label-3">EAST</div>
-        <div class="seat-bid" id="bid-3"></div>
-        <div class="seat-cards-mini" id="mini-3"></div>
-      </div>
-
-      <!-- Trick Area (center) -->
-      <div class="trick-area">
-        <div class="trick-cards" id="trick-cards"></div>
-        <div class="trick-winner-badge" id="trick-winner-badge"></div>
-
-        <!-- Overlays -->
-        <div class="center-overlay" id="overlay-start">
-          <div class="overlay-title">SPADES</div>
-          <div class="overlay-text">Play to 500 points. You and your partner vs the opponents. Spades are always trump.</div>
-          <button class="btn-primary" id="btn-start">PLAY — 50 CREDITS</button>
+  <div class="game-shell">
+    <header class="game-header">
+      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
+        <div>
+          <div class="logo-text">xSTIK</div>
+          <div class="logo-sub">SPADES</div>
         </div>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn-back-link">&larr; Hub</a>
+        <div id="credit-display"></div>
+        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-leaderboard">&#127942;</button>
+      </div>
+    </header>
 
-        <div class="center-overlay" id="overlay-bid">
-          <div class="overlay-title">YOUR BID</div>
-          <div class="overlay-text">How many tricks will you take? (0 = Nil)</div>
-          <div class="bid-row" id="bid-row"></div>
-        </div>
-
-        <div class="center-overlay" id="overlay-round-end">
-          <div class="result-text" id="result-text"></div>
-          <div class="round-score-text" id="round-score-text"></div>
-          <button class="btn-primary" id="btn-next-round">NEXT ROUND</button>
-        </div>
-
-        <div class="center-overlay" id="overlay-game-over">
-          <div class="result-text" id="game-over-text"></div>
-          <div class="round-score-text" id="game-over-score"></div>
-          <button class="btn-primary" id="btn-new-game">NEW GAME</button>
+    <main class="game-area">
+      <!-- Game controls bar -->
+      <div class="game-controls">
+        <div class="game-info">
+          <span>Round <strong id="round-num">1</strong></span>
+          <span>Trick <strong id="trick-num">0</strong>/13</span>
+          <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
         </div>
       </div>
 
-      <!-- Player Hand (bottom / seat 0) -->
-      <div class="player-hand-area">
-        <div class="hand-row" id="player-hand"></div>
-        <div style="font-size:0.55rem;color:var(--muted-text);font-family:'Rajdhani',sans-serif;letter-spacing:1px;">YOUR HAND</div>
+      <!-- Score strip -->
+      <div class="score-strip">
+        <div class="team-score team-us">US (You + Partner): <strong id="score-us">0</strong></div>
+        <div class="team-score team-them">THEM: <strong id="score-them">0</strong></div>
       </div>
-    </div>
-  </main>
 
-  <!-- Leaderboard -->
-  <div id="lb-overlay">
-    <div id="lb-backdrop"></div>
-    <div id="lb-panel">
-      <div class="lb-handle-bar"></div>
-      <div class="lb-handle">
-        <span class="lb-title">🏆 SPADES LEADERBOARD</span>
-        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      <!-- Bid info strip (visible during play) -->
+      <div class="bid-info-strip" id="bid-info-strip"></div>
+
+      <!-- Spades Table (CSS Grid) -->
+      <div class="spades-table">
+        <!-- Partner (top / seat 2) -->
+        <div class="seat seat-top" id="seat-2">
+          <div class="seat-label partner" id="label-2">PARTNER</div>
+          <div class="seat-bid" id="bid-2"></div>
+          <div class="seat-cards-mini" id="mini-2"></div>
+        </div>
+
+        <!-- Left opponent (seat 1) -->
+        <div class="seat seat-left" id="seat-1">
+          <div class="seat-label" id="label-1">WEST</div>
+          <div class="seat-bid" id="bid-1"></div>
+          <div class="seat-cards-mini" id="mini-1"></div>
+        </div>
+
+        <!-- Right opponent (seat 3) -->
+        <div class="seat seat-right" id="seat-3">
+          <div class="seat-label" id="label-3">EAST</div>
+          <div class="seat-bid" id="bid-3"></div>
+          <div class="seat-cards-mini" id="mini-3"></div>
+        </div>
+
+        <!-- Trick Area (center) -->
+        <div class="trick-area">
+          <div class="trick-cards" id="trick-cards"></div>
+          <div class="trick-winner-badge" id="trick-winner-badge"></div>
+
+          <!-- Start overlay -->
+          <div class="center-overlay" id="overlay-start">
+            <div class="overlay-title">SPADES</div>
+            <div class="overlay-text">Play to 500 points. You and your partner vs the opponents. Spades are always trump.</div>
+            <button class="btn-game" id="btn-start">PLAY &mdash; 50 CREDITS</button>
+          </div>
+
+          <!-- Bidding overlay -->
+          <div class="center-overlay" id="overlay-bid">
+            <div class="overlay-title">YOUR BID</div>
+            <div class="overlay-text">How many tricks will you take? (0 = Nil)</div>
+            <div class="bid-row" id="bid-row"></div>
+          </div>
+
+          <!-- Round end overlay -->
+          <div class="center-overlay" id="overlay-round-end">
+            <div class="result-text" id="result-text"></div>
+            <div class="round-score-text" id="round-score-text"></div>
+            <button class="btn-game" id="btn-next-round">NEXT ROUND</button>
+          </div>
+
+          <!-- Game over overlay -->
+          <div class="center-overlay" id="overlay-game-over">
+            <div class="result-text" id="game-over-text"></div>
+            <div class="round-score-text" id="game-over-score"></div>
+            <button class="btn-game" id="btn-new-game">NEW GAME</button>
+          </div>
+        </div>
+
+        <!-- Player Hand (bottom / seat 0) -->
+        <div class="player-hand-area">
+          <div class="hand-row" id="player-hand"></div>
+          <div class="your-hand-label">YOUR HAND</div>
+        </div>
       </div>
-      <div id="leaderboard-area"></div>
+    </main>
+
+    <footer class="game-footer-bar">
+      <div><a href="https://xstik.art">xSTIK.art</a> &middot; <a href="/">Game Hub</a></div>
+      <div class="footer-legal">Virtual credits &mdash; entertainment only. &copy; 2026 xSTIK</div>
+    </footer>
+  </div>
+
+  <!-- Rules Overlay -->
+  <div class="rules-overlay" id="rules-overlay">
+    <div class="rules-box">
+      <div class="rules-title">HOW TO PLAY SPADES</div>
+
+      <div class="rules-section">
+        <h3>Overview</h3>
+        <p>Spades is a 4-player trick-taking card game played in teams. You (South) partner with North against West and East. First team to 500 points wins.</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Bidding</h3>
+        <ul>
+          <li>Each player bids how many tricks they expect to win (1&ndash;7), or bids Nil (0).</li>
+          <li>Your team&rsquo;s combined bid is the contract you must meet.</li>
+          <li>Nil = you promise to take zero tricks. +100 if successful, &minus;100 if you fail.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Playing Tricks</h3>
+        <ul>
+          <li>The lead player plays any card (except Spades until broken).</li>
+          <li>Other players must follow the led suit if they can.</li>
+          <li>If you can&rsquo;t follow suit, you may play any card including Spades (trump).</li>
+          <li>Highest card of the led suit wins &mdash; unless a Spade was played, then highest Spade wins.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Breaking Spades</h3>
+        <p>Spades cannot be led until a Spade has been played on a previous trick (trumping). Once broken, Spades can be led freely.</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>Scoring</h3>
+        <ul>
+          <li>Meet your team bid: <strong>10 points per bid trick</strong> + 1 point per overtrick (bag).</li>
+          <li>Fail your bid: <strong>&minus;10 points per bid trick</strong>.</li>
+          <li>Accumulate 10 bags: <strong>&minus;100 point penalty</strong>.</li>
+          <li>Nil success: <strong>+100 points</strong>. Nil fail: <strong>&minus;100 points</strong>.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>Entry &amp; Payout</h3>
+        <ul>
+          <li>Entry fee: <strong>50 credits</strong></li>
+          <li>Win payout: <strong>125 credits</strong></li>
+        </ul>
+      </div>
+
+      <button class="rules-close" id="btn-rules-close">GOT IT</button>
     </div>
   </div>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="game-footer">
-    <div class="footer-links">
-      <a href="https://xstik.art">Home</a>
-      <a href="https://games.xstik.art">Game Hub</a>
-      <a href="https://xstik.art/#ecosystem">Ecosystem</a>
+  <!-- Leaderboard Panel -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-panel">
+      <div class="lb-handle-bar"></div>
+      <div class="lb-handle">
+        <span class="lb-title">&#127942; LEADERBOARD</span>
+        <button class="lb-close" id="btn-lb-close">CLOSE</button>
+      </div>
+      <div class="lb-content" id="leaderboard-area"></div>
     </div>
-    <div class="footer-legal"><p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p></div>
-  </footer>
+  </div>
 
-  <!-- ===== SHARED-CORE ===== -->
+  <!-- Win Screen -->
+  <div class="win-screen" id="win-screen"></div>
+
+  <!-- SHARED-CORE Scripts -->
   <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
   <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
   <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
@@ -147,23 +631,24 @@
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
 
-  <!-- ===== SPADES v1.0 ===== -->
   <script>
   (function () {
     'use strict';
 
-    const ENTRY_FEE = 50;
-    const WIN_SCORE = 500;
-    const SUIT_ORDER = { 'Clubs':0, 'Diamonds':1, 'Hearts':2, 'Spades':3 };
-    const RANK_ORDER = { '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14 };
-    const NAMES = ['YOU', 'WEST', 'PARTNER', 'EAST'];
+    var GAME_SLUG = 'spades';
+    var ENTRY_FEE = 50;
+    var WIN_SCORE = 500;
+    var SUIT_ORDER = { 'Clubs': 0, 'Diamonds': 1, 'Hearts': 2, 'Spades': 3 };
+    var RANK_ORDER = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+    var NAMES = ['YOU', 'WEST', 'PARTNER', 'EAST'];
+    var SUIT_SYMBOLS = { Hearts: '\u2665', Diamonds: '\u2666', Clubs: '\u2663', Spades: '\u2660' };
 
     // Seats: 0=South(you), 1=West(opp), 2=North(partner), 3=East(opp)
     // Teams: us=[0,2], them=[1,3]
 
-    let G = {
+    var G = {
       hands: [[], [], [], []],
-      bids: [0, 0, 0, 0],
+      bids: [null, null, null, null],
       tricks: [0, 0, 0, 0],
       scores: { us: 0, them: 0 },
       bags: { us: 0, them: 0 },
@@ -176,13 +661,13 @@
       phase: 'start',
       gamesWon: 0,
       gamesLost: 0,
-      totalTricksUs: 0,   // cumulative tricks taken by our team (for leaderboard)
-      totalBidUs: 0,      // cumulative tricks bid by our team (for bid accuracy)
-      totalBagsUs: 0      // cumulative bags accumulated (penalised in score)
+      totalTricksUs: 0,
+      totalBidUs: 0,
+      totalBagsUs: 0
     };
 
-    let deck = [];
-    let deckIdx = 0;
+    var deck = [];
+    var deckIdx = 0;
 
     // ===== DECK =====
     function shuffleDeck() { deck = XstikImageLoader.getShuffledDeck(); deckIdx = 0; }
@@ -194,8 +679,8 @@
     function isSpade(card) { return card.suit === 'Spades'; }
 
     function sortHand(hand) {
-      return hand.sort((a, b) => {
-        const sd = suitVal(a) - suitVal(b);
+      return hand.sort(function (a, b) {
+        var sd = suitVal(a) - suitVal(b);
         return sd !== 0 ? sd : rankVal(a) - rankVal(b);
       });
     }
@@ -207,9 +692,9 @@
     }
 
     function trickWinner(trick) {
-      const leadSuit = trick[0].card.suit;
-      let best = 0;
-      for (let i = 1; i < trick.length; i++) {
+      var leadSuit = trick[0].card.suit;
+      var best = 0;
+      for (var i = 1; i < trick.length; i++) {
         if (cardScore(trick[i].card, leadSuit) > cardScore(trick[best].card, leadSuit)) best = i;
       }
       return trick[best].seat;
@@ -217,17 +702,42 @@
 
     function legalPlays(hand, leadSuit, spadesBroken) {
       if (!leadSuit) {
-        if (spadesBroken) return hand;
-        const nonSpades = hand.filter(c => !isSpade(c));
-        return nonSpades.length > 0 ? nonSpades : hand;
+        // Leading
+        if (spadesBroken) return hand.slice();
+        var nonSpades = hand.filter(function (c) { return !isSpade(c); });
+        return nonSpades.length > 0 ? nonSpades : hand.slice();
       }
-      const follow = hand.filter(c => c.suit === leadSuit);
-      return follow.length > 0 ? follow : hand;
+      var follow = hand.filter(function (c) { return c.suit === leadSuit; });
+      return follow.length > 0 ? follow : hand.slice();
     }
 
-    // ===== CARD RENDERING =====
+    // ===== CARD RENDERING (createCardEl pattern) =====
+    function createCardEl(card, faceUp) {
+      var el = document.createElement('div');
+      el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
+      el.dataset.name = card.name;
+      var img = document.createElement('img');
+      if (faceUp) {
+        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt = card.name;
+        img.onerror = function () { XstikImageLoader.handleError(this, card); };
+      } else {
+        img.src = CARD_BACK_PATH;
+        img.alt = 'Card back';
+      }
+      el.appendChild(img);
+      if (faceUp) {
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts', 'Diamonds'].indexOf(card.suit) >= 0 ? ' red' : '');
+        badge.textContent = card.rank + (SUIT_SYMBOLS[card.suit] || '');
+        el.appendChild(badge);
+      }
+      return el;
+    }
+
+    // Helper to create just an image for mini cards / trick cards
     function createCardImg(card) {
-      const img = document.createElement('img');
+      var img = document.createElement('img');
       img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
       img.alt = card.name;
       img.onerror = function () { XstikImageLoader.handleError(this, card); };
@@ -236,7 +746,7 @@
     }
 
     function createBackImg() {
-      const img = document.createElement('img');
+      var img = document.createElement('img');
       img.src = CARD_BACK_PATH;
       img.alt = 'Card';
       img.draggable = false;
@@ -245,23 +755,37 @@
 
     // ===== RENDER =====
     function renderPlayerHand() {
-      const el = document.getElementById('player-hand');
+      var el = document.getElementById('player-hand');
       el.innerHTML = '';
-      const hand = G.hands[0];
-      const leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
-      const legal = G.phase === 'play' && G.currentSeat === 0 ? legalPlays(hand, leadSuit, G.spadesBroken) : [];
+      var hand = G.hands[0];
+      var leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
+      var legal = G.phase === 'play' && G.currentSeat === 0 ? legalPlays(hand, leadSuit, G.spadesBroken) : [];
 
-      hand.forEach((card, i) => {
-        const div = document.createElement('div');
-        div.className = 'hand-card deal-in';
-        div.style.animationDelay = (i * 0.04) + 's';
+      hand.forEach(function (card, i) {
+        var div = document.createElement('div');
+        div.className = 'hand-card';
+        // Only add deal-in on fresh deal (trickNum <= 1 and phase isn't mid-play)
+        if (G.trickNum <= 1 && G.phase !== 'play') {
+          div.classList.add('deal-in');
+          div.style.animationDelay = (i * 0.04) + 's';
+        }
+
+        // NFT card image
         div.appendChild(createCardImg(card));
 
-        const isLegal = legal.includes(card);
+        // Card badge
+        var badge = document.createElement('span');
+        badge.className = 'card-badge' + (['Hearts', 'Diamonds'].indexOf(card.suit) >= 0 ? ' red' : '');
+        badge.textContent = card.rank + (SUIT_SYMBOLS[card.suit] || '');
+        div.appendChild(badge);
+
+        var isLegal = legal.indexOf(card) >= 0;
         if (G.phase === 'play' && G.currentSeat === 0) {
           if (isLegal) {
             div.classList.add('playable');
-            div.addEventListener('click', () => playerPlayCard(i));
+            div.addEventListener('click', (function (idx) {
+              return function () { playerPlayCard(idx); };
+            })(i));
           } else {
             div.classList.add('disabled');
           }
@@ -271,33 +795,73 @@
     }
 
     function renderMiniHand(seat) {
-      const el = document.getElementById('mini-' + seat);
+      var el = document.getElementById('mini-' + seat);
       el.innerHTML = '';
-      const count = G.hands[seat].length;
-      const show = Math.min(count, 6);
-      for (let i = 0; i < show; i++) {
-        const d = document.createElement('div');
+      var count = G.hands[seat].length;
+      var maxShow = (seat === 1 || seat === 3) ? 5 : 6; // fewer for vertical
+      var show = Math.min(count, maxShow);
+      for (var i = 0; i < show; i++) {
+        var d = document.createElement('div');
         d.className = 'mini-card';
         d.appendChild(createBackImg());
         el.appendChild(d);
       }
       if (count > show) {
-        const more = document.createElement('div');
+        var more = document.createElement('span');
         more.className = 'seat-bid';
         more.textContent = '+' + (count - show);
+        more.style.fontSize = '0.5rem';
         el.appendChild(more);
       }
     }
 
     function renderTrick() {
-      const el = document.getElementById('trick-cards');
+      var el = document.getElementById('trick-cards');
       el.innerHTML = '';
-      G.currentTrick.forEach(entry => {
-        const d = document.createElement('div');
-        d.className = 'trick-card deal-in';
-        d.dataset.seat = entry.seat;
-        d.appendChild(createCardImg(entry.card));
-        el.appendChild(d);
+
+      // Always show all 4 slots
+      var seatOrder = [1, 2, 0, 3]; // west, north, south, east
+      var seatLabels = ['WEST', 'PARTNER', 'YOU', 'EAST'];
+
+      // Build map of played cards
+      var playedMap = {};
+      G.currentTrick.forEach(function (entry) {
+        playedMap[entry.seat] = entry.card;
+      });
+
+      seatOrder.forEach(function (seat, idx) {
+        var card = playedMap[seat];
+        if (card) {
+          var d = document.createElement('div');
+          d.className = 'trick-card deal-in';
+          d.dataset.seat = seat;
+          d.appendChild(createCardImg(card));
+
+          // Badge
+          var badge = document.createElement('span');
+          badge.className = 'card-badge' + (['Hearts', 'Diamonds'].indexOf(card.suit) >= 0 ? ' red' : '');
+          badge.textContent = card.rank + (SUIT_SYMBOLS[card.suit] || '');
+          d.appendChild(badge);
+
+          // Seat label
+          var lbl = document.createElement('span');
+          lbl.className = 'trick-seat-label';
+          lbl.textContent = seatLabels[idx];
+          d.appendChild(lbl);
+
+          el.appendChild(d);
+        } else {
+          var slot = document.createElement('div');
+          slot.className = 'trick-slot';
+          slot.dataset.seat = seat;
+          slot.style.gridColumn = seat === 2 || seat === 3 ? '2' : '1';
+          slot.style.gridRow = seat === 1 || seat === 2 ? '1' : '2';
+          var slbl = document.createElement('span');
+          slbl.className = 'slot-label';
+          slbl.textContent = seatLabels[idx];
+          slot.appendChild(slbl);
+          el.appendChild(slot);
+        }
       });
     }
 
@@ -307,19 +871,34 @@
     }
 
     function renderBids() {
-      for (let s = 1; s <= 3; s++) {
-        const el = document.getElementById('bid-' + s);
+      for (var s = 1; s <= 3; s++) {
+        var el = document.getElementById('bid-' + s);
         if (G.bids[s] !== null && G.bids[s] !== undefined && G.phase !== 'start') {
-          el.textContent = 'Bid: ' + G.bids[s] + ' | Won: ' + G.tricks[s];
+          el.textContent = 'Bid ' + G.bids[s] + ' | Won ' + G.tricks[s];
         } else {
           el.textContent = '';
         }
+      }
+
+      // Update bid info strip
+      var strip = document.getElementById('bid-info-strip');
+      if (G.phase === 'play' || G.phase === 'scoring') {
+        var usBid = (G.bids[0] || 0) + (G.bids[2] || 0);
+        var usTricks = G.tricks[0] + G.tricks[2];
+        var themBid = (G.bids[1] || 0) + (G.bids[3] || 0);
+        var themTricks = G.tricks[1] + G.tricks[3];
+        strip.innerHTML =
+          '<span>Us: Bid <strong>' + usBid + '</strong> / Won <strong>' + usTricks + '</strong></span>' +
+          '<span>Them: Bid <strong>' + themBid + '</strong> / Won <strong>' + themTricks + '</strong></span>' +
+          (G.bids[0] !== null ? '<span>Your bid: <strong>' + G.bids[0] + '</strong></span>' : '');
+      } else {
+        strip.innerHTML = '';
       }
     }
 
     function renderAll() {
       renderPlayerHand();
-      for (let s = 1; s <= 3; s++) renderMiniHand(s);
+      for (var s = 1; s <= 3; s++) renderMiniHand(s);
       renderTrick();
       renderScores();
       renderBids();
@@ -327,14 +906,18 @@
       document.getElementById('trick-num').textContent = G.trickNum;
 
       // Active seat highlight
-      for (let s = 1; s <= 3; s++) {
-        const lbl = document.getElementById('label-' + s);
-        lbl.classList.toggle('active', G.currentSeat === s && G.phase === 'play');
+      for (var s2 = 1; s2 <= 3; s2++) {
+        var lbl = document.getElementById('label-' + s2);
+        if (G.currentSeat === s2 && G.phase === 'play') {
+          lbl.classList.add('active');
+        } else {
+          lbl.classList.remove('active');
+        }
       }
     }
 
     function hideAllOverlays() {
-      ['overlay-start','overlay-bid','overlay-round-end','overlay-game-over'].forEach(id => {
+      ['overlay-start', 'overlay-bid', 'overlay-round-end', 'overlay-game-over'].forEach(function (id) {
         document.getElementById(id).classList.remove('show');
       });
     }
@@ -344,16 +927,19 @@
     // ===== GAME FLOW =====
 
     function startGame() {
-      const balance = XstikCredits.getBalance();
+      var balance = XstikCredits.getBalance();
       if (balance < ENTRY_FEE) {
-        if (XstikCredits.isBankrupt()) XstikCredits.triggerBankruptcy(() => {});
+        if (XstikCredits.isBankrupt()) XstikCredits.triggerBankruptcy(function () {});
         return;
       }
-      XstikCredits.placeBet(ENTRY_FEE, 'spades');
+      XstikCredits.placeBet(ENTRY_FEE, GAME_SLUG);
 
       G.scores = { us: 0, them: 0 };
       G.bags = { us: 0, them: 0 };
       G.round = 1;
+      G.totalTricksUs = 0;
+      G.totalBidUs = 0;
+      G.totalBagsUs = 0;
       startRound();
     }
 
@@ -367,25 +953,25 @@
       G.currentTrick = [];
 
       // Deal 13 cards each
-      for (let i = 0; i < 52; i++) {
+      for (var i = 0; i < 52; i++) {
         G.hands[i % 4].push(drawCard());
       }
-      for (let s = 0; s < 4; s++) sortHand(G.hands[s]);
+      for (var s = 0; s < 4; s++) sortHand(G.hands[s]);
 
-      // Leader for first trick rotates
+      // Leader for first trick rotates each round
       G.leadSeat = (G.round - 1) % 4;
 
       hideAllOverlays();
       renderAll();
 
-      // Bidding phase: AI bids first, then player
+      // Bidding phase
       startBidding();
     }
 
     function startBidding() {
       G.phase = 'bidding';
-      // AI bids (simple: count high cards + spades)
-      for (let s = 1; s <= 3; s++) {
+      // AI bids (simple heuristic: count high cards + spades)
+      for (var s = 1; s <= 3; s++) {
         G.bids[s] = aiBid(s);
       }
       renderBids();
@@ -396,26 +982,27 @@
     }
 
     function aiBid(seat) {
-      const hand = G.hands[seat];
-      let est = 0;
-      hand.forEach(c => {
+      var hand = G.hands[seat];
+      var est = 0;
+      hand.forEach(function (c) {
         if (isSpade(c) && rankVal(c) >= 10) est += 1;
         else if (isSpade(c) && rankVal(c) >= 7) est += 0.5;
         else if (rankVal(c) === 14) est += 0.8; // Ace of non-spade
         else if (rankVal(c) === 13) est += 0.4;
       });
-      const bid = Math.max(1, Math.min(7, Math.round(est)));
-      return bid;
+      return Math.max(1, Math.min(7, Math.round(est)));
     }
 
     function buildBidSelector() {
-      const row = document.getElementById('bid-row');
+      var row = document.getElementById('bid-row');
       row.innerHTML = '';
-      for (let b = 0; b <= 7; b++) {
-        const btn = document.createElement('button');
+      for (var b = 0; b <= 7; b++) {
+        var btn = document.createElement('button');
         btn.className = 'bid-btn' + (b === 0 ? ' nil-btn' : '');
         btn.textContent = b === 0 ? 'NIL' : b;
-        btn.addEventListener('click', () => playerBid(b));
+        btn.addEventListener('click', (function (bid) {
+          return function () { playerBid(bid); };
+        })(b));
         row.appendChild(btn);
       }
     }
@@ -447,7 +1034,7 @@
       }
 
       // AI plays
-      setTimeout(() => {
+      setTimeout(function () {
         aiPlay(G.currentSeat);
         afterCardPlayed();
       }, 350);
@@ -455,37 +1042,38 @@
 
     function playerPlayCard(idx) {
       if (G.phase !== 'play' || G.currentSeat !== 0) return;
-      const hand = G.hands[0];
-      const leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
-      const legal = legalPlays(hand, leadSuit, G.spadesBroken);
-      if (!legal.includes(hand[idx])) return;
+      var hand = G.hands[0];
+      var leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
+      var legal = legalPlays(hand, leadSuit, G.spadesBroken);
+      if (legal.indexOf(hand[idx]) < 0) return;
 
-      const card = hand.splice(idx, 1)[0];
+      var card = hand.splice(idx, 1)[0];
       G.currentTrick.push({ seat: 0, card: card });
       if (isSpade(card)) G.spadesBroken = true;
       afterCardPlayed();
     }
 
     function aiPlay(seat) {
-      const hand = G.hands[seat];
-      const leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
-      const legal = legalPlays(hand, leadSuit, G.spadesBroken);
+      var hand = G.hands[seat];
+      var leadSuit = G.currentTrick.length > 0 ? G.currentTrick[0].card.suit : null;
+      var legal = legalPlays(hand, leadSuit, G.spadesBroken);
 
-      // Simple AI: play lowest legal card, but try to win if can
-      let chosen;
+      var chosen;
       if (G.currentTrick.length === 0) {
-        // Leading: play lowest non-spade, or lowest spade
-        const nonSpades = legal.filter(c => !isSpade(c));
+        // Leading: play lowest non-spade, or lowest spade if only spades
+        var nonSpades = legal.filter(function (c) { return !isSpade(c); });
         chosen = (nonSpades.length > 0 ? nonSpades : legal)[0];
       } else {
         // Following: try to win cheaply
-        const ls = G.currentTrick[0].card.suit;
-        const currentBest = Math.max(...G.currentTrick.map(e => cardScore(e.card, ls)));
-        const winners = legal.filter(c => cardScore(c, ls) > currentBest);
-        chosen = winners.length > 0 ? winners[0] : legal[0]; // cheapest winner or dump lowest
+        var ls = G.currentTrick[0].card.suit;
+        var scores = G.currentTrick.map(function (e) { return cardScore(e.card, ls); });
+        var currentBest = Math.max.apply(null, scores);
+        var winners = legal.filter(function (c) { return cardScore(c, ls) > currentBest; });
+        // Play cheapest winner, or dump lowest card
+        chosen = winners.length > 0 ? winners[0] : legal[0];
       }
 
-      const idx = hand.indexOf(chosen);
+      var idx = hand.indexOf(chosen);
       hand.splice(idx, 1);
       G.currentTrick.push({ seat: seat, card: chosen });
       if (isSpade(chosen)) G.spadesBroken = true;
@@ -501,14 +1089,14 @@
       }
 
       // Trick complete
-      const winner = trickWinner(G.currentTrick);
+      var winner = trickWinner(G.currentTrick);
       G.tricks[winner]++;
 
-      const badge = document.getElementById('trick-winner-badge');
-      badge.textContent = NAMES[winner];
+      var badge = document.getElementById('trick-winner-badge');
+      badge.textContent = NAMES[winner] + ' WINS';
       badge.classList.add('show');
 
-      setTimeout(() => {
+      setTimeout(function () {
         badge.classList.remove('show');
         G.currentTrick = [];
         G.trickNum++;
@@ -522,58 +1110,58 @@
         G.currentSeat = winner;
         renderAll();
         nextTurn();
-      }, 800);
+      }, 900);
     }
 
     function endRound() {
       G.phase = 'scoring';
 
       // Score calculation
-      const usBid = G.bids[0] + G.bids[2];
-      const usTricks = G.tricks[0] + G.tricks[2];
-      const themBid = G.bids[1] + G.bids[3];
-      const themTricks = G.tricks[1] + G.tricks[3];
+      var usBid = G.bids[0] + G.bids[2];
+      var usTricks = G.tricks[0] + G.tricks[2];
+      var themBid = G.bids[1] + G.bids[3];
+      var themTricks = G.tricks[1] + G.tricks[3];
 
-      let usPoints = 0;
-      let themPoints = 0;
+      var usPoints = 0;
+      var themPoints = 0;
 
       // Nil handling
-      [0, 2].forEach(s => {
+      [0, 2].forEach(function (s) {
         if (G.bids[s] === 0) {
           if (G.tricks[s] === 0) usPoints += 100;
           else usPoints -= 100;
         }
       });
-      [1, 3].forEach(s => {
+      [1, 3].forEach(function (s) {
         if (G.bids[s] === 0) {
           if (G.tricks[s] === 0) themPoints += 100;
           else themPoints -= 100;
         }
       });
 
-      // Team scoring (exclude nil bidders)
-      const usNonNilBid = [0, 2].filter(s => G.bids[s] > 0).reduce((sum, s) => sum + G.bids[s], 0);
-      const usNonNilTricks = usTricks; // all tricks count for team
+      // Team scoring (exclude nil bidders from bid total)
+      var usNonNilBid = [0, 2].filter(function (s) { return G.bids[s] > 0; }).reduce(function (sum, s) { return sum + G.bids[s]; }, 0);
+      var usNonNilTricks = usTricks;
 
       if (usNonNilBid > 0) {
         if (usNonNilTricks >= usNonNilBid) {
           usPoints += usNonNilBid * 10;
-          const bags = usNonNilTricks - usNonNilBid;
-          usPoints += bags;
-          G.bags.us += bags;
+          var usBags = usNonNilTricks - usNonNilBid;
+          usPoints += usBags;
+          G.bags.us += usBags;
           if (G.bags.us >= 10) { usPoints -= 100; G.bags.us -= 10; }
         } else {
           usPoints -= usNonNilBid * 10;
         }
       }
 
-      const themNonNilBid = [1, 3].filter(s => G.bids[s] > 0).reduce((sum, s) => sum + G.bids[s], 0);
+      var themNonNilBid = [1, 3].filter(function (s) { return G.bids[s] > 0; }).reduce(function (sum, s) { return sum + G.bids[s]; }, 0);
       if (themNonNilBid > 0) {
         if (themTricks >= themNonNilBid) {
           themPoints += themNonNilBid * 10;
-          const bags = themTricks - themNonNilBid;
-          themPoints += bags;
-          G.bags.them += bags;
+          var themBags = themTricks - themNonNilBid;
+          themPoints += themBags;
+          G.bags.them += themBags;
           if (G.bags.them >= 10) { themPoints -= 100; G.bags.them -= 10; }
         } else {
           themPoints -= themNonNilBid * 10;
@@ -583,7 +1171,7 @@
       G.scores.us += usPoints;
       G.scores.them += themPoints;
 
-      // Accumulate cumulative stats for leaderboard score formula
+      // Accumulate stats for leaderboard
       G.totalTricksUs += usTricks;
       G.totalBidUs += usBid;
       G.totalBagsUs += (usNonNilTricks > usNonNilBid ? usNonNilTricks - usNonNilBid : 0);
@@ -596,9 +1184,9 @@
         return;
       }
 
-      const resultEl = document.getElementById('result-text');
+      var resultEl = document.getElementById('result-text');
       resultEl.textContent = usPoints >= themPoints ? 'GOOD ROUND!' : 'TOUGH ROUND';
-      resultEl.className = 'result-text show ' + (usPoints >= themPoints ? 'win' : 'lose');
+      resultEl.className = 'result-text ' + (usPoints >= themPoints ? 'win' : 'lose');
 
       document.getElementById('round-score-text').textContent =
         'Us: ' + (usPoints >= 0 ? '+' : '') + usPoints + ' (bid ' + usBid + ', took ' + usTricks + ')' +
@@ -614,28 +1202,28 @@
 
     function endGame() {
       G.phase = 'gameover';
-      const won = G.scores.us >= WIN_SCORE && G.scores.us >= G.scores.them;
+      var won = G.scores.us >= WIN_SCORE && G.scores.us >= G.scores.them;
 
       if (won) {
         G.gamesWon++;
-        const payout = Math.floor(ENTRY_FEE * 2.5);
-        XstikCredits.awardWinnings(payout, 'spades');
+        var payout = Math.floor(ENTRY_FEE * 2.5);
+        XstikCredits.awardWinnings(payout, GAME_SLUG);
       } else {
         G.gamesLost++;
       }
 
-      const goText = document.getElementById('game-over-text');
+      var goText = document.getElementById('game-over-text');
       goText.textContent = won ? 'VICTORY!' : 'DEFEAT';
-      goText.className = 'result-text show ' + (won ? 'win' : 'lose');
+      goText.className = 'result-text ' + (won ? 'win' : 'lose');
 
       document.getElementById('game-over-score').textContent =
-        'Final: Us ' + G.scores.us + ' — Them ' + G.scores.them + ' (' + G.round + ' rounds)';
+        'Final: Us ' + G.scores.us + ' \u2014 Them ' + G.scores.them + ' (' + G.round + ' rounds)';
 
       showOverlay('overlay-game-over');
 
-      // Leaderboard
-      const playerName = XstikPlayer.getUsername() || 'Anonymous';
-      XstikLeaderboard.submitScore(playerName, 'spades', {
+      // Leaderboard submission
+      var playerName = XstikPlayer.getUsername() || 'Anonymous';
+      XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
         handsPlayed: G.round,
         wins: G.gamesWon,
         losses: G.gamesLost,
@@ -645,14 +1233,64 @@
       submitGameScore();
     }
 
-    // ===== EVENTS =====
+    // ===== LEADERBOARD SCORE SUBMISSION =====
+    function submitGameScore() {
+      try {
+        var tricksWon = G.totalTricksUs || 0;
+        var totalBid = G.totalBidUs || 1;
+        var bags = G.totalBagsUs || 0;
+        var bidAccuracy = Math.min(1.0, tricksWon / Math.max(totalBid, 1));
+        var score = Math.round((tricksWon * 80) + (bidAccuracy * 200) - (bags * 25));
+        if (score <= 0) return;
+
+        var pName = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        var key = 'xstik-spades-leaderboard';
+        var entries = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries)) entries = [];
+
+        var existingIdx = -1;
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].name === pName) { existingIdx = i; break; }
+        }
+        var newEntry = { name: pName, score: score, date: new Date().toISOString() };
+
+        if (existingIdx >= 0) {
+          if (score > entries[existingIdx].score) entries[existingIdx] = newEntry;
+        } else {
+          entries.push(newEntry);
+        }
+
+        entries.sort(function (a, b) { return b.score - a.score; });
+        entries = entries.slice(0, 100);
+        localStorage.setItem(key, JSON.stringify(entries));
+      } catch (err) {
+        // Silent fail
+      }
+    }
+
+    // ===== EVENT WIRING =====
     function wireEvents() {
+      // Game buttons
       document.getElementById('btn-start').addEventListener('click', startGame);
       document.getElementById('btn-next-round').addEventListener('click', nextRound);
       document.getElementById('btn-new-game').addEventListener('click', startGame);
 
+      // Rules
+      document.getElementById('btn-rules').addEventListener('click', function () {
+        document.getElementById('rules-overlay').classList.add('open');
+      });
+      document.getElementById('btn-rules-close').addEventListener('click', function () {
+        document.getElementById('rules-overlay').classList.remove('open');
+      });
+      document.getElementById('rules-overlay').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('rules-overlay'))
+          document.getElementById('rules-overlay').classList.remove('open');
+      });
+
+      // Leaderboard
       function openLB() {
-        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'spades');
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
         document.getElementById('lb-overlay').classList.add('open');
       }
       function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
@@ -663,54 +1301,13 @@
 
     // ===== BOOT =====
     function showPlayerName() {
-      const name = XstikPlayer.getUsername();
+      var name = XstikPlayer.getUsername();
       if (name) document.getElementById('player-name-display').textContent = name;
-    }
-
-    // ===== LEADERBOARD SCORE SUBMISSION =====
-    // Formula: (tricksWon × 80) + (bidAccuracy × 200) - (bags × 25)
-    //   tricksWon   = total tricks our team took across all rounds
-    //   bidAccuracy = tricksWon / max(totalBid, 1)  — capped at 1.0
-    //   bags        = total over-tricks accumulated (penalised)
-    // Key: xstik-spades-leaderboard
-    // Format: [{ name, score, date }] — sorted desc, capped 100, best-only per player
-    function submitGameScore() {
-      try {
-        var tricksWon = G.totalTricksUs || 0;
-        var totalBid = G.totalBidUs || 1;
-        var bags = G.totalBagsUs || 0;
-        var bidAccuracy = Math.min(1.0, tricksWon / totalBid);
-        var score = Math.round((tricksWon * 80) + (bidAccuracy * 200) - (bags * 25));
-        if (score <= 0) return;
-
-        var playerName = localStorage.getItem('xstik_player_name') || 'Anonymous';
-        var key = 'xstik-spades-leaderboard';
-        var entries = [];
-        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { entries = []; }
-        if (!Array.isArray(entries)) entries = [];
-
-        var existingIdx = entries.findIndex(function (e) { return e.name === playerName; });
-        var newEntry = { name: playerName, score: score, date: new Date().toISOString() };
-
-        if (existingIdx >= 0) {
-          if (score > entries[existingIdx].score) {
-            entries[existingIdx] = newEntry;
-          }
-        } else {
-          entries.push(newEntry);
-        }
-
-        entries.sort(function (a, b) { return b.score - a.score; });
-        entries = entries.slice(0, 100);
-        localStorage.setItem(key, JSON.stringify(entries));
-      } catch (err) {
-        // Silent fail — never break game logic
-      }
     }
 
     XstikGameInit.showDisclaimer();
 
-    XstikGameInit.boot('spades', {
+    XstikGameInit.boot(GAME_SLUG, {
       preloadCards: true,
       onReady: function () {
         shuffleDeck();
