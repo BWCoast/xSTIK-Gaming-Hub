@@ -21,6 +21,11 @@
     /* ================================================================
        TEXAS HOLD'EM — Game-specific CSS
        ================================================================ */
+    /* Remove ALL animation from cards — user explicitly requested no slide-in */
+    .card, .card img, .ai-cards .card, .community-cards .card, .player-cards .card {
+      animation: none !important;
+      transition: none !important;
+    }
     .poker-table {
       flex: 1;
       display: flex;
@@ -93,8 +98,8 @@
       justify-content: center;
     }
     .ai-cards .card {
-      width: calc(var(--card-w) * 0.85);
-      height: calc(var(--card-h) * 0.85);
+      width: calc(var(--card-w) * 0.9);
+      height: calc(var(--card-h) * 0.9);
     }
 
     /* --- COMMUNITY CENTER --- */
@@ -124,12 +129,12 @@
       min-height: var(--card-h);
     }
     .community-cards .card {
-      width: calc(var(--card-w) * 0.9);
-      height: calc(var(--card-h) * 0.9);
+      width: calc(var(--card-w) * 0.95);
+      height: calc(var(--card-h) * 0.95);
     }
     .community-cards .card-slot {
-      width: calc(var(--card-w) * 0.9);
-      height: calc(var(--card-h) * 0.9);
+      width: calc(var(--card-w) * 0.95);
+      height: calc(var(--card-h) * 0.95);
       border: 1.5px dashed rgba(245, 197, 24, 0.12);
     }
 
@@ -147,9 +152,8 @@
       justify-content: center;
     }
     .player-cards .card {
-      width: calc(var(--card-w) * 0.95);
-      height: calc(var(--card-h) * 0.95);
-      transition: transform 0.15s ease;
+      width: calc(var(--card-w) * 1);
+      height: calc(var(--card-h) * 1);
     }
     .player-label {
       font-family: 'Orbitron', sans-serif;
@@ -372,6 +376,15 @@
         <button class="btn-sm" id="btn-leaderboard">🏆</button>
       </div>
     </header>
+
+    <!-- REAL-TIME SCOREBOARD -->
+    <div class="game-controls">
+      <div class="game-info">
+        <span>Hands: <strong id="stat-hands">0</strong></span>
+        <span>W: <strong id="stat-wins">0</strong></span>
+        <span>Net: <strong id="stat-net">0</strong></span>
+      </div>
+    </div>
 
     <main class="game-area">
       <div class="poker-table" id="poker-table">
@@ -1462,6 +1475,13 @@
         creditsWon: stats.creditsWon
       });
       XstikLeaderboard.rebuildUnified();
+      updateScoreboard();
+    }
+
+    function updateScoreboard() {
+      document.getElementById('stat-hands').textContent = stats.handsPlayed;
+      document.getElementById('stat-wins').textContent = stats.wins;
+      document.getElementById('stat-net').textContent = (stats.creditsWon >= 0 ? '+' : '') + stats.creditsWon;
     }
 
     // ================================================================

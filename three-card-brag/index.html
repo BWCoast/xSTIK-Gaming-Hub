@@ -41,7 +41,7 @@
     .hand-name {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 1.02rem;
       color: var(--primary);
       text-align: center;
       min-height: 1.1em;
@@ -87,7 +87,7 @@
     .bet-info {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.96rem;
       color: var(--muted-text, #B3B3B3);
       text-align: center;
       display: flex;
@@ -103,7 +103,7 @@
     .result-banner {
       font-family: 'Orbitron', sans-serif;
       font-weight: 900;
-      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      font-size: clamp(0.96rem, 3vw, 1.2rem);
       text-align: center;
       min-height: 1.2em;
       letter-spacing: 1px;
@@ -115,7 +115,7 @@
     .result-detail {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 500;
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       color: var(--muted-text, #B3B3B3);
       text-align: center;
       min-height: 1em;
@@ -125,7 +125,7 @@
     .qualifier-badge {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 700;
-      font-size: 0.7rem;
+      font-size: 0.84rem;
       padding: 0.15rem 0.5rem;
       border-radius: 0.25rem;
       text-transform: uppercase;
@@ -141,6 +141,12 @@
       background: rgba(239, 68, 68, 0.15);
       color: #ef4444;
       border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Player cards slightly larger than dealer */
+    .player-section .cards-row .card {
+      width: calc(var(--card-w) * 1.1);
+      height: calc(var(--card-h) * 1.1);
     }
 
     /* Compact spacing for no-scroll fit */

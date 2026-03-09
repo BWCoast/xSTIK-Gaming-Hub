@@ -450,20 +450,12 @@
             cardEl.classList.add('selected');
           }
 
-          // Drag and double-click on face-up tableau cards
+          // Drag on face-up tableau cards (dblclick handled via delegation in wireEvents)
           if (entry.faceUp) {
             (function(ci, cdi) {
               cardEl.addEventListener('mousedown',  function (e) { e.stopPropagation(); startDrag(e, ci, cdi); });
               cardEl.addEventListener('touchstart', function (e) { e.stopPropagation(); startDrag(e, ci, cdi); }, { passive: false });
             })(colIdx, cardIdx);
-            if (cardIdx === col.length - 1) {
-              (function(entryRef, ci, cdi) {
-                cardEl.addEventListener('dblclick', function (e) {
-                  e.stopPropagation();
-                  autoFoundation(entryRef.card, 'tableau', ci, cdi);
-                });
-              })(entry, colIdx, cardIdx);
-            }
           }
 
           el.appendChild(cardEl);
@@ -985,7 +977,9 @@
         })(f);
       }
 
-      // Tableau columns
+      // Tableau columns (click + delegated double-click for foundation)
+      var lastClickTime = {};
+      var DBLCLICK_MS = 400;
       for (var c = 0; c < 7; c++) {
         (function(ci) {
           var colEl = document.getElementById('tab-' + ci);
@@ -993,7 +987,21 @@
             if (drag && drag.moved) return;
             var cardEl = e.target.closest('.card');
             if (!cardEl) { handleEmptyTableauClick(ci); return; }
-            handleTableauClick(ci, parseInt(cardEl.dataset.idx));
+            var idx = parseInt(cardEl.dataset.idx);
+            var now = Date.now();
+            var key = ci + '-' + idx;
+            // Manual double-click detection (immune to DOM re-render)
+            if (lastClickTime[key] && (now - lastClickTime[key]) < DBLCLICK_MS) {
+              delete lastClickTime[key];
+              var col = state.tableau[ci];
+              if (col[idx] && col[idx].faceUp && idx === col.length - 1) {
+                autoFoundation(col[idx].card, 'tableau', ci, idx);
+                return;
+              }
+            } else {
+              lastClickTime[key] = now;
+            }
+            handleTableauClick(ci, idx);
           });
         })(c);
       }

@@ -254,6 +254,16 @@
       </div>
     </header>
 
+    <!-- REAL-TIME SCOREBOARD -->
+    <div class="game-controls">
+      <div class="game-info">
+        <span>Hands: <strong id="stat-hands">0</strong></span>
+        <span>W: <strong id="stat-wins">0</strong></span>
+        <span>L: <strong id="stat-losses">0</strong></span>
+        <span>Streak: <strong id="stat-streak">0</strong></span>
+      </div>
+    </div>
+
     <main class="game-area">
       <div class="table-felt" id="table-felt">
 
@@ -881,8 +891,16 @@
       });
       XstikLeaderboard.rebuildUnified();
 
-      // Show result
+      // Show result + update scoreboard
       showResult(resultType, resultLabel, amountText);
+      updateScoreboard();
+    }
+
+    function updateScoreboard() {
+      document.getElementById('stat-hands').textContent = stats.handsPlayed;
+      document.getElementById('stat-wins').textContent = stats.wins;
+      document.getElementById('stat-losses').textContent = stats.losses;
+      document.getElementById('stat-streak').textContent = stats.consecutiveWins;
     }
 
     function showResult(type, label, amountText) {

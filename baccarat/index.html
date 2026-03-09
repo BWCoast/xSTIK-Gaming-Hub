@@ -24,6 +24,12 @@
     /* ================================================================
        BACCARAT-SPECIFIC STYLES
        ================================================================ */
+    /* Remove slide-in animation from cards — user explicitly requested no fade/slide effects */
+    .card, .card img {
+      animation: none !important;
+      transition: none !important;
+    }
+    .deal-in { animation: none !important; }
 
     /* Betting zones row */
     .bet-zones {
