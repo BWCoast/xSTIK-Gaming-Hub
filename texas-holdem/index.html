@@ -33,7 +33,7 @@
       align-items: center;
       justify-content: space-between;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
       padding: 0.25rem 0.5rem;
       gap: 0;
     }
@@ -109,6 +109,8 @@
       align-items: center;
       gap: 0.25rem;
       flex-shrink: 0;
+      z-index: 10;
+      position: relative;
     }
     .pot-display {
       font-family: 'Orbitron', sans-serif;
@@ -127,6 +129,7 @@
       justify-content: center;
       align-items: center;
       min-height: var(--card-h);
+      z-index: 10;
     }
     .community-cards .card {
       width: calc(var(--card-w) * 0.95);
@@ -783,25 +786,16 @@
 
     function renderCommunity() {
       var el = document.getElementById('community-cards');
-      var existing = el.children.length;
 
-      // Only rebuild from scratch if community was reset (new hand)
-      if (existing > G.community.length + (5 - G.community.length) || existing === 0 || G.community.length === 0) {
-        el.innerHTML = '';
-        existing = 0;
-      }
+      // Always rebuild from scratch — ensures correct display
+      el.innerHTML = '';
 
-      for (var i = existing; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         if (i < G.community.length) {
-          // Replace empty slot with actual card, or add new card
-          var oldChild = el.children[i];
           var cardEl = createCardEl(G.community[i], true);
-          if (oldChild && oldChild.classList.contains('card-slot')) {
-            oldChild.replaceWith(cardEl);
-          } else if (!oldChild) {
-            el.appendChild(cardEl);
-          }
-        } else if (!el.children[i]) {
+          cardEl.style.zIndex = 10 + i;
+          el.appendChild(cardEl);
+        } else {
           var slot = document.createElement('div');
           slot.className = 'card-slot';
           el.appendChild(slot);

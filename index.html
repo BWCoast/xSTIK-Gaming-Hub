@@ -1344,6 +1344,12 @@
     var url = game ? LB_API + '?game=' + encodeURIComponent(game) + '&limit=100' : LB_API + '?limit=200';
     return fetch(url)
       .then(function(res) { return res.ok ? res.json() : []; })
+      .then(function(data) {
+        // Filter out DebugUser from all leaderboard data
+        return (data || []).filter(function(entry) {
+          return entry.player_name !== 'DebugUser';
+        });
+      })
       .catch(function() { return []; });
   }
 
@@ -1442,8 +1448,18 @@
     setLoading('lb-game-body', 'lb-game-empty', true);
     fetchScores(game).then(function(entries) {
       var currentUser = getCurrentUsername();
-      entries.sort(function(a,b) { return Number(b.score) - Number(a.score); });
-      var top20 = entries.slice(0, 20);
+      // Deduplicate: keep only each player's best score
+      var bestMap = {};
+      entries.forEach(function(e) {
+        var name = e.player_name || 'Unknown';
+        var score = Number(e.score) || 0;
+        if (!bestMap[name] || score > bestMap[name].score) {
+          bestMap[name] = { player_name: name, score: score, created_at: e.created_at };
+        }
+      });
+      var deduped = Object.values(bestMap);
+      deduped.sort(function(a,b) { return b.score - a.score; });
+      var top20 = deduped.slice(0, 20);
       var tbody = document.getElementById('lb-game-body');
       var emptyEl = document.getElementById('lb-game-empty');
       tbody.innerHTML = '';

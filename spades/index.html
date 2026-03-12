@@ -164,18 +164,22 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      gap: 0.25rem;
+      gap: 0.15rem;
       width: fit-content;
+      /* Diamond layout via 45° rotation on the container */
+      transform: rotate(45deg);
     }
 
     .trick-card {
-      width: var(--card-w);
-      height: var(--card-h);
+      width: calc(var(--card-w) * 0.65);
+      height: calc(var(--card-h) * 0.65);
       border-radius: var(--card-radius);
       overflow: hidden;
       background: rgba(31, 31, 31, 0.3);
       border: 1px dashed rgba(245, 197, 24, 0.12);
       position: relative;
+      /* Counter-rotate card content so images display upright */
+      transform: rotate(-45deg);
     }
     .trick-card img {
       width: 100%;
@@ -228,14 +232,15 @@
 
     /* Empty trick slots */
     .trick-slot {
-      width: var(--card-w);
-      height: var(--card-h);
+      width: calc(var(--card-w) * 0.65);
+      height: calc(var(--card-h) * 0.65);
       border: 1px dashed rgba(245, 197, 24, 0.1);
       border-radius: var(--card-radius);
       background: rgba(31, 31, 31, 0.15);
       display: flex;
       align-items: center;
       justify-content: center;
+      transform: rotate(-45deg);
     }
     .trick-slot .slot-label {
       font-family: 'Rajdhani', sans-serif;
@@ -288,8 +293,9 @@
     }
 
     .hand-card {
-      width: var(--card-w);
-      height: var(--card-h);
+      /* Reduced card size in hand — 70% of normal to prevent overflow with 13 cards */
+      width: calc(var(--card-w) * 0.7);
+      height: calc(var(--card-h) * 0.7);
       border-radius: var(--card-radius);
       overflow: hidden;
       flex-shrink: 0;
@@ -323,9 +329,9 @@
     }
     .hand-card .card-badge.red { color: #ef4444; }
 
-    /* Overlap cards in hand */
+    /* Overlap cards in hand — tighter spacing for reduced size */
     .hand-card + .hand-card {
-      margin-left: calc(var(--card-w) * -0.42);
+      margin-left: calc(var(--card-w) * -0.35);
     }
 
     .hand-card.playable {
@@ -426,7 +432,7 @@
         width: calc(var(--card-w) * 0.32);
         height: calc(var(--card-h) * 0.32);
       }
-      .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.5); }
+      .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.38); }
       .hand-card .card-badge { font-size: 0.45rem; }
       .trick-card .card-badge { font-size: 0.45rem; }
       .trick-card .trick-seat-label { font-size: 0.35rem; }
@@ -439,7 +445,7 @@
     }
 
     @media (min-width: 768px) and (max-width: 1023px) {
-      .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.4); }
+      .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.33); }
     }
     @media (min-width: 1024px) {
       .hand-card + .hand-card { margin-left: calc(var(--card-w) * -0.35); }

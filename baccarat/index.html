@@ -293,25 +293,6 @@
           <span>Won: <strong id="stat-credits">0</strong></span>
         </div>
 
-        <!-- Betting zones -->
-        <div class="bet-zones" id="bet-zones">
-          <div class="bet-zone" data-bet="player" id="zone-player">
-            <span class="bet-zone-label">PLAYER</span>
-            <span class="bet-zone-payout">1:1</span>
-            <span class="bet-zone-amount" id="bet-player-amt"></span>
-          </div>
-          <div class="bet-zone tie-zone" data-bet="tie" id="zone-tie">
-            <span class="bet-zone-label">TIE</span>
-            <span class="bet-zone-payout">8:1</span>
-            <span class="bet-zone-amount" id="bet-tie-amt"></span>
-          </div>
-          <div class="bet-zone" data-bet="banker" id="zone-banker">
-            <span class="bet-zone-label">BANKER</span>
-            <span class="bet-zone-payout">0.95:1</span>
-            <span class="bet-zone-amount" id="bet-banker-amt"></span>
-          </div>
-        </div>
-
         <!-- Hands area -->
         <div class="hands-area">
           <!-- Banker hand -->
@@ -332,6 +313,25 @@
               <span class="hand-label">PLAYER</span>
               <span class="hand-value" id="player-value"></span>
             </div>
+          </div>
+        </div>
+
+        <!-- Betting zones (relocated near Deal button per blueprint) -->
+        <div class="bet-zones" id="bet-zones">
+          <div class="bet-zone" data-bet="player" id="zone-player">
+            <span class="bet-zone-label">PLAYER</span>
+            <span class="bet-zone-payout">1:1</span>
+            <span class="bet-zone-amount" id="bet-player-amt"></span>
+          </div>
+          <div class="bet-zone tie-zone" data-bet="tie" id="zone-tie">
+            <span class="bet-zone-label">TIE</span>
+            <span class="bet-zone-payout">8:1</span>
+            <span class="bet-zone-amount" id="bet-tie-amt"></span>
+          </div>
+          <div class="bet-zone" data-bet="banker" id="zone-banker">
+            <span class="bet-zone-label">BANKER</span>
+            <span class="bet-zone-payout">0.95:1</span>
+            <span class="bet-zone-amount" id="bet-banker-amt"></span>
           </div>
         </div>
 

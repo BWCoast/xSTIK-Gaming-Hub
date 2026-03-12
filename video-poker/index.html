@@ -24,46 +24,50 @@
        VIDEO POKER — Game-Specific CSS
        ================================================================ */
 
-    /* Pay Table */
+    /* Pay Table — vertical stacked layout at top */
     .pay-table {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.2rem 0.4rem;
-      padding: 0.25rem 0.5rem;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.3rem 0.75rem;
       flex-shrink: 0;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.4);
       border-radius: 0.4rem;
-      border: 1px solid rgba(245,197,24,0.12);
+      border: 1px solid rgba(245,197,24,0.15);
+      width: 100%;
+      max-width: 22rem;
     }
+    .pay-table .pay-sep { display: none; }
     .pay-row {
       display: flex;
       align-items: center;
-      gap: 0.3rem;
+      justify-content: space-between;
       font-family: 'Rajdhani', sans-serif;
       font-size: 0.78rem;
       font-weight: 500;
       color: var(--muted-text);
       white-space: nowrap;
+      padding: 0.1rem 0.25rem;
+      border-bottom: 1px solid rgba(245,197,24,0.06);
     }
+    .pay-row:last-of-type { border-bottom: none; }
     .pay-row .pay-hand {
       color: rgba(250,250,250,0.8);
     }
     .pay-row .pay-mult {
       color: var(--primary);
       font-weight: 700;
+      margin-left: auto;
     }
     .pay-row.active {
       background: rgba(245,197,24,0.15);
       border-radius: 0.2rem;
-      padding: 0 0.3rem;
+      padding: 0.1rem 0.3rem;
     }
     .pay-row.active .pay-hand {
       color: var(--primary);
       font-weight: 700;
-    }
-    .pay-row .pay-sep {
-      color: rgba(179,179,179,0.3);
     }
 
     /* Poker Hand Area */
@@ -239,11 +243,12 @@
         --card-w: clamp(3.8rem, 18vw, 5.5rem);
       }
       .pay-table {
-        gap: 0.1rem 0.3rem;
-        padding: 0.15rem 0.3rem;
+        padding: 0.15rem 0.4rem;
+        max-width: 18rem;
       }
       .pay-row {
         font-size: 0.6rem;
+        padding: 0.05rem 0.2rem;
       }
       .hold-label {
         font-size: 0.5rem;

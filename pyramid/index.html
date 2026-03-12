@@ -13,12 +13,15 @@
        PYRAMID-SPECIFIC CSS
        ================================================================ */
 
-    /* Pyramid card scaling — smaller than normal */
+    /* Pyramid card scaling — enlarged to fill center */
     :root {
-      --pyr-card-w: calc(var(--card-w) * 0.65);
+      --pyr-card-w: calc(var(--card-w) * 0.85);
       --pyr-card-h: calc(var(--pyr-card-w) * 1.5);
-      --pyr-row-offset: calc(var(--pyr-card-h) * 0.40);
-      --pyr-col-gap: 4px;
+      --pyr-row-offset: calc(var(--pyr-card-h) * 0.42);
+      --pyr-col-gap: 3px;
+      /* Stock/Waste piles — shrunk to subordinate status */
+      --pile-card-w: calc(var(--card-w) * 0.6);
+      --pile-card-h: calc(var(--pile-card-w) * 1.5);
     }
 
     .pyramid-area {
@@ -161,8 +164,8 @@
     }
 
     .stock-pile, .waste-pile {
-      width: var(--card-w);
-      height: var(--card-h);
+      width: var(--pile-card-w);
+      height: var(--pile-card-h);
       border-radius: var(--card-radius);
       position: relative;
       cursor: pointer;
@@ -180,6 +183,8 @@
       position: absolute;
       top: 0;
       left: 0;
+      width: var(--pile-card-w);
+      height: var(--pile-card-h);
     }
 
     .waste-pile .card.selected {
@@ -308,9 +313,11 @@
     /* Responsive tweaks */
     @media (max-width: 767px) {
       :root {
-        --pyr-card-w: calc(var(--card-w) * 0.78);
+        --pyr-card-w: calc(var(--card-w) * 0.82);
         --pyr-card-h: calc(var(--pyr-card-w) * 1.5);
         --pyr-col-gap: 2px;
+        --pile-card-w: calc(var(--card-w) * 0.48);
+        --pile-card-h: calc(var(--pile-card-w) * 1.5);
       }
       .pyramid-container { padding-top: 0.15rem; }
       .bottom-section { padding: 0.2rem 0.3rem; }

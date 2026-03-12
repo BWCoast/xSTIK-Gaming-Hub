@@ -31,10 +31,10 @@ const XstikWrapper = (function () {
         </div>
       </a>
       <div class="header-actions">
-        <a href="/" class="btn-back-link">\u2190 Hub</a>
-        <span class="player-name" style="font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.8rem;color:var(--primary);max-width:8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        <a href="/" class="btn-back-link">GAME HUB</a>
+        <span class="player-name" style="font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.85rem;color:var(--primary);max-width:8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
         <div id="credit-display"></div>
-        <button class="btn-sm" id="btn-rules">RULES</button>
+        <button class="btn-sm" id="btn-rules">HOW TO PLAY</button>
         <button class="btn-sm" id="btn-leaderboard">\uD83C\uDFC6</button>
       </div>
     </header>`;
@@ -44,7 +44,7 @@ const XstikWrapper = (function () {
   function _buildFooter() {
     return `
     <footer class="game-footer-bar">
-      <div><a href="https://xstik.art">xSTIK.art</a> \u00B7 <a href="/">Game Hub</a></div>
+      <div><a href="https://xstik.art">Home</a> \u00B7 <a href="/">Game Hub</a> \u00B7 <a href="https://xstik.art" target="_blank">Ecosystem</a></div>
       <div class="footer-legal">Virtual credits \u2014 entertainment only. \u00A9 2026 xSTIK</div>
     </footer>`;
   }
