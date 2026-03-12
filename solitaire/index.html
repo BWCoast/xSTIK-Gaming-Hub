@@ -252,6 +252,7 @@
   <script src="/SHARED-CORE/player/player-system.js"></script>
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
   <script src="/SHARED-CORE/leaderboard/supabase-bridge.js"></script>
+  <script src="/SHARED-CORE/game-wrapper.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
 
   <!-- ===== SOLITAIRE GAME LOGIC ===== -->
@@ -1050,6 +1051,7 @@
     }
 
     // ===== BOOT =====
+    XstikWrapper.mount('SOLITAIRE');
     XstikGameInit.showDisclaimer();
     XstikGameInit.boot('solitaire', {
       preloadCards: true,

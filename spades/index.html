@@ -633,6 +633,7 @@
   <script src="/SHARED-CORE/player/player-system.js"></script>
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
   <script src="/SHARED-CORE/leaderboard/supabase-bridge.js"></script>
+  <script src="/SHARED-CORE/game-wrapper.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
 
   <script>
@@ -1100,8 +1101,21 @@
       badge.textContent = NAMES[winner] + ' WINS';
       badge.classList.add('show');
 
+      // Winner glow on the seat label
+      var winnerLabel = document.getElementById('label-' + winner);
+      if (winnerLabel) {
+        winnerLabel.style.color = 'var(--primary)';
+        winnerLabel.style.textShadow = '0 0 12px var(--glow-primary), 0 0 24px var(--glow-primary)';
+        winnerLabel.style.transition = 'all 0.3s';
+      }
+
       setTimeout(function () {
         badge.classList.remove('show');
+        // Remove winner glow
+        if (winnerLabel) {
+          winnerLabel.style.color = '';
+          winnerLabel.style.textShadow = '';
+        }
         G.currentTrick = [];
         G.trickNum++;
 
@@ -1114,7 +1128,7 @@
         G.currentSeat = winner;
         renderAll();
         nextTurn();
-      }, 900);
+      }, 1000);
     }
 
     function endRound() {
@@ -1309,6 +1323,7 @@
       if (name) document.getElementById('player-name-display').textContent = name;
     }
 
+    XstikWrapper.mount('SPADES');
     XstikGameInit.showDisclaimer();
 
     XstikGameInit.boot(GAME_SLUG, {

@@ -476,7 +476,7 @@ html, body { overflow: hidden; height: 100%; height: 100dvh; }
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 600;
 }
 .lb-overlay.open { display: block; }
 
@@ -573,7 +573,7 @@ html, body { overflow: hidden; height: 100%; height: 100dvh; }
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.88);
-  z-index: 200;
+  z-index: 500;
   align-items: center;
   justify-content: center;
   padding: 1rem;
@@ -762,25 +762,28 @@ html, body { overflow: hidden; height: 100%; height: 100dvh; }
    LARGE CARDS — for non-solitaire games (add .large-cards to .game-shell)
    ================================================================ */
 .large-cards {
-  --card-w: clamp(6rem, 13vw, 9.5rem);
+  /* 15% larger than original (was 6rem/13vw/9.5rem) */
+  --card-w: clamp(6.9rem, 15vw, 10.9rem);
   --card-h: calc(var(--card-w) * 1.5);
   --card-gap: 0.5rem;
 }
 .large-cards .card-badge {
-  font-size: 0.65rem;
-  padding: 2px 4px;
+  font-size: 0.75rem;
+  padding: 2px 5px;
 }
 
 @media (max-width: 767px) {
   .large-cards {
-    --card-w: clamp(4rem, 20vw, 6rem);
+    /* 15% larger (was 4rem/20vw/6rem) */
+    --card-w: clamp(4.6rem, 23vw, 6.9rem);
     --card-gap: 0.3rem;
   }
-  .large-cards .card-badge { font-size: 0.55rem; }
+  .large-cards .card-badge { font-size: 0.63rem; }
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .large-cards {
-    --card-w: clamp(5.5rem, 11vw, 7.5rem);
+    /* 15% larger (was 5.5rem/11vw/7.5rem) */
+    --card-w: clamp(6.3rem, 12.6vw, 8.6rem);
     --card-gap: 0.4rem;
   }
 }

@@ -42,6 +42,11 @@ const XstikGameInit = (function () {
     // STEP 4: Mount credit display (if #credit-display exists)
     XstikCredits.mountDisplay('#credit-display');
 
+    // STEP 4.5: Bankruptcy intercept — if player is bankrupt, show popup before proceeding
+    if (typeof XstikWrapper !== 'undefined' && XstikCredits.isBankrupt && XstikCredits.isBankrupt()) {
+      await XstikWrapper.checkBankruptcy();
+    }
+
     // STEP 5: Check leaderboard monthly reset (happens inside leaderboard calls)
     // No explicit action needed — _checkMonthReset runs on first access.
 

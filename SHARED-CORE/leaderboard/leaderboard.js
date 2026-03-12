@@ -550,6 +550,11 @@ const XstikLeaderboard = (function () {
       '<button style="' + tabBase + hofTabStyle + '" onclick="XstikLeaderboard.renderLeaderboard(\'' + safeSelector + '\',\'' + safeMode + '\',\'' + safeGame + '\',\'hallOfFame\')">HALL OF FAME</button>' +
       '</div>';
 
+    // ---- Filter out DebugUser from display ----
+    scores = scores.filter(function (s) {
+      return s.name !== 'DebugUser' && s.name !== 'debuguser';
+    });
+
     // Score table
     var medals = ['🥇', '🥈', '🥉'];
     var rows = scores.map(function (s, i) {
@@ -580,6 +585,21 @@ const XstikLeaderboard = (function () {
           rows +
         '</table>' +
       '</div>';
+
+    // ---- Wire touch events for tab buttons (mobile fix) ----
+    var tabButtons = container.querySelectorAll('button');
+    for (var t = 0; t < tabButtons.length; t++) {
+      (function (btn) {
+        var originalOnclick = btn.getAttribute('onclick');
+        if (originalOnclick) {
+          btn.addEventListener('touchend', function (e) {
+            e.preventDefault();
+            // Execute the onclick handler via Function constructor
+            try { new Function(originalOnclick)(); } catch (err) { /* silent */ }
+          });
+        }
+      })(tabButtons[t]);
+    }
   }
 
   return {

@@ -23,7 +23,7 @@ const XstikCredits = (function () {
   const BANKRUPTCY_RECOVERY = 750;
   const MIN_BET = 10;
   const MAX_HISTORY = 100;
-  const BANKRUPTCY_IMAGE = 'SHARED-CORE/assets/bankruptcy/xButtMcAssFace.png';
+  const BANKRUPTCY_IMAGE = '/SHARED-CORE/assets/bankruptcy/xButtMcAssFace.png';
 
   // ---- Internal State ----
 

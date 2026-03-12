@@ -510,6 +510,7 @@
   <script src="/SHARED-CORE/player/player-system.js"></script>
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
   <script src="/SHARED-CORE/leaderboard/supabase-bridge.js"></script>
+  <script src="/SHARED-CORE/game-wrapper.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
   <script>
   (function () {
@@ -782,13 +783,25 @@
 
     function renderCommunity() {
       var el = document.getElementById('community-cards');
-      el.innerHTML = '';
-      for (var i = 0; i < 5; i++) {
-        if (i < G.community.length) {
-          var cardEl = createCardEl(G.community[i], true);
+      var existing = el.children.length;
 
-          el.appendChild(cardEl);
-        } else {
+      // Only rebuild from scratch if community was reset (new hand)
+      if (existing > G.community.length + (5 - G.community.length) || existing === 0 || G.community.length === 0) {
+        el.innerHTML = '';
+        existing = 0;
+      }
+
+      for (var i = existing; i < 5; i++) {
+        if (i < G.community.length) {
+          // Replace empty slot with actual card, or add new card
+          var oldChild = el.children[i];
+          var cardEl = createCardEl(G.community[i], true);
+          if (oldChild && oldChild.classList.contains('card-slot')) {
+            oldChild.replaceWith(cardEl);
+          } else if (!oldChild) {
+            el.appendChild(cardEl);
+          }
+        } else if (!el.children[i]) {
           var slot = document.createElement('div');
           slot.className = 'card-slot';
           el.appendChild(slot);
@@ -1517,6 +1530,7 @@
     // ================================================================
     //  BOOT
     // ================================================================
+    XstikWrapper.mount('TEXAS HOLD\'EM');
     XstikGameInit.showDisclaimer();
     XstikGameInit.boot(GAME_SLUG, {
       preloadCards: true,

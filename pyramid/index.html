@@ -459,6 +459,7 @@
   <script src="/SHARED-CORE/player/player-system.js"></script>
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
   <script src="/SHARED-CORE/leaderboard/supabase-bridge.js"></script>
+  <script src="/SHARED-CORE/game-wrapper.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
   <script>
   (function () {
@@ -1038,6 +1039,7 @@
     /* ================================================================
        BOOT
        ================================================================ */
+    XstikWrapper.mount('PYRAMID');
     XstikGameInit.showDisclaimer();
     XstikGameInit.boot(GAME_SLUG, {
       preloadCards: true,
