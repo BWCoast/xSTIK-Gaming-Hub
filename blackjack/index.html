@@ -3,1029 +3,1439 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>xSTIK Blackjack</title>
-
-  <!-- OG Meta -->
-  <meta property="og:title" content="xSTIK Blackjack">
-  <meta property="og:description" content="Play classic Blackjack with NFT playing cards on XRPL. Bet credits, beat the dealer, climb leaderboards.">
-  <meta property="og:image" content="https://games.xstik.art/og-preview.png">
-  <meta property="og:url" content="https://games.xstik.art/blackjack">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
+  <title>xSTIK Solitaire</title>
   <link rel="icon" href="/logo.jpg" type="image/jpeg">
-
-  <!-- REQUIRED: xSTIK Brand Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="/SHARED-CORE/branding/xstik-brand.css">
-  <link rel="stylesheet" href="/SHARED-CORE/game-layout.css">
-
   <style>
     /* ================================================================
-       BLACKJACK-SPECIFIC STYLES
+       xSTIK BRAND FOUNDATION — copied verbatim from Blackjack
        ================================================================ */
 
-    /* Chip buttons */
-    .chip-btn {
-      width: 3.2rem;
-      height: 3.2rem;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --primary: #F5C518;
+      --primary-glow: rgba(245, 197, 24, 0.4);
+      --accent: #E8A902;
+      --accent-glow: rgba(232, 169, 2, 0.4);
+      --background: #141414;
+      --card-bg: #1F1F1F;
+      --muted: #262626;
+      --border: #1C1B19;
+      --foreground: #FAFAFA;
+      --muted-text: #B3B3B3;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+    }
+
+    html, body {
+      background: var(--background);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--foreground);
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ========== HEADER — copied verbatim from Blackjack ========== */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-left))
+               var(--spacing-sm) max(var(--spacing-md), env(safe-area-inset-right));
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.2);
+      position: relative;
+      z-index: 100;
+      height: 5rem;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      text-decoration: none;
+    }
+
+    .logo-coin {
+      width: 3.25rem;
+      height: 3.25rem;
       border-radius: 50%;
-      border: 3px solid var(--primary);
-      background: radial-gradient(circle at 30% 30%, #2a2a2a, #111);
-      color: var(--primary);
+      object-fit: cover;
+      border: 2px solid rgba(245, 197, 24, 0.5);
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    .logo-text {
       font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-      font-size: 0.7rem;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .logo-sub {
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: -2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    /* ← Game Hub button — outlined, muted */
+    .btn-back {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-text);
+      background: none;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
       cursor: pointer;
+      text-decoration: none;
       transition: all 0.2s;
       display: flex;
       align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 10px rgba(245, 197, 24, 0.15), inset 0 0 8px rgba(245, 197, 24, 0.1);
-      position: relative;
+      gap: 0.3rem;
     }
-    .chip-btn:hover {
-      transform: translateY(-3px) scale(1.08);
-      box-shadow: 0 0 20px rgba(245, 197, 24, 0.4), inset 0 0 12px rgba(245, 197, 24, 0.15);
-    }
-    .chip-btn:active {
-      transform: scale(0.95);
-    }
-    .chip-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    .chip-btn.selected {
-      border-color: #22c55e;
-      box-shadow: 0 0 18px rgba(34, 197, 94, 0.5), inset 0 0 10px rgba(34, 197, 94, 0.15);
-      color: #22c55e;
-    }
+    .btn-back:hover { color: var(--primary); border-color: var(--primary); }
 
-    /* Chip row */
-    .chip-row {
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Bet amount display */
-    .bet-amount {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900;
-      font-size: 1.4rem;
-      color: var(--primary);
-      text-shadow: 0 0 12px rgba(245, 197, 24, 0.5);
-      margin: 0.15rem 0;
-    }
-
-    .bet-label {
+    /* HOW TO PLAY button — filled golden */
+    .btn-rules {
       font-family: 'Rajdhani', sans-serif;
-      font-weight: 500;
-      font-size: 0.75rem;
-      color: var(--muted-text, #B3B3B3);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    /* Deal button in bet overlay */
-    .btn-deal {
-      background: var(--primary);
-      color: #0D0D0D;
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 0.85rem;
-      letter-spacing: 1.5px;
-      padding: 0.6rem 2rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
       border: none;
+      padding: 0.4rem 0.9rem;
       border-radius: 0.4rem;
       cursor: pointer;
       transition: all 0.2s;
-      box-shadow: 0 0 18px rgba(245, 197, 24, 0.35);
-      margin-top: 0.3rem;
+      box-shadow: 0 0 10px var(--primary-glow);
     }
-    .btn-deal:hover {
-      background: var(--accent, #E8A902);
-      box-shadow: 0 0 28px rgba(232, 169, 2, 0.5);
-      transform: translateY(-1px);
-    }
-    .btn-deal:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
+    .btn-rules:hover { background: var(--accent); }
 
-    /* Hand section wrapper */
-    .hand-section {
+    .header-stats {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 0.15rem;
-      flex-shrink: 0;
+      gap: var(--spacing-md);
     }
 
-    /* Middle section with bet and actions */
-    .middle-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.3rem;
-      flex: 1;
-      min-height: 0;
-    }
-
-    /* Result overlay additions */
-    .result-amount {
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 700;
-      font-size: 1.2rem;
-      margin-top: 0.15rem;
-    }
-    .result-amount.win { color: #22c55e; }
-    .result-amount.lose { color: #ef4444; }
-    .result-amount.push { color: var(--primary); }
-
-    /* Table felt layout override for blackjack */
-    .table-felt {
-      padding: 0.3rem 0;
-      gap: 0.3rem;
-      justify-content: space-between;
-    }
-
-    /* Card in blackjack: no grab cursor */
-    .hand-area .card {
-      cursor: default;
-    }
-    .hand-area .card.face-up {
-      cursor: default;
-    }
-
-    /* Action button row spacing */
-    .action-buttons {
-      gap: 0.5rem;
-    }
-    .action-buttons .btn-game {
-      min-width: 5rem;
-    }
-
-    /* Current bet display in play */
-    .current-bet-display {
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: var(--primary);
-      text-align: center;
-      letter-spacing: 1px;
-    }
-
-    /* Win screen stat rows */
-    .win-screen .stat-row {
+    /* ========== FOOTER — copied verbatim from Blackjack ========== */
+    .game-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(245, 197, 24, 0.2);
+      padding: 0.75rem max(var(--spacing-md), env(safe-area-inset-left))
+               max(0.75rem, env(safe-area-inset-bottom))
+               max(var(--spacing-md), env(safe-area-inset-right));
+      z-index: 90;
       display: flex;
       justify-content: space-between;
-      gap: 2rem;
-      font-family: 'Rajdhani', sans-serif;
+      align-items: center;
       font-size: 1rem;
-      color: var(--muted-text, #B3B3B3);
-      margin: 0.15rem 0;
-    }
-    .win-screen .stat-row strong {
-      color: var(--primary);
     }
 
-    /* Clear bet button */
-    .btn-clear-bet {
-      background: none;
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      color: #ef4444;
+    .footer-links {
+      display: flex;
+      gap: var(--spacing-lg);
+      align-items: center;
+    }
+
+    .footer-links a {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    .footer-legal {
+      color: var(--muted-text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+    }
+
+    /* ========== UTILITY ========== */
+    .btn-primary {
+      background: var(--primary);
+      color: #0D0D0D;
       font-family: 'Rajdhani', sans-serif;
       font-weight: 600;
-      font-size: 0.75rem;
-      padding: 0.25rem 0.7rem;
-      border-radius: 0.3rem;
-      cursor: pointer;
-      transition: all 0.2s;
+      font-size: 1rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px var(--primary-glow);
+      min-height: 44px;
     }
-    .btn-clear-bet:hover {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: #ef4444;
-    }
-    .btn-clear-bet:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
+    .btn-primary:hover {
+      background: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+      transform: translateY(-2px);
     }
 
-    /* Responsive */
+    /* ========== LEADERBOARD SLIDE-UP PANEL — copied verbatim from Blackjack ========== */
+    #lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+    }
+    #lb-overlay.open { display: block; }
+    #lb-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    #lb-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 75vh;
+      background: var(--background);
+      border-top: 2px solid var(--primary);
+      border-radius: 1rem 1rem 0 0;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5), 0 -2px 20px var(--primary-glow);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #lb-overlay.open #lb-panel { transform: translateY(0); }
+    .lb-handle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .lb-handle-bar {
+      width: 2.5rem;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--muted-text);
+      position: absolute;
+      left: 50%;
+      top: 0.5rem;
+      transform: translateX(-50%);
+    }
+    .lb-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+    .lb-close {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-text);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-close:hover { color: var(--primary); border-color: var(--primary); }
+    #leaderboard-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
+      -webkit-overflow-scrolling: touch;
+    }
+    #leaderboard-area::-webkit-scrollbar { width: 4px; }
+    #leaderboard-area::-webkit-scrollbar-track { background: var(--muted); }
+    #leaderboard-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+    /* ========== HOW TO PLAY MODAL — copied verbatim from Blackjack ========== */
+    .rules-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+    .rules-overlay.open { display: flex; }
+    .rules-box {
+      background: var(--card-bg);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: 1rem;
+      padding: var(--spacing-xl);
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 40px rgba(245,197,24,0.15);
+    }
+    .rules-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--primary);
+      text-shadow: 0 0 10px var(--primary-glow);
+      margin-bottom: var(--spacing-lg);
+      text-align: center;
+    }
+    .rules-section {
+      margin-bottom: var(--spacing-md);
+    }
+    .rules-section h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-sm);
+    }
+    .rules-section p, .rules-section li {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      color: var(--muted-text);
+      line-height: 1.6;
+    }
+    .rules-section ul { padding-left: 1.2rem; }
+    .rules-close {
+      width: 100%;
+      margin-top: var(--spacing-lg);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: var(--background);
+      background: var(--primary);
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow: 0 0 15px var(--primary-glow);
+      transition: all 0.2s;
+    }
+    .rules-close:hover { background: var(--accent); }
+
+    /* ================================================================
+       SOLITAIRE-SPECIFIC STYLES
+       ================================================================ */
+
+    /* HOW TO PLAY modal uses Blackjack's .rules-overlay pattern (below) */
+
+    /* ===== SOLITAIRE-SPECIFIC ===== */
+    #game-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0.5rem max(0.5rem, env(safe-area-inset-left));
+      min-height: calc(100vh - 3.5rem - 3rem);
+      min-height: calc(100dvh - 3.5rem - 3rem);
+      display: flex;
+      flex-direction: column;
+    }
+    .game-controls {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.4rem 0; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .game-info {
+      display: flex; gap: 1rem; align-items: center;
+      font-family: 'Rajdhani', sans-serif; font-weight: 500;
+      font-size: 0.85rem; color: var(--muted-text);
+    }
+    .game-info span strong { color: var(--primary); font-weight: 700; }
+    .btn-group { display: flex; gap: 0.4rem; }
+    .btn-sm {
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 0.35rem 0.75rem; border-radius: 0.4rem;
+      border: 1px solid var(--primary); background: transparent;
+      color: var(--primary); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-sm:hover { background: rgba(245,197,24,0.12); }
+
+    :root {
+      /* Solitaire card: 5% smaller than Blackjack baseline */
+      --card-w: clamp(3.8rem, 9.5vw, 6.65rem);
+      --card-h: calc(var(--card-w) * 1.5);
+    }
+
+    .solitaire-table {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: auto 1fr; gap: 0.35rem; flex: 1;
+    }
+    .top-row {
+      grid-column: 1 / -1; display: grid;
+      grid-template-columns: repeat(7, 1fr); gap: 0.35rem; margin-bottom: 0.5rem;
+    }
+    .pile-slot {
+      width: 100%; aspect-ratio: 2/3;
+      border: 2px dashed rgba(245,197,24,0.2); border-radius: 0.4rem;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; background: rgba(31,31,31,0.3);
+    }
+    .pile-slot.has-cards { border-color: transparent; background: transparent; }
+    .pile-slot .slot-label {
+      font-family: 'Orbitron', sans-serif; font-size: 0.55rem;
+      color: rgba(245,197,24,0.3); text-transform: uppercase;
+      letter-spacing: 1px; position: absolute; pointer-events: none;
+    }
+    .tableau-area {
+      grid-column: 1 / -1; display: grid;
+      grid-template-columns: repeat(7, 1fr); gap: 0.35rem; align-items: start;
+    }
+    /* Absolute stacking so negative-margin overlap works correctly */
+    .tableau-col { position: relative; width: 100%; }
+
+    .card {
+      position: absolute; width: 100%; aspect-ratio: 2/3;
+      border-radius: 0.35rem; overflow: hidden; cursor: pointer;
+      transition: box-shadow 0.15s; background: #000;
+      user-select: none; -webkit-user-select: none; touch-action: none;
+    }
+    .card img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      pointer-events: none; -webkit-user-drag: none;
+      user-select: none; -webkit-user-select: none;
+    }
+    .card.face-down { cursor: default; }
+    .card.face-up   { cursor: grab; }
+    .card.selected  {
+      box-shadow: 0 0 12px rgba(245,197,24,0.7), 0 0 4px var(--primary);
+      z-index: 50;
+    }
+    .card.hint { box-shadow: 0 0 15px rgba(34,197,94,0.6); }
+
+    /* Drag ghost */
+    #drag-ghost {
+      position: fixed; pointer-events: none; z-index: 10000; display: none;
+    }
+    #drag-ghost .card { position: relative; }
+
+    /* Win screen */
+    #win-screen {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.9); flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 2rem;
+    }
+    #win-screen.show { display: flex; }
+    #win-screen h1 {
+      font-family: 'Orbitron', sans-serif; font-weight: 900;
+      font-size: clamp(2rem, 6vw, 4rem);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    #win-screen .stat { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; color: var(--muted-text); margin: 0.25rem 0; }
+    #win-screen .stat strong { color: var(--primary); }
+
+    #leaderboard-area { margin-top: 1rem; padding: 0 0.5rem; }
+
     @media (max-width: 767px) {
-      .chip-btn {
-        width: 2.6rem;
-        height: 2.6rem;
-        font-size: 0.6rem;
-        border-width: 2px;
-      }
-      .bet-amount { font-size: 1.1rem; }
-      .btn-deal { font-size: 0.75rem; padding: 0.5rem 1.5rem; }
-      .result-amount { font-size: 1rem; }
-      .action-buttons .btn-game { min-width: 4rem; font-size: 0.75rem; padding: 0.35rem 0.7rem; }
-      .current-bet-display { font-size: 0.75rem; }
+      :root { --card-w: clamp(2.66rem, 11.875vw, 4.275rem); }
+      .game-info  { font-size: 0.75rem; gap: 0.5rem; }
+      .btn-sm     { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+      .pile-slot .slot-label { font-size: 0.4rem; }
+      .footer-legal { display: none; }
+      .logo-text { font-size: 1.1rem; }
+      .logo-coin { width: 2.5rem; height: 2.5rem; }
+      .btn-back { display: none; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      :root { --card-w: clamp(3.8rem, 8.55vw, 5.225rem); }
     }
   </style>
 </head>
 <body>
-  <div class="game-shell large-cards">
-    <header class="game-header">
-      <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
-        <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin">
-        <div>
-          <div class="logo-text">xSTIK</div>
-          <div class="logo-sub">BLACKJACK</div>
-        </div>
-      </a>
-      <div class="header-actions">
-        <a href="/" class="btn-back-link">← Hub</a>
-        <div id="credit-display"></div>
-        <button class="btn-sm" id="btn-rules">RULES</button>
-        <button class="btn-sm" id="btn-leaderboard">🏆</button>
-      </div>
-    </header>
 
-    <!-- REAL-TIME SCOREBOARD -->
+  <!-- ===== HEADER — copied verbatim from Blackjack ===== -->
+  <header class="top-bar">
+    <a href="https://xstik.art" target="_blank" rel="noopener noreferrer" class="logo-wrap">
+      <img src="/SHARED-CORE/branding/assets/logo.jpg" alt="xSTIK" class="logo-coin"
+           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23F5C518%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-family=%22Orbitron%22 font-size=%2240%22 font-weight=%22900%22 fill=%22%23000%22 text-anchor=%22middle%22%3EX%3C/text%3E%3C/svg%3E'">
+      <div>
+        <div class="logo-text">xSTIK</div>
+        <div class="logo-sub">SOLITAIRE</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <a href="https://games.xstik.art" class="btn-back">← Game Hub</a>
+      <button class="btn-rules" id="btn-rules">HOW TO PLAY</button>
+      <div id="credit-display"></div>
+    </div>
+  </header>
+
+  <!-- ===== GAME AREA ===== -->
+  <main id="game-container">
+
     <div class="game-controls">
       <div class="game-info">
-        <span>Hands: <strong id="stat-hands">0</strong></span>
-        <span>W: <strong id="stat-wins">0</strong></span>
-        <span>L: <strong id="stat-losses">0</strong></span>
-        <span>Streak: <strong id="stat-streak">0</strong></span>
+        <span>⏱ <strong id="timer">0:00</strong></span>
+        <span>🃏 <strong id="move-count">0</strong> moves</span>
+        <span id="player-name-display" style="color:var(--primary);font-weight:600;"></span>
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" id="btn-draw-mode">DRAW 3</button>
+        <button class="btn-sm" id="btn-new-game">NEW GAME</button>
+        <button class="btn-sm" id="btn-undo">UNDO</button>
+        <button class="btn-sm" id="btn-leaderboard" title="Leaderboard">🏆</button>
       </div>
     </div>
 
-    <main class="game-area">
-      <div class="table-felt" id="table-felt">
-
-        <!-- DEALER HAND -->
-        <div class="hand-section" id="dealer-section">
-          <div class="hand-label">DEALER</div>
-          <div class="hand-value" id="dealer-value"></div>
-          <div class="hand-area" id="dealer-hand"></div>
-        </div>
-
-        <!-- MIDDLE: bet display + actions -->
-        <div class="middle-section" id="middle-section">
-          <div class="current-bet-display" id="current-bet-display"></div>
-          <div class="action-buttons" id="action-buttons" style="display:none;">
-            <button class="btn-game" id="btn-hit">HIT</button>
-            <button class="btn-game" id="btn-stand">STAND</button>
-            <button class="btn-game" id="btn-double">DOUBLE DOWN</button>
-          </div>
-        </div>
-
-        <!-- PLAYER HAND -->
-        <div class="hand-section" id="player-section">
-          <div class="hand-area" id="player-hand"></div>
-          <div class="hand-value" id="player-value"></div>
-          <div class="hand-label">PLAYER</div>
-        </div>
-
-        <!-- BET OVERLAY (inside table-felt for positioning) -->
-        <div class="center-overlay show" id="bet-overlay">
-          <div class="overlay-title">BLACKJACK</div>
-          <div class="overlay-text">Place your bet to begin</div>
-          <div class="chip-row" id="chip-row">
-            <button class="chip-btn" data-chip="10">10</button>
-            <button class="chip-btn" data-chip="25">25</button>
-            <button class="chip-btn" data-chip="50">50</button>
-            <button class="chip-btn" data-chip="100">100</button>
-          </div>
-          <div class="bet-label">BET</div>
-          <div class="bet-amount" id="bet-amount-display">0</div>
-          <div style="display:flex;gap:0.5rem;align-items:center;">
-            <button class="btn-clear-bet" id="btn-clear-bet" disabled>CLEAR</button>
-            <button class="btn-deal" id="btn-deal" disabled>DEAL</button>
-          </div>
-        </div>
-
-        <!-- RESULT OVERLAY -->
-        <div class="center-overlay" id="result-overlay">
-          <div class="result-text" id="result-title"></div>
-          <div class="result-amount" id="result-amount"></div>
-          <button class="btn-deal" id="btn-play-again">PLAY AGAIN</button>
-        </div>
+    <div class="solitaire-table">
+      <div class="top-row">
+        <div class="pile-slot" id="stock"><span class="slot-label">DRAW</span></div>
+        <!-- Waste: wider slot to accommodate 3-card fan in draw-3 mode -->
+        <div class="pile-slot" id="waste" style="overflow:visible;"><span class="slot-label">WASTE</span></div>
+        <div class="pile-slot" style="border:none;background:none;"></div>
+        <div class="pile-slot" id="foundation-0"><span class="slot-label">♠</span></div>
+        <div class="pile-slot" id="foundation-1"><span class="slot-label">♥</span></div>
+        <div class="pile-slot" id="foundation-2"><span class="slot-label">♦</span></div>
+        <div class="pile-slot" id="foundation-3"><span class="slot-label">♣</span></div>
       </div>
-    </main>
+      <div class="tableau-area">
+        <div class="tableau-col" id="tab-0"></div>
+        <div class="tableau-col" id="tab-1"></div>
+        <div class="tableau-col" id="tab-2"></div>
+        <div class="tableau-col" id="tab-3"></div>
+        <div class="tableau-col" id="tab-4"></div>
+        <div class="tableau-col" id="tab-5"></div>
+        <div class="tableau-col" id="tab-6"></div>
+      </div>
+    </div>
 
-    <footer class="game-footer-bar">
-      <div><a href="https://xstik.art">xSTIK.art</a> · <a href="/">Game Hub</a></div>
-      <div class="footer-legal">Virtual credits — entertainment only. © 2026 xSTIK</div>
-    </footer>
+    <div id="leaderboard-area"></div>
+  </main>
+
+  <!-- ===== WIN SCREEN ===== -->
+  <div id="win-screen">
+    <h1>YOU WIN!</h1>
+    <div class="stat">Time:   <strong id="win-time">0:00</strong></div>
+    <div class="stat">Moves:  <strong id="win-moves">0</strong></div>
+    <div class="stat">Score:  <strong id="win-score">0</strong></div>
+    <div class="stat" style="color:#22c55e;font-weight:700;margin-top:0.5rem;">
+      +<strong id="win-credits">0</strong> credits
+    </div>
+    <div class="stat" id="win-rank" style="margin-top:0.25rem;"></div>
+    <button class="btn-primary" style="margin-top:1.5rem;" id="btn-play-again">PLAY AGAIN</button>
   </div>
 
-  <!-- RULES OVERLAY -->
+  <!-- ===== FOOTER — copied verbatim from Blackjack ===== -->
+  <footer class="game-footer">
+    <div class="footer-links">
+      <a href="https://xstik.art">Home</a>
+      <a href="https://games.xstik.art">Game Hub</a>
+      <a href="https://xstik.art/#ecosystem">Ecosystem</a>
+    </div>
+    <div class="footer-legal">
+      <p>Virtual credits only — entertainment purposes. &copy; 2026 xSTIK</p>
+    </div>
+  </footer>
+
+  <!-- Drag ghost element -->
+  <div id="drag-ghost"></div>
+
+  <!-- ===== HOW TO PLAY MODAL — Blackjack rules-overlay pattern ===== -->
   <div class="rules-overlay" id="rules-overlay">
     <div class="rules-box">
-      <div class="rules-title">HOW TO PLAY</div>
+      <div class="rules-title">🃏 HOW TO PLAY SOLITAIRE</div>
 
       <div class="rules-section">
         <h3>Objective</h3>
-        <p>Beat the dealer by getting a hand value as close to 21 as possible without going over.</p>
+        <p>Move all 52 cards to the four foundation piles, sorted by suit from Ace to King.</p>
       </div>
 
       <div class="rules-section">
-        <h3>Card Values</h3>
+        <h3>The Layout</h3>
         <ul>
-          <li>Number cards (2–10) = face value</li>
-          <li>Face cards (J, Q, K) = 10</li>
-          <li>Ace = 1 or 11 (automatically optimized)</li>
+          <li><strong>DRAW</strong> — Click to flip cards from the stock</li>
+          <li><strong>WASTE</strong> — The top card is always available to play</li>
+          <li><strong>Foundations (♠♥♦♣)</strong> — Build each suit up from Ace to King</li>
+          <li><strong>Tableau</strong> — Seven columns. Build down in alternating colours</li>
         </ul>
       </div>
 
       <div class="rules-section">
-        <h3>Gameplay</h3>
+        <h3>Moving Cards</h3>
         <ul>
-          <li>Place a bet using chips (10, 25, 50, 100)</li>
-          <li>You and the dealer each receive 2 cards</li>
-          <li>One dealer card is face-down (the hole card)</li>
-          <li><strong>HIT</strong> — draw another card</li>
-          <li><strong>STAND</strong> — keep your current hand</li>
-          <li><strong>DOUBLE DOWN</strong> — double your bet, receive exactly one more card, then stand</li>
+          <li>Click a card to select it, then click a valid destination</li>
+          <li>Drag cards directly to their destination</li>
+          <li>Double-click any face-up card to send it to a foundation</li>
+          <li>Only Kings may be placed on empty tableau columns</li>
         </ul>
       </div>
 
       <div class="rules-section">
-        <h3>Winning</h3>
+        <h3>Draw Modes</h3>
         <ul>
-          <li><strong>Blackjack</strong> (Ace + 10-value on first two cards) pays 3:2</li>
-          <li>Beat the dealer's hand = win 1:1</li>
-          <li>Dealer busts (over 21) = you win</li>
-          <li>Push (tie) = bet returned</li>
-          <li>Dealer stands on 17 or higher</li>
+          <li><strong>Draw 1</strong> — flip one card at a time (easier)</li>
+          <li><strong>Draw 3</strong> — flip three cards at once (classic challenge)</li>
         </ul>
       </div>
 
       <div class="rules-section">
-        <h3>Credits</h3>
-        <p>Bet increments: 10, 25, 50, 100. Stack chips to increase your bet. Winnings are added to your credit balance.</p>
+        <h3>Scoring</h3>
+        <p>Base 500 · Time bonus up to +300 · Speed bonus +100 (under 3 min) · Move penalty −2 each</p>
       </div>
 
-      <button class="rules-close" id="btn-rules-close">GOT IT</button>
+      <button class="rules-close" id="btn-rules-close">GOT IT — LET'S PLAY</button>
     </div>
   </div>
 
-  <!-- LEADERBOARD PANEL -->
-  <div class="lb-overlay" id="lb-overlay">
-    <div class="lb-backdrop" id="lb-backdrop"></div>
-    <div class="lb-panel">
+  <!-- ===== LEADERBOARD SLIDE-UP PANEL — Blackjack lb-overlay pattern ===== -->
+  <div id="lb-overlay">
+    <div id="lb-backdrop"></div>
+    <div id="lb-panel">
       <div class="lb-handle-bar"></div>
       <div class="lb-handle">
-        <span class="lb-title">🏆 LEADERBOARD</span>
+        <span class="lb-title">🏆 SOLITAIRE LEADERBOARD</span>
         <button class="lb-close" id="btn-lb-close">CLOSE</button>
       </div>
-      <div class="lb-content" id="leaderboard-area"></div>
+      <div id="leaderboard-area"></div>
     </div>
   </div>
 
-  <!-- WIN SCREEN -->
-  <div class="win-screen" id="win-screen"></div>
-
-  <!-- SHARED-CORE Scripts -->
+  <!-- ===== SHARED-CORE SCRIPTS — absolute paths, matching Blackjack ===== -->
   <script src="/SHARED-CORE/nft-loader/card-deck.js"></script>
   <script src="/SHARED-CORE/nft-loader/image-loader.js"></script>
   <script src="/SHARED-CORE/credit-system/credit-system.js"></script>
   <script src="/SHARED-CORE/player/player-system.js"></script>
   <script src="/SHARED-CORE/leaderboard/leaderboard.js"></script>
-  <script src="/SHARED-CORE/leaderboard/supabase-bridge.js"></script>
-  <script src="/SHARED-CORE/game-wrapper.js"></script>
   <script src="/SHARED-CORE/game-init.js"></script>
 
+  <!-- ===== SOLITAIRE GAME LOGIC ===== -->
   <script>
   (function () {
     'use strict';
 
-    /* ================================================================
-       CONSTANTS
-       ================================================================ */
-    var GAME_SLUG = 'blackjack';
-    var CARD_BACK_PATH = '/SHARED-CORE/assets/cardback.jpg';
+    // ===== CONSTANTS =====
+    const ENTRY_FEE        = 50;
+    const RANK_ORDER       = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    const RED_SUITS        = ['Hearts','Diamonds'];
+    const FACE_DOWN_PX     = 14;  // px overlap gap for face-down cards in stack
+    const FACE_UP_PX       = 40;  // px overlap gap for face-up cards in stack
 
-    /* ================================================================
-       GAME STATE
-       ================================================================ */
-    var deck = [];
-    var deckIndex = 0;
-    var playerHand = [];
-    var dealerHand = [];
-    var currentBet = 0;
-    var gameActive = false;
-    var playerTurnDone = false;
+    // Draw mode: 1 = draw-1 (default), 3 = draw-3
+    let drawCount = 1;
 
-    // Session stats
-    var stats = {
-      handsPlayed: 0,
-      wins: 0,
-      losses: 0,
-      pushes: 0,
-      blackjacks: 0,
-      profitCredits: 0,
-      consecutiveWins: 0,
-      maxConsecutiveWins: 0
+    // ===== GAME STATE =====
+    let state = {
+      stock:         [],
+      waste:         [],
+      foundations:   [[],[],[],[]],
+      tableau:       [[],[],[],[],[],[],[]],
+      moves:         0,
+      startTime:     null,
+      timerInterval: null,
+      seconds:       0,
+      gameActive:    false,
+      selected:      null,
+      undoStack:     [],
+      paid:          false,
+      // Draw-3: tracks how many passes through stock (for scoring)
+      stockPasses:   0
     };
 
-    /* ================================================================
-       DOM REFS
-       ================================================================ */
-    var dealerHandEl = document.getElementById('dealer-hand');
-    var playerHandEl = document.getElementById('player-hand');
-    var dealerValueEl = document.getElementById('dealer-value');
-    var playerValueEl = document.getElementById('player-value');
-    var betOverlay = document.getElementById('bet-overlay');
-    var resultOverlay = document.getElementById('result-overlay');
-    var resultTitle = document.getElementById('result-title');
-    var resultAmount = document.getElementById('result-amount');
-    var actionButtons = document.getElementById('action-buttons');
-    var btnHit = document.getElementById('btn-hit');
-    var btnStand = document.getElementById('btn-stand');
-    var btnDouble = document.getElementById('btn-double');
-    var btnDeal = document.getElementById('btn-deal');
-    var btnClearBet = document.getElementById('btn-clear-bet');
-    var btnPlayAgain = document.getElementById('btn-play-again');
-    var betAmountDisplay = document.getElementById('bet-amount-display');
-    var currentBetDisplay = document.getElementById('current-bet-display');
-    var chipButtons = document.querySelectorAll('.chip-btn');
+    // ===== DRAG STATE =====
+    let drag = null;
+    let autoCompleting = false;
 
-    /* ================================================================
-       CARD FUNCTIONS
-       ================================================================ */
+    // ===== HELPERS =====
+    function isRed(card)   { return RED_SUITS.includes(card.suit); }
+    function rankIdx(rank) { return RANK_ORDER.indexOf(rank); }
+
+    function canStackTableau(moving, target) {
+      if (isRed(moving) === isRed(target)) return false;
+      return rankIdx(moving.rank) === rankIdx(target.rank) - 1;
+    }
+
+    function canStackFoundation(card, pile) {
+      if (pile.length === 0) return card.rank === 'A';
+      const top = pile[pile.length - 1];
+      return top.suit === card.suit && rankIdx(card.rank) === rankIdx(top.rank) + 1;
+    }
+
+    // ===== CARD ELEMENT FACTORY =====
     function createCardEl(card, faceUp) {
-      var el = document.createElement('div');
+      const el  = document.createElement('div');
       el.className = 'card ' + (faceUp ? 'face-up' : 'face-down');
       el.dataset.name = card.name;
-      var img = document.createElement('img');
+      const img = document.createElement('img');
       if (faceUp) {
-        img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
-        img.alt = card.name;
+        img.src     = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
+        img.alt     = card.name;
         img.onerror = function () { XstikImageLoader.handleError(this, card); };
       } else {
         img.src = CARD_BACK_PATH;
         img.alt = 'Card back';
       }
       el.appendChild(img);
-      if (faceUp) {
-        var badge = document.createElement('span');
-        badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
-        badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
-        el.appendChild(badge);
-      }
       return el;
     }
 
-    function drawCard() {
-      if (deckIndex >= deck.length) {
-        deck = XstikImageLoader.getShuffledDeck();
-        deckIndex = 0;
-      }
-      return deck[deckIndex++];
+    // ===== RENDERING =====
+    function renderAll() {
+      renderStock();
+      renderWaste();
+      renderFoundations();
+      renderTableau();
     }
 
-    function handValue(hand) {
-      var total = 0;
-      var aces = 0;
-      for (var i = 0; i < hand.length; i++) {
-        var card = hand[i];
-        if (card.ace) {
-          aces++;
-          total += 11;
-        } else if (['J','Q','K'].indexOf(card.rank) !== -1) {
-          total += 10;
-        } else {
-          total += parseInt(card.rank, 10);
-        }
-      }
-      while (total > 21 && aces > 0) {
-        total -= 10;
-        aces--;
-      }
-      return total;
-    }
-
-    function isBlackjack(hand) {
-      return hand.length === 2 && handValue(hand) === 21;
-    }
-
-    function isBust(hand) {
-      return handValue(hand) > 21;
-    }
-
-    /* ================================================================
-       RENDERING
-       ================================================================ */
-    function renderDealerHand(revealAll) {
-      dealerHandEl.innerHTML = '';
-      for (var i = 0; i < dealerHand.length; i++) {
-        var faceUp = revealAll || i === 0;
-        var cardEl = createCardEl(dealerHand[i], faceUp);
-        dealerHandEl.appendChild(cardEl);
-      }
-      if (revealAll) {
-        dealerValueEl.textContent = handValue(dealerHand);
+    function renderStock() {
+      const el = document.getElementById('stock');
+      el.innerHTML = '';
+      if (state.stock.length > 0) {
+        el.appendChild(createCardEl(state.stock[state.stock.length - 1], false));
+        el.classList.add('has-cards');
       } else {
-        dealerValueEl.textContent = handValue([dealerHand[0]]);
+        el.classList.remove('has-cards');
+        el.innerHTML = '<span class="slot-label" style="font-size:1.5rem;color:rgba(245,197,24,0.4);">↻</span>';
       }
     }
 
-    function renderPlayerHand() {
-      playerHandEl.innerHTML = '';
-      for (var i = 0; i < playerHand.length; i++) {
-        var cardEl = createCardEl(playerHand[i], true);
-        playerHandEl.appendChild(cardEl);
+    function renderWaste() {
+      const el = document.getElementById('waste');
+      el.innerHTML = '';
+      if (state.waste.length === 0) {
+        el.classList.remove('has-cards');
+        el.innerHTML = '<span class="slot-label">WASTE</span>';
+        return;
       }
-      playerValueEl.textContent = handValue(playerHand);
-    }
+      el.classList.add('has-cards');
 
-    function addDealAnimation() {
-      var allCards = document.querySelectorAll('#dealer-hand .card, #player-hand .card');
-      for (var i = 0; i < allCards.length; i++) {
-        allCards[i].classList.add('deal-in');
-        allCards[i].style.animationDelay = (i * 0.12) + 's';
-      }
-    }
+      if (drawCount === 1) {
+        // Draw-1: show only top card
+        const top  = state.waste[state.waste.length - 1];
+        const card = createCardEl(top, true);
+        if (state.selected && state.selected.source === 'waste') card.classList.add('selected');
+        card.addEventListener('mousedown',  startWasteDrag);
+        card.addEventListener('touchstart', startWasteDrag, { passive: false });
+        el.appendChild(card);
+      } else {
+        // Draw-3: fan the top 3 waste cards (oldest → newest, left to right)
+        // Only the top card (rightmost) is playable
+        const count   = Math.min(3, state.waste.length);
+        const fanCards = state.waste.slice(state.waste.length - count); // [oldest...newest]
+        const FAN_OFFSET = 18; // px horizontal offset between fanned cards
 
-    function addDealInToNew(container) {
-      var cards = container.querySelectorAll('.card');
-      var lastCard = cards[cards.length - 1];
-      if (lastCard) {
-        lastCard.classList.add('deal-in');
-      }
-    }
+        el.style.position = 'relative';
+        // Width of slot is 1 card wide — fan extends right (overflow:visible on parent)
+        fanCards.forEach((c, i) => {
+          const cardEl = createCardEl(c, true);
+          cardEl.style.position = 'absolute';
+          cardEl.style.left     = (i * FAN_OFFSET) + 'px';
+          cardEl.style.top      = '0';
+          cardEl.style.width    = '100%';
+          cardEl.style.zIndex   = i + 1;
 
-    function flipDealerHoleCard() {
-      var cards = dealerHandEl.querySelectorAll('.card');
-      if (cards.length >= 2) {
-        var holeCardEl = cards[1];
-        holeCardEl.classList.add('card-flip');
-        setTimeout(function () {
-          // Replace face-down with face-up at midpoint of flip
-          var card = dealerHand[1];
-          var img = holeCardEl.querySelector('img');
-          img.src = XstikImageLoader.getCardImage(card.name) || card.fallbackPath;
-          img.alt = card.name;
-          img.onerror = function () { XstikImageLoader.handleError(this, card); };
-          holeCardEl.className = 'card face-up card-flip';
-          // Add badge
-          var badge = document.createElement('span');
-          badge.className = 'card-badge' + (['Hearts','Diamonds'].includes(card.suit) ? ' red' : '');
-          badge.textContent = card.rank + ({Hearts:'♥',Diamonds:'♦',Clubs:'♣',Spades:'♠'}[card.suit] || '');
-          holeCardEl.appendChild(badge);
-        }, 150);
-      }
-    }
+          const isTop = (i === fanCards.length - 1);
+          if (isTop) {
+            if (state.selected && state.selected.source === 'waste') cardEl.classList.add('selected');
+            cardEl.addEventListener('mousedown',  startWasteDrag);
+            cardEl.addEventListener('touchstart', startWasteDrag, { passive: false });
+          } else {
+            // Non-top fanned cards: visible but not interactive
+            cardEl.style.pointerEvents = 'none';
+            cardEl.style.opacity = '0.85';
+          }
+          el.appendChild(cardEl);
+        });
 
-    /* ================================================================
-       BET LOGIC
-       ================================================================ */
-    var pendingBet = 0;
-
-    function updateBetDisplay() {
-      betAmountDisplay.textContent = pendingBet;
-      btnDeal.disabled = pendingBet < 10;
-      btnClearBet.disabled = pendingBet === 0;
-      updateChipStates();
-    }
-
-    function updateChipStates() {
-      var balance = XstikCredits.getBalance();
-      for (var i = 0; i < chipButtons.length; i++) {
-        var chipVal = parseInt(chipButtons[i].getAttribute('data-chip'), 10);
-        chipButtons[i].disabled = (pendingBet + chipVal) > balance;
+        // Set container height to match a single card (cards are absolute)
+        el.style.height = 'auto';
       }
     }
 
-    function addChip(val) {
-      var balance = XstikCredits.getBalance();
-      if (pendingBet + val <= balance) {
-        pendingBet += val;
-        updateBetDisplay();
-      }
-    }
-
-    function clearBet() {
-      pendingBet = 0;
-      updateBetDisplay();
-    }
-
-    /* ================================================================
-       GAME FLOW
-       ================================================================ */
-    function showBetOverlay() {
-      gameActive = false;
-      playerTurnDone = false;
-      actionButtons.style.display = 'none';
-      resultOverlay.classList.remove('show');
-      betOverlay.classList.add('show');
-      currentBetDisplay.textContent = '';
-      dealerHandEl.innerHTML = '';
-      playerHandEl.innerHTML = '';
-      dealerValueEl.textContent = '';
-      playerValueEl.textContent = '';
-      pendingBet = 0;
-      updateBetDisplay();
-    }
-
-    function startRound() {
-      if (pendingBet < 10) return;
-
-      var betAmount = pendingBet;
-      if (!XstikCredits.placeBet(betAmount, GAME_SLUG)) {
-        // Not enough credits
-        if (XstikCredits.isBankrupt()) {
-          XstikCredits.triggerBankruptcy(function () {
-            updateBetDisplay();
-          });
+    function renderFoundations() {
+      state.foundations.forEach((pile, i) => {
+        const el   = document.getElementById('foundation-' + i);
+        el.innerHTML = '';
+        const syms = ['♠','♥','♦','♣'];
+        if (pile.length > 0) {
+          el.appendChild(createCardEl(pile[pile.length - 1], true));
+          el.classList.add('has-cards');
+        } else {
+          el.classList.remove('has-cards');
+          el.innerHTML = `<span class="slot-label">${syms[i]}</span>`;
         }
-        return;
+      });
+    }
+
+    // Absolute-position stacking — cards overlap correctly
+    function renderTableau() {
+      state.tableau.forEach((col, colIdx) => {
+        const el = document.getElementById('tab-' + colIdx);
+        el.innerHTML = '';
+
+        if (col.length === 0) {
+          el.style.height = 'var(--card-h)';
+          el.innerHTML = '<div class="pile-slot" style="border-style:dashed;width:100%;aspect-ratio:2/3;"><span class="slot-label">K</span></div>';
+          return;
+        }
+
+        let topOffset = 0;
+        col.forEach((entry, cardIdx) => {
+          const cardEl = createCardEl(entry.card, entry.faceUp);
+          cardEl.dataset.col = colIdx;
+          cardEl.dataset.idx = cardIdx;
+          cardEl.style.top   = topOffset + 'px';
+          cardEl.style.left  = '0';
+
+          if (state.selected &&
+              state.selected.source === 'tableau' &&
+              state.selected.colIdx === colIdx &&
+              cardIdx >= state.selected.cardIdx) {
+            cardEl.classList.add('selected');
+          }
+
+          // Drag from face-up tableau cards
+          if (entry.faceUp) {
+            cardEl.addEventListener('mousedown',  function (e) { e.stopPropagation(); startDrag(e, colIdx, cardIdx); });
+            cardEl.addEventListener('touchstart', function (e) { e.stopPropagation(); startDrag(e, colIdx, cardIdx); }, { passive: false });
+          }
+
+          el.appendChild(cardEl);
+          if (cardIdx < col.length - 1) topOffset += entry.faceUp ? FACE_UP_PX : FACE_DOWN_PX;
+        });
+
+        const colWidth = el.offsetWidth || 80;
+        el.style.height = (topOffset + colWidth * 1.5) + 'px';
+      });
+
+      // Auto-complete check
+      if (!autoCompleting && canAutoComplete()) {
+        autoCompleting = true;
+        setTimeout(runAutoComplete, 400);
       }
+    }
 
-      currentBet = betAmount;
-      pendingBet = 0;
-      betOverlay.classList.remove('show');
-      currentBetDisplay.textContent = 'BET: ' + currentBet;
-      gameActive = true;
-      playerTurnDone = false;
+    function updateInfo() {
+      document.getElementById('move-count').textContent = state.moves;
+    }
 
-      // Shuffle if needed
-      if (deckIndex > deck.length - 20) {
-        deck = XstikImageLoader.getShuffledDeck();
-        deckIndex = 0;
-      }
-
-      // Deal cards
-      playerHand = [drawCard(), drawCard()];
-      dealerHand = [drawCard(), drawCard()];
-
-      renderDealerHand(false);
-      renderPlayerHand();
-      addDealAnimation();
-
-      // Check for player blackjack
-      if (isBlackjack(playerHand)) {
-        setTimeout(function () {
-          playerTurnDone = true;
-          resolveRound();
-        }, 600);
-        return;
-      }
-
-      // Show action buttons
-      setTimeout(function () {
-        showActions();
+    // ===== TIMER =====
+    function startTimer() {
+      if (state.timerInterval) return;
+      state.startTime = Date.now();
+      state.timerInterval = setInterval(() => {
+        state.seconds = Math.floor((Date.now() - state.startTime) / 1000);
+        const m = Math.floor(state.seconds / 60);
+        const s = state.seconds % 60;
+        document.getElementById('timer').textContent = m + ':' + String(s).padStart(2, '0');
       }, 500);
     }
 
-    function showActions() {
-      if (!gameActive || playerTurnDone) return;
-      actionButtons.style.display = 'flex';
-      btnHit.disabled = false;
-      btnStand.disabled = false;
-      // Double down only available on first two cards and if player has enough credits
-      var canDouble = playerHand.length === 2 && XstikCredits.getBalance() >= currentBet;
-      btnDouble.disabled = !canDouble;
-      btnDouble.style.display = canDouble ? '' : 'none';
+    function stopTimer() {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
     }
 
-    function hideActions() {
-      actionButtons.style.display = 'none';
+    // ===== UNDO =====
+    function saveUndo() {
+      state.undoStack.push(JSON.stringify({
+        stock:       state.stock.map(c => c.name),
+        waste:       state.waste.map(c => c.name),
+        foundations: state.foundations.map(p => p.map(c => c.name)),
+        tableau:     state.tableau.map(col => col.map(e => ({ name: e.card.name, faceUp: e.faceUp }))),
+        moves:       state.moves
+      }));
+      if (state.undoStack.length > 30) state.undoStack.shift();
     }
 
-    function playerHit() {
-      if (!gameActive || playerTurnDone) return;
-      playerHand.push(drawCard());
-      renderPlayerHand();
-      addDealInToNew(playerHandEl);
-
-      if (isBust(playerHand)) {
-        playerTurnDone = true;
-        hideActions();
-        setTimeout(function () { resolveRound(); }, 400);
-        return;
-      }
-
-      if (handValue(playerHand) === 21) {
-        playerTurnDone = true;
-        hideActions();
-        setTimeout(function () { dealerPlay(); }, 400);
-        return;
-      }
-
-      // Update double availability
-      btnDouble.disabled = true;
-      btnDouble.style.display = 'none';
+    function cardByName(name) {
+      return XSTIK_POKER_DECK.find(c => c.name === name);
     }
 
-    function playerStand() {
-      if (!gameActive || playerTurnDone) return;
-      playerTurnDone = true;
-      hideActions();
-      dealerPlay();
+    function doUndo() {
+      if (state.undoStack.length === 0) return;
+      const snap        = JSON.parse(state.undoStack.pop());
+      state.stock       = snap.stock.map(cardByName);
+      state.waste       = snap.waste.map(cardByName);
+      state.foundations = snap.foundations.map(p => p.map(cardByName));
+      state.tableau     = snap.tableau.map(col => col.map(e => ({ card: cardByName(e.name), faceUp: e.faceUp })));
+      state.moves       = snap.moves;
+      state.selected    = null;
+      renderAll();
+      updateInfo();
     }
 
-    function playerDoubleDown() {
-      if (!gameActive || playerTurnDone) return;
-      if (playerHand.length !== 2) return;
+    // ===== GAME SETUP =====
+    function startNewGame() {
+      stopTimer();
+      autoCompleting = false;
 
-      // Place additional bet
-      if (!XstikCredits.placeBet(currentBet, GAME_SLUG)) {
-        if (XstikCredits.isBankrupt()) {
-          XstikCredits.triggerBankruptcy(function () {});
+      if (!state.paid) {
+        const balance = XstikCredits.getBalance();
+        if (balance < ENTRY_FEE) {
+          if (XstikCredits.isBankrupt()) { XstikCredits.triggerBankruptcy(() => startNewGame()); return; }
+          return;
         }
-        return;
+        XstikCredits.payEntryFee(ENTRY_FEE, 'solitaire');
+        state.paid = true;
       }
 
-      currentBet *= 2;
-      currentBetDisplay.textContent = 'BET: ' + currentBet;
+      const deck        = XstikImageLoader.getShuffledDeck();
+      state.stock       = [];
+      state.waste       = [];
+      state.foundations = [[],[],[],[]];
+      state.tableau     = [[],[],[],[],[],[],[]];
+      state.moves       = 0;
+      state.seconds     = 0;
+      state.selected    = null;
+      state.undoStack   = [];
+      state.gameActive  = true;
+      state.paid        = false;
+      state.stockPasses = 0;
+      document.getElementById('timer').textContent = '0:00';
+      document.getElementById('win-screen').classList.remove('show');
 
-      // Draw exactly one card
-      playerHand.push(drawCard());
-      renderPlayerHand();
-      addDealInToNew(playerHandEl);
-
-      playerTurnDone = true;
-      hideActions();
-
-      if (isBust(playerHand)) {
-        setTimeout(function () { resolveRound(); }, 400);
-      } else {
-        setTimeout(function () { dealerPlay(); }, 400);
-      }
-    }
-
-    function dealerPlay() {
-      // Reveal hole card
-      flipDealerHoleCard();
-      renderDealerHand(true);
-
-      // Dealer draws until 17+
-      function dealerDraw() {
-        if (handValue(dealerHand) < 17) {
-          setTimeout(function () {
-            dealerHand.push(drawCard());
-            renderDealerHand(true);
-            addDealInToNew(dealerHandEl);
-            dealerDraw();
-          }, 500);
-        } else {
-          setTimeout(function () { resolveRound(); }, 400);
+      let deckIdx = 0;
+      for (let col = 0; col < 7; col++) {
+        for (let row = 0; row <= col; row++) {
+          state.tableau[col].push({ card: deck[deckIdx++], faceUp: (row === col) });
         }
       }
-
-      setTimeout(function () { dealerDraw(); }, 400);
+      state.stock = deck.slice(deckIdx);
+      renderAll();
+      updateInfo();
+      startTimer();
     }
 
-    function resolveRound() {
-      gameActive = false;
-      hideActions();
+    // ===== WIN =====
+    function checkWin() {
+      return state.foundations.every(p => p.length === 13);
+    }
 
-      // Make sure dealer is fully revealed
-      renderDealerHand(true);
-
-      var pVal = handValue(playerHand);
-      var dVal = handValue(dealerHand);
-      var pBJ = isBlackjack(playerHand);
-      var dBJ = isBlackjack(dealerHand);
-      var pBust = pVal > 21;
-      var dBust = dVal > 21;
-
-      var resultType = '';
-      var resultLabel = '';
-      var winAmount = 0;
-      var amountText = '';
-
-      stats.handsPlayed++;
-
-      if (pBJ && dBJ) {
-        // Both blackjack = push
-        resultType = 'push';
-        resultLabel = 'PUSH';
-        winAmount = currentBet;
-        amountText = 'Bet returned: ' + currentBet;
-        XstikCredits.awardWinnings(currentBet, GAME_SLUG);
-        stats.pushes++;
-        stats.consecutiveWins = 0;
-      } else if (pBJ) {
-        // Player blackjack pays 3:2
-        resultType = 'win';
-        resultLabel = 'BLACKJACK!';
-        winAmount = currentBet + Math.floor(currentBet * 1.5);
-        amountText = '+' + Math.floor(currentBet * 1.5) + ' credits';
-        XstikCredits.awardWinnings(winAmount, GAME_SLUG);
-        stats.wins++;
-        stats.blackjacks++;
-        stats.profitCredits += Math.floor(currentBet * 1.5);
-        stats.consecutiveWins++;
-        if (stats.consecutiveWins > stats.maxConsecutiveWins) {
-          stats.maxConsecutiveWins = stats.consecutiveWins;
-        }
-      } else if (pBust) {
-        // Player bust
-        resultType = 'lose';
-        resultLabel = 'BUST';
-        winAmount = 0;
-        amountText = '-' + currentBet + ' credits';
-        stats.losses++;
-        stats.profitCredits -= currentBet;
-        stats.consecutiveWins = 0;
-      } else if (dBust) {
-        // Dealer bust
-        resultType = 'win';
-        resultLabel = 'DEALER BUSTS!';
-        winAmount = currentBet * 2;
-        amountText = '+' + currentBet + ' credits';
-        XstikCredits.awardWinnings(winAmount, GAME_SLUG);
-        stats.wins++;
-        stats.profitCredits += currentBet;
-        stats.consecutiveWins++;
-        if (stats.consecutiveWins > stats.maxConsecutiveWins) {
-          stats.maxConsecutiveWins = stats.consecutiveWins;
-        }
-      } else if (pVal > dVal) {
-        // Player wins
-        resultType = 'win';
-        resultLabel = 'YOU WIN!';
-        winAmount = currentBet * 2;
-        amountText = '+' + currentBet + ' credits';
-        XstikCredits.awardWinnings(winAmount, GAME_SLUG);
-        stats.wins++;
-        stats.profitCredits += currentBet;
-        stats.consecutiveWins++;
-        if (stats.consecutiveWins > stats.maxConsecutiveWins) {
-          stats.maxConsecutiveWins = stats.consecutiveWins;
-        }
-      } else if (pVal < dVal) {
-        // Dealer wins
-        resultType = 'lose';
-        resultLabel = 'DEALER WINS';
-        winAmount = 0;
-        amountText = '-' + currentBet + ' credits';
-        stats.losses++;
-        stats.profitCredits -= currentBet;
-        stats.consecutiveWins = 0;
-      } else {
-        // Push
-        resultType = 'push';
-        resultLabel = 'PUSH';
-        winAmount = currentBet;
-        amountText = 'Bet returned: ' + currentBet;
-        XstikCredits.awardWinnings(currentBet, GAME_SLUG);
-        stats.pushes++;
-        stats.consecutiveWins = 0;
-      }
-
-      // Submit score to leaderboard
-      var playerName = XstikPlayer.getUsername() || 'Anonymous';
-      XstikLeaderboard.submitScore(playerName, GAME_SLUG, {
-        handsPlayed: stats.handsPlayed,
-        wins: stats.wins,
-        profitCredits: stats.profitCredits,
-        consecutiveWins: stats.maxConsecutiveWins
+    function handleWin() {
+      stopTimer();
+      state.gameActive = false;
+      const creditsWon = state.seconds < 180 ? 200 : state.seconds < 300 ? 150 : 100;
+      XstikCredits.awardWinnings(creditsWon, 'solitaire');
+      const playerName = XstikPlayer.getUsername() || 'Anonymous';
+      const result     = XstikLeaderboard.submitScore(playerName, 'solitaire', {
+        completionTime: state.seconds, moves: state.moves, creditsWon
       });
       XstikLeaderboard.rebuildUnified();
-
-      // Show result + update scoreboard
-      showResult(resultType, resultLabel, amountText);
-      updateScoreboard();
+      submitGameScore();
+      const m = Math.floor(state.seconds / 60);
+      const s = state.seconds % 60;
+      document.getElementById('win-time').textContent    = m + ':' + String(s).padStart(2, '0');
+      document.getElementById('win-moves').textContent   = state.moves;
+      document.getElementById('win-score').textContent   = result.score;
+      document.getElementById('win-credits').textContent = creditsWon;
+      document.getElementById('win-rank').innerHTML      = result.isNewBest
+        ? `<span style="color:var(--primary)">🏆 New best! Rank #${result.rank}</span>`
+        : `Rank #${result.rank}`;
+      document.getElementById('win-screen').classList.add('show');
+      XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'solitaire');
     }
 
-    function updateScoreboard() {
-      document.getElementById('stat-hands').textContent = stats.handsPlayed;
-      document.getElementById('stat-wins').textContent = stats.wins;
-      document.getElementById('stat-losses').textContent = stats.losses;
-      document.getElementById('stat-streak').textContent = stats.consecutiveWins;
+    // ===== AUTO-COMPLETE =====
+    // Fires only when: stock empty + waste empty + all tableau cards face-up
+    function canAutoComplete() {
+      if (!state.gameActive) return false;
+      if (state.stock.length > 0 || state.waste.length > 0) return false;
+      return state.tableau.every(col => col.every(e => e.faceUp));
     }
 
-    function showResult(type, label, amountText) {
-      resultTitle.className = 'result-text ' + type;
-      resultTitle.textContent = label;
-      resultAmount.className = 'result-amount ' + type;
-      resultAmount.textContent = amountText;
-      resultOverlay.classList.add('show');
+    function runAutoComplete() {
+      if (checkWin()) { autoCompleting = false; handleWin(); return; }
+      let moved = false;
+
+      if (state.waste.length > 0) {
+        const wcard = state.waste[state.waste.length - 1];
+        for (let f = 0; f < 4; f++) {
+          if (canStackFoundation(wcard, state.foundations[f])) {
+            state.waste.pop();
+            state.foundations[f].push(wcard);
+            state.moves++;
+            moved = true;
+            break;
+          }
+        }
+      }
+
+      if (!moved) {
+        outer: for (let c = 0; c < 7; c++) {
+          const col = state.tableau[c];
+          if (col.length === 0) continue;
+          const tcard = col[col.length - 1].card;
+          for (let f = 0; f < 4; f++) {
+            if (canStackFoundation(tcard, state.foundations[f])) {
+              col.pop();
+              state.foundations[f].push(tcard);
+              state.moves++;
+              moved = true;
+              break outer;
+            }
+          }
+        }
+      }
+
+      if (moved) {
+        renderAll(); updateInfo();
+        if (checkWin()) { autoCompleting = false; handleWin(); return; }
+        setTimeout(runAutoComplete, 80);
+      } else {
+        autoCompleting = false;
+      }
     }
 
-    /* ================================================================
-       WIN SCREEN (big wins)
-       ================================================================ */
-    function showWinScreen(label, amountText) {
-      var ws = document.getElementById('win-screen');
-      ws.innerHTML = '';
+    // ===== CLICK HANDLERS (from index_old.html — verified correct logic) =====
+    function handleStockClick() {
+      if (!state.gameActive) return;
+      saveUndo();
+      state.selected = null;
+      if (state.stock.length > 0) {
+        // Draw drawCount cards (or however many remain)
+        const toDraw = Math.min(drawCount, state.stock.length);
+        for (let i = 0; i < toDraw; i++) {
+          state.waste.push(state.stock.pop());
+        }
+      } else {
+        // Recycle waste back to stock (reversed)
+        state.stock      = state.waste.slice().reverse();
+        state.waste      = [];
+        state.stockPasses++;
+      }
+      state.moves++;
+      renderAll(); updateInfo();
+    }
 
-      var title = document.createElement('div');
-      title.className = 'win-title';
-      title.textContent = label;
-      ws.appendChild(title);
+    function handleWasteClick() {
+      if (!state.gameActive || state.waste.length === 0) return;
+      if (state.selected && state.selected.source === 'waste') {
+        state.selected = null; renderAll(); return;
+      }
+      state.selected = { source: 'waste' };
+      renderAll();
+    }
 
-      var amount = document.createElement('div');
-      amount.className = 'stat';
-      amount.innerHTML = '<strong>' + amountText + '</strong>';
-      ws.appendChild(amount);
+    function handleFoundationClick(foundIdx) {
+      if (!state.gameActive || !state.selected) return;
+      let card;
+      if (state.selected.source === 'waste') {
+        card = state.waste[state.waste.length - 1];
+      } else if (state.selected.source === 'tableau') {
+        const col = state.tableau[state.selected.colIdx];
+        if (state.selected.cardIdx !== col.length - 1) { state.selected = null; renderAll(); return; }
+        card = col[state.selected.cardIdx].card;
+      }
+      if (!card) { state.selected = null; renderAll(); return; }
+      if (canStackFoundation(card, state.foundations[foundIdx])) {
+        saveUndo();
+        if (state.selected.source === 'waste') {
+          state.waste.pop();
+        } else {
+          state.tableau[state.selected.colIdx].pop();
+          const col = state.tableau[state.selected.colIdx];
+          if (col.length > 0 && !col[col.length - 1].faceUp) col[col.length - 1].faceUp = true;
+        }
+        state.foundations[foundIdx].push(card);
+        state.moves++;
+        state.selected = null;
+        renderAll(); updateInfo();
+        if (checkWin()) handleWin();
+      } else {
+        state.selected = null; renderAll();
+      }
+    }
 
-      var statsDiv = document.createElement('div');
-      statsDiv.style.margin = '1rem 0';
-      statsDiv.innerHTML = '<div class="stat">Hands Played: <strong>' + stats.handsPlayed + '</strong></div>' +
-        '<div class="stat">Wins: <strong>' + stats.wins + '</strong></div>' +
-        '<div class="stat">Blackjacks: <strong>' + stats.blackjacks + '</strong></div>' +
-        '<div class="stat">Profit: <strong>' + (stats.profitCredits >= 0 ? '+' : '') + stats.profitCredits + '</strong></div>';
-      ws.appendChild(statsDiv);
+    function handleTableauClick(colIdx, cardIdx) {
+      if (!state.gameActive) return;
+      const col = state.tableau[colIdx];
 
-      var btn = document.createElement('button');
-      btn.className = 'btn-game';
-      btn.textContent = 'CONTINUE';
-      btn.style.marginTop = '1rem';
-      btn.addEventListener('click', function () {
-        ws.classList.remove('show');
-        showBetOverlay();
+      // Flip top face-down card
+      if (cardIdx !== undefined && col[cardIdx] && !col[cardIdx].faceUp) {
+        if (cardIdx === col.length - 1) {
+          saveUndo();
+          col[cardIdx].faceUp = true;
+          state.moves++;
+          renderAll(); updateInfo();
+        }
+        return;
+      }
+
+      // Select
+      if (!state.selected) {
+        if (col.length === 0 || cardIdx === undefined || !col[cardIdx].faceUp) return;
+        state.selected = { source: 'tableau', colIdx, cardIdx };
+        renderAll(); return;
+      }
+
+      // Move waste → tableau
+      if (state.selected.source === 'waste') {
+        const card = state.waste[state.waste.length - 1];
+        if (col.length === 0) {
+          if (card.rank === 'K') {
+            saveUndo();
+            state.waste.pop();
+            col.push({ card, faceUp: true });
+            state.moves++; state.selected = null;
+            renderAll(); updateInfo(); return;
+          }
+        } else if (canStackTableau(card, col[col.length - 1].card)) {
+          saveUndo();
+          state.waste.pop();
+          col.push({ card, faceUp: true });
+          state.moves++; state.selected = null;
+          renderAll(); updateInfo(); return;
+        }
+        state.selected = null; renderAll(); return;
+      }
+
+      // Move tableau → tableau
+      if (state.selected.source === 'tableau') {
+        const srcCol      = state.tableau[state.selected.colIdx];
+        const movingCards = srcCol.slice(state.selected.cardIdx);
+        const movingCard  = movingCards[0].card;
+        if (state.selected.colIdx === colIdx) { state.selected = null; renderAll(); return; }
+        let canDrop = false;
+        if (col.length === 0) { canDrop = (movingCard.rank === 'K'); }
+        else                   { canDrop = canStackTableau(movingCard, col[col.length - 1].card); }
+        if (canDrop) {
+          saveUndo();
+          state.tableau[state.selected.colIdx] = srcCol.slice(0, state.selected.cardIdx);
+          movingCards.forEach(e => col.push(e));
+          const src = state.tableau[state.selected.colIdx];
+          if (src.length > 0 && !src[src.length - 1].faceUp) src[src.length - 1].faceUp = true;
+          state.moves++; state.selected = null;
+          renderAll(); updateInfo(); return;
+        }
+        state.selected = null; renderAll();
+      }
+    }
+
+    function handleEmptyTableauClick(colIdx) { handleTableauClick(colIdx, undefined); }
+
+    // ===== AUTO-FOUNDATION (double-click) =====
+    function autoFoundation(card, source, colIdx, cardIdx) {
+      for (let f = 0; f < 4; f++) {
+        if (canStackFoundation(card, state.foundations[f])) {
+          saveUndo();
+          if (source === 'waste') {
+            state.waste.pop();
+          } else {
+            state.tableau[colIdx].splice(cardIdx, 1);
+            const col = state.tableau[colIdx];
+            if (col.length > 0 && !col[col.length - 1].faceUp) col[col.length - 1].faceUp = true;
+          }
+          state.foundations[f].push(card);
+          state.moves++; state.selected = null;
+          renderAll(); updateInfo();
+          if (checkWin()) handleWin();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // ===== DRAG & DROP =====
+    function getClientPos(e) {
+      const src = e.touches ? e.touches[0] : e.changedTouches ? e.changedTouches[0] : e;
+      return { x: src.clientX, y: src.clientY };
+    }
+
+    function buildGhost(cards, cardWidth) {
+      const ghost = document.getElementById('drag-ghost');
+      ghost.innerHTML = '';
+      ghost.style.display = 'block';
+      ghost.style.width   = cardWidth + 'px';
+      cards.forEach((c, i) => {
+        const gCard = createCardEl(c.card, true);
+        gCard.style.position = 'relative';
+        gCard.style.width    = '100%';
+        if (i > 0) gCard.style.marginTop = (-cardWidth * 1.5 + FACE_UP_PX) + 'px';
+        ghost.appendChild(gCard);
       });
-      ws.appendChild(btn);
-
-      ws.classList.add('show');
     }
 
-    /* ================================================================
-       EVENT WIRING
-       ================================================================ */
+    function positionGhost(x, y) {
+      const ghost = document.getElementById('drag-ghost');
+      ghost.style.left = (x - drag.offsetX) + 'px';
+      ghost.style.top  = (y - drag.offsetY) + 'px';
+    }
+
+    function startDrag(e, colIdx, cardIdx) {
+      if (!state.gameActive) return;
+      const col   = state.tableau[colIdx];
+      const entry = col[cardIdx];
+      if (!entry || !entry.faceUp) return;
+      e.preventDefault();
+      const pos   = getClientPos(e);
+      const rect  = e.currentTarget.getBoundingClientRect();
+      const cards = col.slice(cardIdx);
+      drag = {
+        source: 'tableau', colIdx, cardIdx, cards,
+        offsetX: pos.x - rect.left, offsetY: pos.y - rect.top, moved: false
+      };
+      buildGhost(cards, e.currentTarget.offsetWidth);
+      positionGhost(pos.x, pos.y);
+    }
+
+    function startWasteDrag(e) {
+      if (!state.gameActive || state.waste.length === 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const pos   = getClientPos(e);
+      const rect  = e.currentTarget.getBoundingClientRect();
+      const card  = state.waste[state.waste.length - 1];
+      drag = {
+        source: 'waste', colIdx: null, cardIdx: null,
+        cards: [{ card, faceUp: true }],
+        offsetX: pos.x - rect.left, offsetY: pos.y - rect.top, moved: false
+      };
+      buildGhost([{ card, faceUp: true }], e.currentTarget.offsetWidth);
+      positionGhost(pos.x, pos.y);
+    }
+
+    function onDragMove(e) {
+      if (!drag) return;
+      e.preventDefault();
+      drag.moved = true;
+      const pos  = getClientPos(e);
+      positionGhost(pos.x, pos.y);
+    }
+
+    function onDragEnd(e) {
+      if (!drag) return;
+      const ghost = document.getElementById('drag-ghost');
+      ghost.style.display = 'none';
+
+      if (!drag.moved) {
+        // Treat as click
+        if (drag.source === 'waste') handleWasteClick();
+        else handleTableauClick(drag.colIdx, drag.cardIdx);
+        drag = null;
+        return;
+      }
+
+      const pos = e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
+                                   : { x: e.clientX, y: e.clientY };
+      const dropEl = document.elementFromPoint(pos.x, pos.y);
+      let handled  = false;
+
+      if (dropEl) {
+        // Foundation drop
+        for (let f = 0; f < 4 && !handled; f++) {
+          const fEl = document.getElementById('foundation-' + f);
+          if (fEl && fEl.contains(dropEl) && drag.cards.length === 1) {
+            const card = drag.cards[0].card;
+            if (canStackFoundation(card, state.foundations[f])) {
+              saveUndo();
+              if (drag.source === 'waste') {
+                state.waste.pop();
+              } else {
+                state.tableau[drag.colIdx].splice(drag.cardIdx);
+                const col = state.tableau[drag.colIdx];
+                if (col.length > 0 && !col[col.length - 1].faceUp) col[col.length - 1].faceUp = true;
+              }
+              state.foundations[f].push(card);
+              state.moves++; state.selected = null;
+              renderAll(); updateInfo();
+              if (checkWin()) handleWin();
+              handled = true;
+            }
+          }
+        }
+
+        // Tableau drop
+        for (let c = 0; c < 7 && !handled; c++) {
+          const colEl = document.getElementById('tab-' + c);
+          if (colEl && colEl.contains(dropEl)) {
+            if (drag.source === 'tableau' && drag.colIdx === c) break; // same column
+            const destCol    = state.tableau[c];
+            const movingCard = drag.cards[0].card;
+            let canDrop = destCol.length === 0 ? movingCard.rank === 'K'
+                                               : canStackTableau(movingCard, destCol[destCol.length - 1].card);
+            if (canDrop) {
+              saveUndo();
+              if (drag.source === 'waste') {
+                state.waste.pop();
+              } else {
+                state.tableau[drag.colIdx] = state.tableau[drag.colIdx].slice(0, drag.cardIdx);
+                const src = state.tableau[drag.colIdx];
+                if (src.length > 0 && !src[src.length - 1].faceUp) src[src.length - 1].faceUp = true;
+              }
+              drag.cards.forEach(entry => destCol.push(entry));
+              state.moves++; state.selected = null;
+              renderAll(); updateInfo();
+              handled = true;
+            }
+            break;
+          }
+        }
+      }
+
+      if (!handled) { state.selected = null; renderAll(); }
+      drag = null;
+    }
+
+    // ===== LOCAL SCORE BACKUP (from index_old.html) =====
+    function submitGameScore() {
+      try {
+        const secs   = state.seconds || 999;
+        const score  = Math.max(0, 500 + Math.max(0, 300 - secs) - state.moves * 2 + (secs < 180 ? 100 : 0));
+        if (score <= 0) return;
+        const name   = localStorage.getItem('xstik_player_name') || 'Anonymous';
+        const key    = 'xstik-solitaire-leaderboard';
+        let entries  = [];
+        try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+        if (!Array.isArray(entries)) entries = [];
+        const idx    = entries.findIndex(e => e.name === name);
+        const entry  = { name, score, date: new Date().toISOString() };
+        if (idx >= 0) { if (score > entries[idx].score) entries[idx] = entry; }
+        else            { entries.push(entry); }
+        entries.sort((a, b) => b.score - a.score);
+        localStorage.setItem(key, JSON.stringify(entries.slice(0, 100)));
+      } catch (err) {}
+    }
+
+    // ===== EVENT WIRING =====
     function wireEvents() {
-      // Rules overlay
-      document.getElementById('btn-rules').addEventListener('click', function () {
-        document.getElementById('rules-overlay').classList.add('open');
+      // Stock
+      document.getElementById('stock').addEventListener('click', handleStockClick);
+
+      // Waste
+      const wasteEl = document.getElementById('waste');
+      wasteEl.addEventListener('click', handleWasteClick);
+      wasteEl.addEventListener('dblclick', () => {
+        if (state.waste.length > 0) autoFoundation(state.waste[state.waste.length - 1], 'waste');
       });
-      document.getElementById('btn-rules-close').addEventListener('click', function () {
-        document.getElementById('rules-overlay').classList.remove('open');
+
+      // Foundations
+      for (let f = 0; f < 4; f++) {
+        document.getElementById('foundation-' + f).addEventListener('click', () => handleFoundationClick(f));
+      }
+
+      // Tableau columns — click and double-click
+      for (let c = 0; c < 7; c++) {
+        const colEl = document.getElementById('tab-' + c);
+        colEl.addEventListener('click', (e) => {
+          if (drag && drag.moved) return;
+          const cardEl = e.target.closest('.card');
+          if (!cardEl) { handleEmptyTableauClick(c); return; }
+          handleTableauClick(c, parseInt(cardEl.dataset.idx));
+        });
+        colEl.addEventListener('dblclick', (e) => {
+          const cardEl = e.target.closest('.card');
+          if (!cardEl) return;
+          const idx = parseInt(cardEl.dataset.idx);
+          const col = state.tableau[c];
+          if (idx === col.length - 1 && col[idx] && col[idx].faceUp) {
+            autoFoundation(col[idx].card, 'tableau', c, idx);
+          }
+        });
+      }
+
+      // Global drag move / end
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup',   onDragEnd);
+      document.addEventListener('touchmove', (e) => { if (drag) { e.preventDefault(); onDragMove(e); } }, { passive: false });
+      document.addEventListener('touchend',  (e) => { if (drag) onDragEnd(e); });
+
+      // Buttons
+      document.getElementById('btn-new-game').addEventListener('click',  startNewGame);
+      document.getElementById('btn-undo').addEventListener('click',      doUndo);
+      document.getElementById('btn-play-again').addEventListener('click', startNewGame);
+
+      // Draw mode toggle (cycles 1 ↔ 3, starts new game on switch)
+      document.getElementById('btn-draw-mode').addEventListener('click', () => {
+        drawCount = (drawCount === 1) ? 3 : 1;
+        document.getElementById('btn-draw-mode').textContent = drawCount === 1 ? 'DRAW 3' : 'DRAW 1';
+        startNewGame();
       });
-      document.getElementById('rules-overlay').addEventListener('click', function (e) {
+
+      // HOW TO PLAY modal — Blackjack pattern (rules-overlay)
+      document.getElementById('btn-rules').addEventListener('click', () =>
+        document.getElementById('rules-overlay').classList.add('open'));
+      document.getElementById('btn-rules-close').addEventListener('click', () =>
+        document.getElementById('rules-overlay').classList.remove('open'));
+      document.getElementById('rules-overlay').addEventListener('click', (e) => {
         if (e.target === document.getElementById('rules-overlay'))
           document.getElementById('rules-overlay').classList.remove('open');
       });
 
-      // Leaderboard
-      function openLB() {
-        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', GAME_SLUG);
+      // Leaderboard slide-up panel — Blackjack pattern (lb-overlay)
+      function openLeaderboard() {
+        XstikLeaderboard.renderLeaderboard('#leaderboard-area', 'game', 'solitaire');
         document.getElementById('lb-overlay').classList.add('open');
       }
-      function closeLB() { document.getElementById('lb-overlay').classList.remove('open'); }
-      document.getElementById('btn-leaderboard').addEventListener('click', openLB);
-      document.getElementById('btn-lb-close').addEventListener('click', closeLB);
-      document.getElementById('lb-backdrop').addEventListener('click', closeLB);
-
-      // Chip buttons
-      for (var i = 0; i < chipButtons.length; i++) {
-        (function (btn) {
-          btn.addEventListener('click', function () {
-            var val = parseInt(btn.getAttribute('data-chip'), 10);
-            addChip(val);
-          });
-        })(chipButtons[i]);
+      function closeLeaderboard() {
+        document.getElementById('lb-overlay').classList.remove('open');
       }
-
-      // Clear bet
-      btnClearBet.addEventListener('click', clearBet);
-
-      // Deal button
-      btnDeal.addEventListener('click', startRound);
-
-      // Action buttons
-      btnHit.addEventListener('click', playerHit);
-      btnStand.addEventListener('click', playerStand);
-      btnDouble.addEventListener('click', playerDoubleDown);
-
-      // Play again
-      btnPlayAgain.addEventListener('click', function () {
-        // Check for bankruptcy
-        if (XstikCredits.isBankrupt()) {
-          XstikCredits.triggerBankruptcy(function () {
-            showBetOverlay();
-          });
-          return;
-        }
-        showBetOverlay();
-      });
+      document.getElementById('btn-leaderboard').addEventListener('click', openLeaderboard);
+      document.getElementById('btn-lb-close').addEventListener('click', closeLeaderboard);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLeaderboard);
     }
 
-    /* ================================================================
-       BOOT
-       ================================================================ */
-    XstikWrapper.mount('BLACKJACK');
+    // ===== BOOT =====
     XstikGameInit.showDisclaimer();
-    XstikGameInit.boot(GAME_SLUG, {
+    XstikGameInit.boot('solitaire', {
       preloadCards: true,
       onReady: function () {
-        deck = XstikImageLoader.getShuffledDeck();
-        deckIndex = 0;
         wireEvents();
-        showBetOverlay();
+        startNewGame();
       }
     });
 
   })();
   </script>
+
 </body>
 </html>

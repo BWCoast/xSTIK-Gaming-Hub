@@ -42,11 +42,6 @@ const XstikGameInit = (function () {
     // STEP 4: Mount credit display (if #credit-display exists)
     XstikCredits.mountDisplay('#credit-display');
 
-    // STEP 4.5: Bankruptcy intercept — if player is bankrupt, show popup before proceeding
-    if (typeof XstikWrapper !== 'undefined' && XstikCredits.isBankrupt && XstikCredits.isBankrupt()) {
-      await XstikWrapper.checkBankruptcy();
-    }
-
     // STEP 5: Check leaderboard monthly reset (happens inside leaderboard calls)
     // No explicit action needed — _checkMonthReset runs on first access.
 
@@ -95,7 +90,7 @@ const XstikGameInit = (function () {
     if (!bar) {
       bar = document.createElement('div');
       bar.id = 'xstik-load-bar';
-      bar.style.cssText = 'position:fixed;top:5rem;left:0;height:3px;background:var(--primary,#F5C518);z-index:999;transition:width 0.15s;';
+      bar.style.cssText = 'position:fixed;top:3.5rem;left:0;height:3px;background:var(--primary,#F5C518);z-index:999;transition:width 0.15s;';
       document.body.appendChild(bar);
     }
     const pct = Math.round((loaded / total) * 100);

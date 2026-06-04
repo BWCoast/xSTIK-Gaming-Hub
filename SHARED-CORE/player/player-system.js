@@ -66,6 +66,16 @@ const XstikPlayer = (function () {
       firstGame: firstGame || 'game-hub',
       gamesPlayed: {}
     });
+
+    // Fire-and-forget backend sync
+    try {
+      fetch('/.netlify/functions/player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), first_game: firstGame || 'game-hub' })
+      }).catch(function () { /* offline — no-op */ });
+    } catch (e) { /* fetch not available */ }
+
     return { valid: true, error: null };
   }
 
